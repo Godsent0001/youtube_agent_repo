@@ -51,3 +51,6 @@ class SubtitleService:
         sentences = script.split(".")
 
         return [s.strip() for s in sentences if s.strip()]
+
+
+subtitle_service = SubtitleService()

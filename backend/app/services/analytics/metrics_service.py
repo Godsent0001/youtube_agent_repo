@@ -55,5 +55,45 @@ class MetricsService:
     def get_metrics_by_video(self, video_id: str):
         return metrics_collection.find_one({"video_id": video_id})
 
+    def get_user_summary(self, user_id: str):
+        """Aggregate metrics for all videos of a user."""
+        pipeline = [
+            {"$match": {"user_id": user_id}},
+            {"$group": {
+                "_id": "$user_id",
+                "views": {"$sum": "$views"},
+                "retention_rate": {"$avg": "$retention_rate"},
+                "ctr": {"$avg": "$ctr"}
+            }}
+        ]
+        result = list(metrics_collection.aggregate(pipeline))
+        return result[0] if result else {}
+
+    def get_agent_metrics(self, agent_id: str):
+        """Aggregate metrics for a specific agent."""
+        pipeline = [
+            {"$match": {"agent_id": agent_id}},
+            {"$group": {
+                "_id": "$agent_id",
+                "views": {"$sum": "$views"},
+                "likes": {"$sum": "$likes"},
+                "comments": {"$sum": "$comments"}
+            }}
+        ]
+        result = list(metrics_collection.aggregate(pipeline))
+        return result[0] if result else {}
+
+    def get_video_metrics(self, video_id: str):
+        """Alias for get_metrics_by_video to match route usage."""
+        return self.get_metrics_by_video(video_id)
+
+    def generate_learning_insights(self, user_id: str):
+        """Placeholder for AI-driven insights based on metrics."""
+        return [
+            "Focus on more 'How-to' content as it has higher retention.",
+            "Shorts under 30 seconds are performing 20% better.",
+            "Your 'Gaming' niche is seeing a growth trend."
+        ]
+
 
 metrics_service = MetricsService()
