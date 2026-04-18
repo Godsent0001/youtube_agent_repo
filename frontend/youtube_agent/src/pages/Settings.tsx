@@ -1,0 +1,165 @@
+
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
+import { Select } from '../components/ui/Select';
+import { User, Bell, Key, Shield, Trash2, Play, Save } from 'lucide-react';
+
+export const Settings = () => {
+  return (
+    <div className="max-w-4xl mx-auto space-y-8">
+      <div>
+        <h1 className="text-3xl font-bold text-white">Settings</h1>
+        <p className="text-secondary-foreground">Manage your account and preferences</p>
+      </div>
+
+      <div className="space-y-6">
+        {/* Account Settings */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <User className="h-5 w-5 text-primary" />
+              <CardTitle>Account Settings</CardTitle>
+            </div>
+            <CardDescription>Update your personal information and profile settings.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-white">Full Name</label>
+                <Input defaultValue="Godsent Enabulele" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-white">Email Address</label>
+                <Input type="email" defaultValue="godsent@example.com" />
+              </div>
+            </div>
+            <div className="flex items-center justify-between p-4 bg-neutral-900 rounded-lg border border-border">
+              <div className="flex items-center gap-3">
+                <Play className="h-6 w-6 text-red-600" />
+                <div>
+                  <div className="text-sm font-bold text-white">YouTube OAuth</div>
+                  <div className="text-xs text-secondary-foreground">Connected to "Tech Tips Weekly"</div>
+                </div>
+              </div>
+              <Button variant="outline" size="sm">Reconnect</Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Notifications */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Bell className="h-5 w-5 text-primary" />
+              <CardTitle>Notification Settings</CardTitle>
+            </div>
+            <CardDescription>Choose what updates you want to receive.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {[
+              { label: 'Email Notifications for New Videos', description: 'Get an email every time an agent posts a video.' },
+              { label: 'Campaign Performance Updates', description: 'Weekly reports on your monetization campaigns.' },
+              { label: 'Agent Status Alerts', description: 'Immediate alerts if an agent is paused or encounters an error.' },
+            ].map((notif, i) => (
+              <div key={i} className="flex items-start justify-between">
+                <div>
+                  <div className="text-sm font-medium text-white">{notif.label}</div>
+                  <div className="text-xs text-secondary-foreground">{notif.description}</div>
+                </div>
+                <input type="checkbox" className="mt-1 h-4 w-4 rounded border-border bg-card text-primary focus:ring-primary" />
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+
+        {/* API Keys */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Key className="h-5 w-5 text-primary" />
+              <CardTitle>API & Integration</CardTitle>
+            </div>
+            <CardDescription>Access keys for advanced integrations and developer tools.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-white">YouTube API Key</label>
+              <div className="flex gap-2">
+                <Input type="password" value="********************************" readOnly />
+                <Button variant="outline">Edit</Button>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-white">AI Engine API Key</label>
+              <div className="flex gap-2">
+                <Input type="password" value="********************************" readOnly />
+                <Button variant="outline">Edit</Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Preferences */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Shield className="h-5 w-5 text-primary" />
+              <CardTitle>Default Preferences</CardTitle>
+            </div>
+            <CardDescription>Set defaults for newly created agents.</CardDescription>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-white">Video Length</label>
+              <Select defaultValue="30s">
+                <option value="30s">30 Seconds</option>
+                <option value="60s">60 Seconds</option>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-white">Content Type</label>
+              <Select defaultValue="shorts">
+                <option value="shorts">Shorts</option>
+                <option value="long">Long-form</option>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-white">Language</label>
+              <Select defaultValue="en">
+                <option value="en">English (US)</option>
+                <option value="ng">English (NG)</option>
+              </Select>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Danger Zone */}
+        <Card className="border-red-900/50">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Trash2 className="h-5 w-5 text-red-500" />
+              <CardTitle className="text-red-500">Danger Zone</CardTitle>
+            </div>
+            <CardDescription>Irreversible actions for your account and agents.</CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col md:flex-row gap-4">
+            <Button variant="outline" className="border-red-900 text-red-500 hover:bg-red-950/30">
+              Disconnect All Agents
+            </Button>
+            <Button variant="outline" className="border-red-900 text-red-500 hover:bg-red-950/30">
+              Delete Account
+            </Button>
+          </CardContent>
+        </Card>
+
+        <div className="flex justify-end pt-6">
+          <Button size="lg" className="px-12 gap-2">
+            <Save className="h-5 w-5" />
+            Save Changes
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
