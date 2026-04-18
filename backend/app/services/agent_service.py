@@ -1,7 +1,7 @@
 from datetime import datetime
 from bson import ObjectId
 from app.core.logger import logger
-from app.db.session import agent_collection
+from app.db.session import agents_collection as agent_collection
 
 
 class AgentService:
@@ -12,6 +12,11 @@ class AgentService:
 
     def __init__(self):
         self.logger = logger
+
+    def _prepare_agent(self, agent: dict):
+        if agent and "_id" in agent:
+            agent["id"] = str(agent.pop("_id"))
+        return agent
 
     def create_agent(self, user_id: str, data: dict):
 
@@ -40,10 +45,24 @@ class AgentService:
         return str(result.inserted_id)
 
     def get_agent(self, agent_id: str):
-        return agent_collection.find_one({"_id": ObjectId(agent_id)})
+        agent = agent_collection.find_one({"_id": ObjectId(agent_id)})
+        return self._prepare_agent(agent)
 
     def list_user_agents(self, user_id: str):
-        return list(agent_collection.find({"user_id": user_id}))
+        agents = list(agent_collection.find({"user_id": user_id}))
+        return [self._prepare_agent(a) for a in agents]
+
+    def update_agent(self, agent_id: str, data: dict):
+        """Update an existing agent."""
+        try:
+            agent_collection.update_one(
+                {"_id": ObjectId(agent_id)},
+                {"$set": data}
+            )
+            return self.get_agent(agent_id)
+        except Exception as e:
+            self.logger.error(f"Error updating agent {agent_id}: {e}")
+            return None
 
 
 agent_service = AgentService()
