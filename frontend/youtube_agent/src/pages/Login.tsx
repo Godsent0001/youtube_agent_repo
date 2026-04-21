@@ -1,17 +1,40 @@
-import React from "react";
+import React, { useState } from "react";
 
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Play, Mail } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { api } from '../utils/api';
 
 export const Login = () => {
   const navigate = useNavigate();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    navigate('/dashboard');
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const response = await api.post<{ user_id: string; access_token: string }>('/auth/login', {
+        email,
+        password,
+      });
+
+      localStorage.setItem('user_id', response.user_id);
+      localStorage.setItem('access_token', response.access_token);
+      localStorage.setItem('user_email', email);
+
+      navigate('/dashboard');
+    } catch (err: any) {
+      setError(err.message || 'Login failed. Please check your credentials.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -46,9 +69,20 @@ export const Login = () => {
       </div>
 
       <form onSubmit={handleLogin} className="space-y-4">
+        {error && (
+          <div className="p-3 text-sm text-red-500 bg-red-500/10 border border-red-500/20 rounded-md">
+            {error}
+          </div>
+        )}
         <div className="space-y-2">
           <label className="text-sm font-medium text-secondary-foreground">Email</label>
-          <Input type="email" placeholder="name@example.com" required />
+          <Input
+            type="email"
+            placeholder="name@example.com"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
         </div>
         <div className="space-y-2">
           <div className="flex justify-between">
@@ -57,10 +91,16 @@ export const Login = () => {
               Forgot password?
             </Link>
           </div>
-          <Input type="password" placeholder="••••••••" required />
+          <Input
+            type="password"
+            placeholder="••••••••"
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
         </div>
-        <Button type="submit" className="w-full">
-          Login
+        <Button type="submit" className="w-full" disabled={isLoading}>
+          {isLoading ? 'Logging in...' : 'Login'}
         </Button>
       </form>
 

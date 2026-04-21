@@ -1,0 +1,14 @@
+2026-04-19 20:23:32 | INFO | AI_AGENT | No YouTube API key provided. Using mock YouTube Service.
+INFO:     Started server process [49755]
+INFO:     Waiting for application startup.
+2026-04-19 20:23:32 | INFO | AI_AGENT | Starting AI Video Backend...
+2026-04-19 20:23:32 | INFO | AI_AGENT | Initializing Database...
+2026-04-19 20:23:32 | INFO | AI_AGENT | Database indexes created successfully.
+2026-04-19 20:23:32 | INFO | AI_AGENT | Database initialization complete.
+2026-04-19 20:23:32 | INFO | AI_AGENT | Worker started...
+2026-04-19 20:23:32 | INFO | AI_AGENT | Worker running in background
+2026-04-19 20:23:32 | INFO | AI_AGENT | System fully initialized 🚀
+INFO:     Application startup complete.
+ERROR:    [Errno 98] error while attempting to bind on address ('0.0.0.0', 8000): address already in use
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.

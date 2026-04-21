@@ -12,11 +12,14 @@ class AgentCreate(BaseModel):
 
     posting_frequency: Optional[Literal["daily", "weekly"]] = "daily"
 
+    is_active: bool = True
+
 
 class AgentUpdate(BaseModel):
     name: Optional[str] = None
     niche: Optional[str] = None
     custom_prompt: Optional[str] = None
+    is_active: Optional[bool] = None
 
 
 class AgentResponse(BaseModel):

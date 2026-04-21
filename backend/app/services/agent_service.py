@@ -29,6 +29,7 @@ class AgentService:
             "custom_prompt": data.get("custom_prompt", None),
 
             "posting_frequency": data.get("posting_frequency", "daily"),
+            "is_active": data.get("is_active", True),
 
             "created_at": datetime.utcnow(),
 
