@@ -42,6 +42,14 @@ class User(BaseModel):
     total_views: int = 0
 
     # =========================
+    # YOUTUBE OAUTH
+    # =========================
+    youtube_access_token: Optional[str] = None
+    youtube_refresh_token: Optional[str] = None
+    youtube_token_expiry: Optional[datetime] = None
+    youtube_channel_id: Optional[str] = None
+
+    # =========================
     # TIMESTAMPS
     # =========================
     created_at: datetime = Field(default_factory=datetime.utcnow)

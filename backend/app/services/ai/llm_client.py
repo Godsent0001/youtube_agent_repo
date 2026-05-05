@@ -1,38 +1,48 @@
-import requests
 import json
+import google.generativeai as genai
 from app.core.config import settings
 from app.core.logger import logger
 
 class LLMClient:
     """
-    Generic LLM wrapper with mock fallback
+    Gemini LLM wrapper with mock fallback
     """
 
     def __init__(self):
-        self.api_key = settings.LLM_API_KEY
-        self.base_url = "https://api.llm-provider.com/v1/chat/completions"  # replace
+        self.api_key = settings.GEMINI_API_KEY
         self.logger = logger
+        self.model_name = "gemini-1.5-flash" # Defaulting to flash for speed/cost
+
+        if self.api_key and "your_" not in self.api_key:
+            genai.configure(api_key=self.api_key)
+            self.model = genai.GenerativeModel(self.model_name)
+            self.logger.info(f"Gemini LLM initialized with model: {self.model_name}")
+        else:
+            self.model = None
+            self.logger.info("No Gemini API key provided. Using mock LLM responses.")
 
     def generate(self, messages, temperature=0.7):
-        if self.api_key and "your_" not in self.api_key:
+        if self.model:
             try:
-                response = requests.post(
-                    self.base_url,
-                    headers={
-                        "Authorization": f"Bearer {self.api_key}",
-                        "Content-Type": "application/json"
-                    },
-                    json={
-                        "model": "llama-4-maverick",
-                        "messages": messages,
-                        "temperature": temperature
-                    },
-                    timeout=10
+                # Convert messages to Gemini format
+                # Gemini expects a prompt string or a list of parts.
+                # For simplicity, we'll join the messages into a single prompt if it's more than just a user message.
+
+                prompt = ""
+                for msg in messages:
+                    role = msg.get("role", "user")
+                    content = msg.get("content", "")
+                    prompt += f"{role.capitalize()}: {content}\n"
+
+                response = self.model.generate_content(
+                    prompt,
+                    generation_config=genai.types.GenerationConfig(
+                        temperature=temperature,
+                    )
                 )
-                response.raise_for_status()
-                return response.json()["choices"][0]["message"]["content"]
+                return response.text
             except Exception as e:
-                self.logger.warning(f"LLM API call failed: {e}. Using mock response.")
+                self.logger.warning(f"Gemini API call failed: {e}. Using mock response.")
 
         # Mock responses based on the system prompt or user content
         user_content = messages[-1]["content"].lower()
@@ -50,9 +60,9 @@ class LLMClient:
 
         if "scene" in user_content:
             return json.dumps([
-                {"description": "A high-tech laboratory with robots", "duration": 5},
-                {"description": "City of the future with flying cars", "duration": 5},
-                {"description": "Close up of a human eye reflecting code", "duration": 5}
+                {"description": "A high-tech laboratory with robots", "duration": 5, "visual_query": "futuristic lab robots", "emotion": "neutral"},
+                {"description": "City of the future with flying cars", "duration": 5, "visual_query": "future city flying cars", "emotion": "action"},
+                {"description": "Close up of a human eye reflecting code", "duration": 5, "visual_query": "human eye digital code reflection", "emotion": "shock"}
             ])
 
         if "metadata" in user_content:

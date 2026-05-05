@@ -55,6 +55,7 @@ Pillow==10.4.0
 # TEXT PROCESSING (AI PIPELINE)
 # =========================
 regex==2024.7.24
+google-generativeai==0.8.2
 
 
 # =========================

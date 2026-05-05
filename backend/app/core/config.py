@@ -23,18 +23,18 @@ class Settings:
     # =========================
     # AI PROVIDERS
     # =========================
-    LLM_API_KEY: str = os.getenv("LLM_API_KEY", "")
+    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
     
     ELEVENLABS_API_KEY: str = os.getenv("ELEVENLABS_API_KEY", "")
+    ELEVENLABS_VOICE_ID: str = os.getenv("ELEVENLABS_VOICE_ID", "wWWn96OtTHu1sn8SRGEr")
     
-    PEXELS_API_KEY: str = os.getenv("PEXELS_API_KEY", "")
+    PIXABAY_API_KEY: str = os.getenv("PIXABAY_API_KEY", "")
 
     # =========================
     # YOUTUBE API
     # =========================
     YOUTUBE_CLIENT_ID: str = os.getenv("YOUTUBE_CLIENT_ID", "")
     YOUTUBE_CLIENT_SECRET: str = os.getenv("YOUTUBE_CLIENT_SECRET", "")
-    YOUTUBE_REFRESH_TOKEN: str = os.getenv("YOUTUBE_REFRESH_TOKEN", "")
 
     # =========================
     # SECURITY

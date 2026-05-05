@@ -122,6 +122,7 @@ class PipelineService:
         # 11. UPLOAD TO YOUTUBE
         # =========================
         upload_result = youtube_service.upload_video(
+            user_id=agent["user_id"],
             file_path=final_video,
             title=metadata["title"],
             description=metadata["description"],

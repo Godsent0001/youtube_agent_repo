@@ -1,5 +1,5 @@
 from app.core.logger import logger
-from app.services.media.pexels_service import pexels_service
+from app.services.media.pixabay_service import pixabay_service
 from app.services.media.cache_service import cache_service
 
 
@@ -21,9 +21,9 @@ class SelectorService:
         if cached:
             return cached
 
-        # 2. Fetch from Pexels
-        images = pexels_service.search_images(query)
-        videos = pexels_service.search_videos(query)
+        # 2. Fetch from Pixabay
+        images = pixabay_service.search_images(query)
+        videos = pixabay_service.search_videos(query)
 
         # 3. Smart selection logic (lightweight, not LLM-based to avoid latency)
         selected = self._rank_media(images, videos, emotion)
