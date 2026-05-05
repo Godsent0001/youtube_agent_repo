@@ -1,17 +1,18 @@
 import json
+import re
 import google.generativeai as genai
 from app.core.config import settings
 from app.core.logger import logger
 
 class LLMClient:
     """
-    Gemini LLM wrapper with mock fallback
+    Gemini LLM wrapper with mock fallback (disabled in DEBUG=False)
     """
 
     def __init__(self):
         self.api_key = settings.GEMINI_API_KEY
         self.logger = logger
-        self.model_name = "gemini-1.5-flash" # Defaulting to flash for speed/cost
+        self.model_name = "gemini-2.0-flash-exp" # Using stable flash model name
 
         if self.api_key and "your_" not in self.api_key:
             genai.configure(api_key=self.api_key)
@@ -19,15 +20,23 @@ class LLMClient:
             self.logger.info(f"Gemini LLM initialized with model: {self.model_name}")
         else:
             self.model = None
-            self.logger.info("No Gemini API key provided. Using mock LLM responses.")
+            if settings.DEBUG:
+                self.logger.info("No Gemini API key provided. Using mock LLM responses.")
+            else:
+                self.logger.error("No Gemini API key provided and DEBUG=False. LLM will fail.")
+
+    def _extract_json(self, text):
+        """
+        Cleans LLM response and extracts JSON
+        """
+        # Remove markdown code blocks if present
+        text = re.sub(r'```json\s*', '', text)
+        text = re.sub(r'```\s*', '', text)
+        return text.strip()
 
     def generate(self, messages, temperature=0.7):
         if self.model:
             try:
-                # Convert messages to Gemini format
-                # Gemini expects a prompt string or a list of parts.
-                # For simplicity, we'll join the messages into a single prompt if it's more than just a user message.
-
                 prompt = ""
                 for msg in messages:
                     role = msg.get("role", "user")
@@ -40,11 +49,20 @@ class LLMClient:
                         temperature=temperature,
                     )
                 )
-                return response.text
-            except Exception as e:
-                self.logger.warning(f"Gemini API call failed: {e}. Using mock response.")
 
-        # Mock responses based on the system prompt or user content
+                # Clean the response to ensure it's valid JSON if that's what's expected
+                return self._extract_json(response.text)
+            except Exception as e:
+                if settings.DEBUG:
+                    self.logger.warning(f"Gemini API call failed: {e}. Using mock response.")
+                else:
+                    self.logger.error(f"Gemini API call failed: {e}")
+                    raise e
+
+        if not settings.DEBUG:
+            raise Exception("LLM Client not initialized and DEBUG=False")
+
+        # Mock responses (only if DEBUG=True)
         user_content = messages[-1]["content"].lower()
 
         if "topic" in user_content or "niche" in user_content:

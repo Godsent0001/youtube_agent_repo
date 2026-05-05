@@ -1,5 +1,5 @@
 import os
-from moviepy.editor import concatenate_videoclips, CompositeVideoClip
+from moviepy.editor import VideoFileClip, concatenate_videoclips, CompositeVideoClip
 from app.core.logger import logger
 
 
@@ -19,16 +19,30 @@ class RenderService:
         content_type: str = "shorts"
     ):
 
-        self.logger.info("Rendering final video...")
+        self.logger.info(f"Rendering final video... (Input: {clips})")
 
         # 1. Validate input
         if not clips:
             raise ValueError("No clips provided for rendering")
 
-        # 2. Composition strategy
-        final_clip = self._compose(clips, content_type)
+        # 2. Convert string paths to VideoFileClip objects if necessary
+        processed_clips = []
+        for c in clips:
+            if isinstance(c, str):
+                if os.path.exists(c):
+                    processed_clips.append(VideoFileClip(c))
+                else:
+                    self.logger.error(f"Clip file not found: {c}")
+            else:
+                processed_clips.append(c)
 
-        # 3. Export settings
+        if not processed_clips:
+             raise ValueError("No valid clips found for rendering")
+
+        # 3. Composition strategy
+        final_clip = self._compose(processed_clips, content_type)
+
+        # 4. Export settings
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
         fps = 30 if content_type == "shorts" else 24

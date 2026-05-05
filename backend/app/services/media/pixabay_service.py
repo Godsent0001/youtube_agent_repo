@@ -5,7 +5,7 @@ from app.core.logger import logger
 
 class PixabayService:
     """
-    Handles fetching media from Pixabay API with mock fallback
+    Handles fetching media from Pixabay API with mock fallback (disabled in DEBUG=False)
     """
 
     def __init__(self):
@@ -14,6 +14,11 @@ class PixabayService:
         self.logger = logger
 
     def search_images(self, query: str, per_page: int = 5):
+        # Pixabay per_page must be between 3 and 200
+        per_page = max(3, min(200, per_page))
+        # Pixabay query "q" may not exceed 100 characters
+        if len(query) > 100:
+            query = query[:97] + "..."
         if self.api_key and "your_" not in self.api_key:
             try:
                 params = {
@@ -30,14 +35,26 @@ class PixabayService:
                         for item in data.get("hits", [])
                     ]
                 self.logger.error(f"Pixabay error: {response.text}")
+                if not settings.DEBUG:
+                    response.raise_for_status()
             except Exception as e:
                 self.logger.error(f"Pixabay search_images failed: {e}")
+                if not settings.DEBUG:
+                    raise e
 
-        # Mock fallback
+        if not settings.DEBUG:
+            raise Exception("Pixabay API key not provided and DEBUG=False")
+
+        # Mock fallback (only if DEBUG=True)
         self.logger.info(f"Using mock results for Pixabay images: {query}")
         return [{"url": f"https://pixabay.com/mock_{i}.jpg", "photographer": "Mock Photographer"} for i in range(per_page)]
 
     def search_videos(self, query: str, per_page: int = 5):
+        # Pixabay per_page must be between 3 and 200
+        per_page = max(3, min(200, per_page))
+        # Pixabay query "q" may not exceed 100 characters
+        if len(query) > 100:
+            query = query[:97] + "..."
         if self.api_key and "your_" not in self.api_key:
             try:
                 url = f"{self.base_url}videos/"
@@ -51,18 +68,23 @@ class PixabayService:
                     data = response.json()
                     results = []
                     for video in data.get("hits", []):
-                        # Pixabay returns multiple resolutions in the 'videos' key
                         video_files = video.get("videos", {})
-                        # Try to get a medium resolution like 'medium' or 'small'
                         best_file = video_files.get("medium") or video_files.get("small") or video_files.get("large") or video_files.get("tiny")
                         if best_file:
                             results.append({"url": best_file["url"], "duration": video["duration"]})
                     return results
                 self.logger.error(f"Pixabay video error: {response.text}")
+                if not settings.DEBUG:
+                    response.raise_for_status()
             except Exception as e:
                 self.logger.error(f"Pixabay search_videos failed: {e}")
+                if not settings.DEBUG:
+                    raise e
 
-        # Mock fallback
+        if not settings.DEBUG:
+            raise Exception("Pixabay API key not provided and DEBUG=False")
+
+        # Mock fallback (only if DEBUG=True)
         self.logger.info(f"Using mock results for Pixabay videos: {query}")
         return [{"url": f"https://pixabay.com/mock_{i}.mp4", "duration": 10} for i in range(per_page)]
 

@@ -22,13 +22,21 @@ class YouTubeService:
         Retrieves and refreshes OAuth credentials for a specific user
         """
         user = user_service.get_by_id(user_id)
-        if not user or not user.get("youtube_refresh_token"):
+        if not user:
+             self.logger.warning(f"User {user_id} not found")
+             return None
+
+        # In case it's a dict (from DB) or an object (from Pydantic)
+        refresh_token = user.get("youtube_refresh_token") if isinstance(user, dict) else getattr(user, "youtube_refresh_token", None)
+        access_token = user.get("youtube_access_token") if isinstance(user, dict) else getattr(user, "youtube_access_token", None)
+
+        if not refresh_token:
             self.logger.warning(f"No YouTube refresh token found for user {user_id}")
             return None
 
         creds = Credentials(
-            token=user.get("youtube_access_token"),
-            refresh_token=user.get("youtube_refresh_token"),
+            token=access_token,
+            refresh_token=refresh_token,
             token_uri="https://oauth2.googleapis.com/token",
             client_id=settings.YOUTUBE_CLIENT_ID,
             client_secret=settings.YOUTUBE_CLIENT_SECRET,
@@ -66,7 +74,7 @@ class YouTubeService:
         content_type: str = "shorts"
     ):
         """
-        Uploads video to YouTube (or mocks it)
+        Uploads video to YouTube (or mocks it if DEBUG=True)
         """
         self.logger.info(f"Uploading video for user {user_id}: {title}")
 
@@ -95,7 +103,6 @@ class YouTubeService:
                 response = request.execute()
                 video_id = response.get("id")
 
-                # If thumbnail provided, upload it
                 if video_id and thumbnail_path and os.path.exists(thumbnail_path):
                     try:
                         youtube.thumbnails().set(
@@ -112,9 +119,14 @@ class YouTubeService:
                     "url": f"https://www.youtube.com/watch?v={video_id}"
                 }
             except Exception as e:
-                self.logger.error(f"YouTube upload failed: {e}. Returning mock data.")
+                self.logger.error(f"YouTube upload failed: {e}")
+                if not settings.DEBUG:
+                    raise e
 
-        # Mock fallback
+        if not settings.DEBUG:
+            raise Exception(f"No valid YouTube credentials for user {user_id} and DEBUG=False")
+
+        # Mock fallback (only if DEBUG=True)
         mock_id = str(uuid.uuid4())
         self.logger.info(f"MOCK Upload successful: {mock_id}")
         return {

@@ -32,7 +32,7 @@ class ThumbnailService:
             # Actually, I'll implement a "Gemini Thumbnail Generator" that at least uses Gemini to craft the prompt.
             # If I can't find a direct image generation method in genai SDK, I will stick to mock for the actual image file but use Gemini for the prompt.
 
-            self.model = genai.GenerativeModel("gemini-1.5-flash")
+            self.model = genai.GenerativeModel("gemini-2.0-flash-exp")
         else:
             self.model = None
 

@@ -7,7 +7,7 @@ import os
 
 class ElevenLabsService:
     """
-    Handles text-to-speech generation with mock fallback
+    Handles text-to-speech generation with mock fallback (disabled in DEBUG=False)
     """
 
     def __init__(self):
@@ -17,14 +17,14 @@ class ElevenLabsService:
 
     def generate_audio(self, text: str, voice_id: str = None):
         """
-        Converts script to speech audio (or mocks it)
+        Converts script to speech audio (or mocks it if DEBUG=True)
         """
         file_name = f"{uuid.uuid4()}.mp3"
         file_path = os.path.join("storage/audio", file_name)
         os.makedirs("storage/audio", exist_ok=True)
 
         if self.api_key and "your_" not in self.api_key:
-            voice_id = voice_id or "default_voice_id"
+            voice_id = voice_id or settings.ELEVENLABS_VOICE_ID or "wWWn96OtTHu1sn8SRGEr"
             url = f"{self.base_url}/{voice_id}"
             headers = {
                 "xi-api-key": self.api_key,
@@ -43,10 +43,17 @@ class ElevenLabsService:
                     return file_path
                 else:
                     self.logger.error(f"ElevenLabs error: {response.text}")
+                    if not settings.DEBUG:
+                        response.raise_for_status()
             except Exception as e:
                 self.logger.error(f"ElevenLabs request failed: {e}")
+                if not settings.DEBUG:
+                    raise e
 
-        # Mock fallback: create an empty file or just return path
+        if not settings.DEBUG:
+            raise Exception("ElevenLabs API key not provided or request failed and DEBUG=False")
+
+        # Mock fallback: create an empty file (only if DEBUG=True)
         with open(file_path, "wb") as f:
             f.write(b"MOCK AUDIO CONTENT")
         self.logger.info(f"MOCK Audio generated: {file_path}")
