@@ -1,16 +1,43 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Play } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { apiRequest } from '../utils/api';
 
 export const SignUp = () => {
   const navigate = useNavigate();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSignUp = (e: React.FormEvent) => {
+  const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    navigate('/dashboard');
+    setError('');
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const data = await apiRequest('/auth/register', {
+        method: 'POST',
+        body: JSON.stringify({ email, password, username: email.split('@')[0] }),
+      });
+      localStorage.setItem('access_token', data.access_token);
+      localStorage.setItem('user_id', data.user_id);
+      localStorage.setItem('user_email', email);
+      navigate('/dashboard');
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -40,21 +67,40 @@ export const SignUp = () => {
         </div>
       </div>
 
+      {error && <p className="text-red-500 text-sm mb-4 text-center">{error}</p>}
       <form onSubmit={handleSignUp} className="space-y-4">
         <div className="space-y-2">
           <label className="text-sm font-medium text-secondary-foreground">Email</label>
-          <Input type="email" placeholder="name@example.com" required />
+          <Input
+            type="email"
+            placeholder="name@example.com"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
         </div>
         <div className="space-y-2">
           <label className="text-sm font-medium text-secondary-foreground">Password</label>
-          <Input type="password" placeholder="••••••••" required />
+          <Input
+            type="password"
+            placeholder="••••••••"
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
         </div>
         <div className="space-y-2">
           <label className="text-sm font-medium text-secondary-foreground">Confirm Password</label>
-          <Input type="password" placeholder="••••••••" required />
+          <Input
+            type="password"
+            placeholder="••••••••"
+            required
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+          />
         </div>
-        <Button type="submit" className="w-full">
-          Sign Up
+        <Button type="submit" className="w-full" disabled={loading}>
+          {loading ? 'Creating Account...' : 'Sign Up'}
         </Button>
       </form>
     </motion.div>

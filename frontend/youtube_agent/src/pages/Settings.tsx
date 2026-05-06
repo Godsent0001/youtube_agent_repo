@@ -1,11 +1,33 @@
 
+import { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Select } from '../components/ui/Select';
-import { User, Bell, Key, Shield, Trash2, Play, Save } from 'lucide-react';
+import { User as UserIcon, Bell, Key, Shield, Trash2, Play, Save } from 'lucide-react';
+import { apiRequest } from '../utils/api';
 
 export const Settings = () => {
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const data = await apiRequest('/auth/me');
+        setUser(data);
+      } catch (err) {
+        console.error('Failed to fetch user:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
+  if (loading) return <p className="text-white text-center py-12">Loading settings...</p>;
+
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       <div>
@@ -18,7 +40,7 @@ export const Settings = () => {
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
-              <User className="h-5 w-5 text-primary" />
+              <UserIcon className="h-5 w-5 text-primary" />
               <CardTitle>Account Settings</CardTitle>
             </div>
             <CardDescription>Update your personal information and profile settings.</CardDescription>
@@ -27,11 +49,11 @@ export const Settings = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-white">Full Name</label>
-                <Input defaultValue="Godsent Enabulele" />
+                <Input defaultValue={user?.full_name || ''} />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-white">Email Address</label>
-                <Input type="email" defaultValue="godsent@example.com" />
+                <Input type="email" defaultValue={user?.email || ''} readOnly />
               </div>
             </div>
             <div className="flex items-center justify-between p-4 bg-neutral-900 rounded-lg border border-border">
@@ -39,10 +61,14 @@ export const Settings = () => {
                 <Play className="h-6 w-6 text-red-600" />
                 <div>
                   <div className="text-sm font-bold text-white">YouTube OAuth</div>
-                  <div className="text-xs text-secondary-foreground">Connected to "Tech Tips Weekly"</div>
+                  <div className="text-xs text-secondary-foreground">
+                    {user?.youtube_refresh_token ? 'Connected' : 'Not Connected'}
+                  </div>
                 </div>
               </div>
-              <Button variant="outline" size="sm">Reconnect</Button>
+              <Button variant="outline" size="sm">
+                  {user?.youtube_refresh_token ? 'Reconnect' : 'Connect'}
+              </Button>
             </div>
           </CardContent>
         </Card>
