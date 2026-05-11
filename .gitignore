@@ -1,0 +1,101 @@
+# =========================
+# PYTHON
+# =========================
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+
+# =========================
+# VIRTUAL ENVIRONMENT
+# =========================
+venv/
+.venv/
+env/
+.env
+backend/.env
+.env.*
+
+# =========================
+# IDE / EDITOR
+# =========================
+.vscode/
+.idea/
+
+# =========================
+# OS FILES
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# NODE (frontend)
+# =========================
+node_modules/
+dist/
+build/
+
+# =========================
+# LOGS
+# =========================
+logs/
+*.log
+
+# =========================
+# SECRETS (CRITICAL)
+# =========================
+*.pem
+*.key
+*.secret
+
+# =========================
+# MEDIA / VIDEO PIPELINE (CRITICAL)
+# =========================
+
+# raw uploads
+backend/raw_*
+raw_*
+
+# temp generated media
+backend/storage/temp_media/
+backend/storage/temp_audio/
+backend/storage/temp_video/
+storage/temp_media/
+storage/temp_audio/
+storage/temp_video/
+
+# storage folders (FULL BLOCK)
+backend/storage/
+storage/
+
+# ALL MEDIA FILES (safety net)
+*.mp4
+*.mov
+*.avi
+*.mkv
+*.m4a
+*.mp3
+*.wav
+*.flac
+*.png
+*.jpg
+*.jpeg
+*.webp
+
+# =========================
+# TEMP FILES
+# =========================
+tmp/
+temp/
+*.tmp
+
+# =========================
+# JUPYTER
+# =========================
+.ipynb_checkpoints/
+
+# =========================
+# TEST FILES
+# =========================
+test_pipeline.py

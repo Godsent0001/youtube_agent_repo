@@ -126,7 +126,13 @@ class PipelineService:
                 scene["media"] = None
 
         # =========================
-        # 6. AUDIO GENERATION
+        # 6. PRE-DOWNLOAD MEDIA (SERIAL)
+        # =========================
+        self.logger.info("Pre-downloading media serially...")
+        video_builder_service.prefetch_media(scenes)
+
+        # =========================
+        # 7. AUDIO GENERATION
         # =========================
         self.logger.info("Generating audio...")
 
@@ -138,7 +144,7 @@ class PipelineService:
         self.logger.info(f"Audio generated: {audio_path}")
 
         # =========================
-        # 7. METADATA
+        # 8. METADATA
         # =========================
         self.logger.info("Generating metadata...")
 
@@ -153,7 +159,7 @@ class PipelineService:
         tags = metadata.get("tags", [])
 
         # =========================
-        # 8. THUMBNAIL
+        # 9. THUMBNAIL
         # =========================
         self.logger.info("Generating thumbnail...")
 
@@ -168,39 +174,22 @@ class PipelineService:
         )
 
         # =========================
-        # 9. BUILD VIDEO
+        # 10. BUILD VIDEO (INTEGRATED)
         # =========================
-        self.logger.info("Building raw video...")
+        self.logger.info("Building and rendering video...")
 
-        raw_video_path = video_builder_service.build_video(
+        final_video = video_builder_service.build_video(
             scenes=scenes,
             audio_path=audio_path,
-            output_path=f"storage/videos/raw_{agent_id}.mp4"
-        )
-
-        if not raw_video_path:
-            raise Exception("Raw video generation failed")
-
-        self.logger.info(
-            f"Raw video created: {raw_video_path}"
-        )
-
-        # =========================
-        # 10. RENDER FINAL VIDEO
-        # =========================
-        self.logger.info("Rendering final video...")
-
-        final_video = self.render_service.render_final_video(
-            clips=[raw_video_path],
             output_path=f"storage/videos/final_{agent_id}.mp4",
-            content_type=agent.get("content_type", "youtube")
+            content_type=agent.get("content_type", "shorts")
         )
 
         if not final_video:
-            raise Exception("Final render failed")
+            raise Exception("Final video generation failed")
 
         self.logger.info(
-            f"Final video rendered: {final_video}"
+            f"Final video created: {final_video}"
         )
 
         # =========================
@@ -229,7 +218,6 @@ class PipelineService:
             "title": title,
             "audio_path": audio_path,
             "thumbnail_path": thumbnail_path,
-            "raw_video_path": raw_video_path,
             "final_video_path": final_video,
             "youtube_upload": upload_result
         }
