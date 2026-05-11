@@ -1,0 +1,6 @@
+/* Global styles moved to index.css or removed if redundant */
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
