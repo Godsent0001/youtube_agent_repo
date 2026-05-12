@@ -132,11 +132,16 @@ class PipelineService:
         video_builder_service.prefetch_media(scenes)
 
         # =========================
-        # 7. AUDIO GENERATION
+        # 7. AUDIO GENERATION (SYNCED WITH SCENES)
         # =========================
         self.logger.info("Generating audio...")
 
-        audio_path = elevenlabs_service.generate_audio(script)
+        # FIX: ensure audio script matches exactly what's in scenes
+        # this prevents "hanging" narration at the end of the video
+        scene_scripts = [s.get("text", "") for s in scenes if s.get("text")]
+        synced_script = " ".join(scene_scripts)
+
+        audio_path = elevenlabs_service.generate_audio(synced_script or script)
 
         if not audio_path:
             raise Exception("Audio generation failed")

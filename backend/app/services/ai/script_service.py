@@ -31,20 +31,22 @@ CRITICAL RULES (VERY IMPORTANT):
 - Write ONLY natural spoken narration
 - Script must sound like a human talking, not a document
 - Avoid meta commentary (no "in this video", no instructions)
+- AT THE END of the script, include a short, natural call to action (like and subscribe) that fits the flow.
 
 YOUR JOB:
 - Write highly engaging scripts optimized for watch time
 - Use storytelling, hooks, tension, payoff
 - Make it emotionally engaging and natural
 - Keep pacing fast and addictive
+- Ensure the "like and subscribe" CTA feels part of the narrative, not forced.
 
 OUTPUT FORMAT (ONLY VALID JSON):
 
 {
-  "script": "natural spoken narration only",
+  "script": "natural spoken narration only (including the natural CTA at the end)",
   "hook": "strong opening line",
   "key_moments": ["moment 1", "moment 2", "moment 3"],
-  "cta": "short call to action"
+  "cta": "short call to action (repeated here for reference)"
 }
 """
             },
