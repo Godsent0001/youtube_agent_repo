@@ -36,9 +36,23 @@ class VideoBuilderService:
         os.makedirs(self.temp_dir, exist_ok=True)
 
     # ==================================================
+    # PREFETCH MEDIA
+    # ==================================================
+    def prefetch_media(self, scenes: list):
+        """
+        Downloads all media serially to save memory
+        """
+        for scene in scenes:
+            media = scene.get("media")
+            if media and media.get("url"):
+                local_path = self._download_media(media["url"], media.get("type", "image"))
+                if local_path:
+                    media["local_path"] = local_path
+
+    # ==================================================
     # MAIN PIPELINE
     # ==================================================
-    def build_video(self, scenes: list, audio_path: str, output_path: str):
+    def build_video(self, scenes: list, audio_path: str, output_path: str, content_type: str = "youtube"):
 
         self.logger.info("Starting video build process")
 
@@ -81,7 +95,7 @@ class VideoBuilderService:
                 except Exception as e:
                     self.logger.warning(f"Effects failed: {e}")
 
-                # text overlay (FULL SYSTEM RESTORED)
+                # text overlay (DISABLED TO SAVE MEMORY/SPEED)
                 clip = self._add_text_overlay(clip, text)
 
                 clips.append(clip)
@@ -90,6 +104,8 @@ class VideoBuilderService:
                 self.logger.error(f"Scene failed: {e}")
 
         if not clips:
+            if audio:
+                audio.close()
             raise Exception("No clips generated")
 
         # ==================================================
@@ -101,30 +117,27 @@ class VideoBuilderService:
         # AUDIO SYNC FIX
         # ==================================================
         if audio:
-
             try:
-                final_duration = min(final_video.duration, audio_duration)
-
-                final_video = final_video.subclip(0, final_duration)
-                audio = audio.subclip(0, final_duration)
-
                 final_video = final_video.set_audio(audio)
+                final_video = final_video.set_duration(audio_duration)
 
             except Exception as e:
                 self.logger.warning(f"Audio sync failed: {e}")
 
-        # ==================================================
-        # EXPORT (OPTIMIZED BUT HIGH QUALITY)
-        # ==================================================
+        # =========================
+        # EXPORT (OPTIMIZED)
+        # =========================
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
+
+        fps = 30 if content_type == "shorts" else 24
 
         try:
             final_video.write_videofile(
                 output_path,
-                fps=24,
+                fps=fps,
                 codec="libx264",
                 audio_codec="aac",
-                preset="medium",   # balance quality + speed
+                preset="ultrafast",   # EXTREME SPEED
                 threads=4,
                 logger=None
             )
@@ -134,6 +147,12 @@ class VideoBuilderService:
                 final_video.close()
             except:
                 pass
+
+            if audio:
+                try:
+                    audio.close()
+                except:
+                    pass
 
             for c in clips:
                 try:
@@ -149,21 +168,21 @@ class VideoBuilderService:
     # ==================================================
     def _create_clip(self, media: dict, duration: int):
 
-        if not media or not media.get("url"):
+        if not media or (not media.get("url") and not media.get("local_path")):
             return self._fallback_clip(duration)
 
         try:
-            url = media["url"]
             media_type = media.get("type", "image")
+            path = media.get("local_path")
 
-            path = self._download_media(url, media_type)
+            if not path:
+                path = self._download_media(media["url"], media_type)
 
             if not path:
                 return self._fallback_clip(duration)
 
             # VIDEO
             if media_type == "video":
-
                 clip = VideoFileClip(path, audio=False)
 
                 usable = min(duration, clip.duration)
@@ -233,69 +252,10 @@ class VideoBuilderService:
             return clip
 
     # ==================================================
-    # TEXT OVERLAY (FULL RESTORED VERSION)
+    # TEXT OVERLAY (DISABLED)
     # ==================================================
     def _add_text_overlay(self, clip, text):
-
-        if not text:
-            return clip
-
-        try:
-            text = text[:100]
-
-            width, height = 1000, 260
-
-            img = Image.new("RGBA", (width, height), (0, 0, 0, 0))
-            draw = ImageDraw.Draw(img)
-
-            try:
-                font = ImageFont.truetype("arial.ttf", 58)
-            except:
-                font = ImageFont.load_default()
-
-            words = text.split()
-            lines, current = [], ""
-
-            for word in words:
-                test = (current + " " + word).strip()
-
-                bbox = draw.textbbox((0, 0), test, font=font)
-                if (bbox[2] - bbox[0]) <= 850:
-                    current = test
-                else:
-                    lines.append(current)
-                    current = word
-
-            if current:
-                lines.append(current)
-
-            y = 20
-
-            for line in lines:
-
-                bbox = draw.textbbox((0, 0), line, font=font)
-                x = (width - (bbox[2] - bbox[0])) // 2
-
-                # stroke (RESTORED FULL EFFECT)
-                for dx in range(-2, 3):
-                    for dy in range(-2, 3):
-                        draw.text((x + dx, y + dy), line, font=font, fill="black")
-
-                draw.text((x, y), line, font=font, fill="white")
-
-                y += 70
-
-            txt_clip = (
-                ImageClip(np.array(img))
-                .set_duration(clip.duration)
-                .set_position(("center", 1480))
-            )
-
-            return CompositeVideoClip([clip, txt_clip])
-
-        except Exception as e:
-            self.logger.warning(f"Text overlay failed: {e}")
-            return clip
+        return clip
 
     # ==================================================
     # FALLBACK

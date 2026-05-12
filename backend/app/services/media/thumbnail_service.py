@@ -123,7 +123,6 @@ class ThumbnailService:
                     config={
                         "number_of_images": 1,
                         "aspect_ratio": "16:9",
-                        "image_size": "2K",
                         "output_mime_type": "image/jpeg",
                         "person_generation": "ALLOW_ADULT"
                     }

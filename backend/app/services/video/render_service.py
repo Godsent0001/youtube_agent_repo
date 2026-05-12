@@ -2,6 +2,7 @@ import os
 
 from moviepy.editor import (
     VideoFileClip,
+    AudioFileClip,
     concatenate_videoclips,
     CompositeVideoClip,
     ColorClip
@@ -67,9 +68,10 @@ class RenderService:
         # =========================
         # 3. ATTACH AUDIO (CRITICAL FIX)
         # =========================
+        audio = None
         if audio_path and os.path.exists(audio_path):
             try:
-                audio = VideoFileClip(audio_path).audio
+                audio = AudioFileClip(audio_path)
                 final_clip = final_clip.set_audio(audio)
 
             except Exception as e:
@@ -102,7 +104,9 @@ class RenderService:
                 codec="libx264",
                 audio_codec="aac",
                 bitrate="2500k",
-                threads=4
+                preset="ultrafast",
+                threads=4,
+                logger=None
             )
 
             self.logger.info(f"Render complete: {output_path}")
@@ -114,6 +118,12 @@ class RenderService:
             for clip in processed_clips:
                 try:
                     clip.close()
+                except:
+                    pass
+
+            if audio:
+                try:
+                    audio.close()
                 except:
                     pass
 
