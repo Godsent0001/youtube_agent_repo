@@ -70,6 +70,14 @@ class VideoBuilderService:
                 self.logger.warning(f"Audio preload failed: {e}")
 
         # ==================================================
+        # DURATION CALCULATION (DYNAMIC PROPORTIONAL)
+        # ==================================================
+        # Calculate total characters in all scenes to distribute audio duration
+        total_chars = sum(len(s.get("text", "")) for s in scenes)
+        if total_chars == 0:
+            total_chars = 1
+
+        # ==================================================
         # SCENE LOOP
         # ==================================================
         for i, scene in enumerate(scenes):
@@ -80,11 +88,17 @@ class VideoBuilderService:
                 media = scene.get("media")
                 text = scene.get("text", "")
 
-                # FIX: smooth pacing without cutting narration
-                duration = float(scene.get("duration_seconds", 4))
-                duration = max(2.5, min(duration + 0.6, 15))
+                # FIX: Proportional duration based on text length and total audio duration
+                if audio_duration:
+                    char_ratio = len(text) / total_chars
+                    duration = char_ratio * audio_duration
+                else:
+                    duration = float(scene.get("duration_seconds", 4))
 
-                clip = self._create_clip(media, duration)
+                # Clamp duration to reasonable limits
+                duration = max(1.5, duration)
+
+                clip = self._create_clip(media, duration, content_type)
 
                 if not clip:
                     continue
@@ -118,8 +132,9 @@ class VideoBuilderService:
         # ==================================================
         if audio:
             try:
-                final_video = final_video.set_audio(audio)
+                # Force video duration to match audio EXACTLY to prevent black screen
                 final_video = final_video.set_duration(audio_duration)
+                final_video = final_video.set_audio(audio)
 
             except Exception as e:
                 self.logger.warning(f"Audio sync failed: {e}")
@@ -166,10 +181,10 @@ class VideoBuilderService:
     # ==================================================
     # CREATE CLIP
     # ==================================================
-    def _create_clip(self, media: dict, duration: int):
+    def _create_clip(self, media: dict, duration: int, content_type: str = "youtube"):
 
         if not media or (not media.get("url") and not media.get("local_path")):
-            return self._fallback_clip(duration)
+            return self._fallback_clip(duration, content_type)
 
         try:
             media_type = media.get("type", "image")
@@ -179,25 +194,30 @@ class VideoBuilderService:
                 path = self._download_media(media["url"], media_type)
 
             if not path:
-                return self._fallback_clip(duration)
+                return self._fallback_clip(duration, content_type)
 
             # VIDEO
             if media_type == "video":
                 clip = VideoFileClip(path, audio=False)
 
-                usable = min(duration, clip.duration)
-                clip = clip.subclip(0, usable)
+                # Loop video if it's shorter than required duration
+                if clip.duration < duration:
+                    from moviepy.editor import vfx
+                    clip = clip.fx(vfx.loop, duration=duration)
+                else:
+                    clip = clip.subclip(0, duration)
 
-                return self._resize(clip)
+                return self._resize(clip, content_type)
 
             # IMAGE
             return self._resize(
-                ImageClip(path).set_duration(duration)
+                ImageClip(path).set_duration(duration),
+                content_type
             )
 
         except Exception as e:
             self.logger.error(f"Clip error: {e}")
-            return self._fallback_clip(duration)
+            return self._fallback_clip(duration, content_type)
 
     # ==================================================
     # DOWNLOAD (FIXED FOR INCOMPLETE READ)
@@ -244,11 +264,27 @@ class VideoBuilderService:
     # ==================================================
     # RESIZE
     # ==================================================
-    def _resize(self, clip):
+    def _resize(self, clip, content_type="youtube"):
 
         try:
-            return clip.resize(height=1920).set_position("center")
-        except:
+            target_w, target_h = (1080, 1920) if content_type == "shorts" else (1920, 1080)
+
+            # Resize while maintaining aspect ratio
+            w, h = clip.size
+            ratio = max(target_w / w, target_h / h)
+            new_w, new_h = int(w * ratio), int(h * ratio)
+
+            clip = clip.resize(newsize=(new_w, new_h))
+
+            # Crop to exact target size
+            return clip.crop(
+                x_center=new_w / 2,
+                y_center=new_h / 2,
+                width=target_w,
+                height=target_h
+            )
+        except Exception as e:
+            self.logger.warning(f"Resize failed: {e}")
             return clip
 
     # ==================================================
@@ -260,8 +296,9 @@ class VideoBuilderService:
     # ==================================================
     # FALLBACK
     # ==================================================
-    def _fallback_clip(self, duration):
-        return ColorClip(size=(1080, 1920), color=(0, 0, 0)).set_duration(duration)
+    def _fallback_clip(self, duration, content_type="youtube"):
+        size = (1080, 1920) if content_type == "shorts" else (1920, 1080)
+        return ColorClip(size=size, color=(0, 0, 0)).set_duration(duration)
 
 
 # ==================================================
