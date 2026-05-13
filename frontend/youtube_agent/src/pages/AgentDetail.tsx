@@ -1,4 +1,5 @@
 
+import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
@@ -15,19 +16,45 @@ import {
   Download,
   Pause,
   Clock,
-  Globe
+  Globe,
+  Youtube
 } from 'lucide-react';
+import { apiRequest } from '../utils/api';
 
 export const AgentDetail = () => {
   const { id } = useParams();
-  console.log("Agent ID:", id);
+  const [agentData, setAgentData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Mock data for a single agent
+  useEffect(() => {
+    const fetchAgent = async () => {
+      try {
+        const data = await apiRequest(`/agents/${id}`);
+        setAgentData(data);
+      } catch (err) {
+        console.error("Failed to fetch agent", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAgent();
+  }, [id]);
+
+  const handleConnectYouTube = () => {
+    // Redirect to backend OAuth initiation endpoint
+    window.location.href = `http://localhost:8000/agents/${id}/youtube/connect`;
+  };
+
+  if (loading) return <div className="p-8 text-white">Loading agent...</div>;
+  if (!agentData) return <div className="p-8 text-white">Agent not found.</div>;
+
+  // Mock data merged with real data
   const agent = {
-    name: 'Daily AI Facts',
-    niche: 'Facts',
-    type: 'Shorts',
-    status: 'active',
+    name: agentData.name,
+    niche: agentData.niche,
+    type: agentData.content_type === 'shorts' ? 'Shorts' : 'Long-form',
+    status: agentData.is_active ? 'active' : 'paused',
+    youtube_connected: agentData.youtube_connected,
     lastPosted: '2 hours ago',
     metrics: [
       { label: 'Views', value: '12,430', icon: Eye, color: 'text-blue-500' },
@@ -74,6 +101,17 @@ export const AgentDetail = () => {
           <p className="text-secondary-foreground">{agent.niche} • {agent.type}</p>
         </div>
         <div className="flex gap-2">
+          {agent.youtube_connected ? (
+            <Button variant="outline" size="sm" className="gap-2 text-green-500 border-green-500/50 bg-green-500/10 hover:bg-green-500/20">
+              <Youtube className="h-4 w-4" />
+              Connected
+            </Button>
+          ) : (
+            <Button variant="outline" size="sm" className="gap-2 text-primary border-primary/50 bg-primary/10 hover:bg-primary/20" onClick={handleConnectYouTube}>
+              <Youtube className="h-4 w-4" />
+              Connect YouTube
+            </Button>
+          )}
           <Button variant="outline" size="sm" className="gap-2">
             <Download className="h-4 w-4" />
             Export

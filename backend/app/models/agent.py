@@ -66,4 +66,12 @@ class Agent(BaseModel):
 
     last_run_at: Optional[datetime] = None
 
+    # =========================
+    # YOUTUBE OAUTH (AGENT LEVEL)
+    # =========================
+    youtube_access_token: Optional[str] = None
+    youtube_refresh_token: Optional[str] = None
+    youtube_token_expiry: Optional[datetime] = None
+    youtube_channel_id: Optional[str] = None
+
     created_at: datetime = Field(default_factory=datetime.utcnow)

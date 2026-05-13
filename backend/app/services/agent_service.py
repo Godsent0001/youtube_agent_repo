@@ -16,6 +16,8 @@ class AgentService:
     def _prepare_agent(self, agent: dict):
         if agent and "_id" in agent:
             agent["id"] = str(agent.pop("_id"))
+            # Add calculated field for schema
+            agent["youtube_connected"] = bool(agent.get("youtube_refresh_token"))
         return agent
 
     def create_agent(self, user_id: str, data: dict):

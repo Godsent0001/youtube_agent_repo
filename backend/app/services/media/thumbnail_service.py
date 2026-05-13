@@ -35,16 +35,19 @@ class ThumbnailService:
 
         self.api_key = settings.GEMINI_API_KEY
 
-        if not self.api_key or "your_" in self.api_key:
+        if (not self.api_key or "your_" in self.api_key) and not settings.DEBUG:
             raise Exception("Missing GEMINI_API_KEY")
 
         # ==========================================
         # GOOGLE CLIENT
         # ==========================================
 
-        self.client = genai.Client(
-            api_key=self.api_key
-        )
+        if self.api_key and "your_" not in self.api_key:
+            self.client = genai.Client(
+                api_key=self.api_key
+            )
+        else:
+            self.client = None
 
         # ==========================================
         # IMAGEN MODEL
@@ -138,8 +141,15 @@ class ThumbnailService:
                     result.generated_images[0]
                 )
 
-                generated_image.image.save(
-                    file_path
+                # Ensure image is in RGB format for JPEG saving
+                img = generated_image.image
+                if img.mode != 'RGB':
+                    img = img.convert('RGB')
+
+                img.save(
+                    file_path,
+                    "JPEG",
+                    quality=95
                 )
 
                 # ======================================

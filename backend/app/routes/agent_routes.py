@@ -1,11 +1,19 @@
-from fastapi import APIRouter, HTTPException, BackgroundTasks
+from fastapi import APIRouter, HTTPException, BackgroundTasks, Request
+from fastapi.responses import RedirectResponse
 from typing import List
+import os
 
 from app.schemas.agent import AgentCreate, AgentResponse, AgentUpdate
 from app.services.agent_service import agent_service
 from app.workers.worker import worker
+from app.core.config import settings
+from google_auth_oauthlib.flow import Flow
 
 router = APIRouter(prefix="/agents", tags=["Agents"])
+
+# Allow insecure transport for local development (if DEBUG=True)
+if settings.DEBUG:
+    os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
 
 # =========================
@@ -78,3 +86,82 @@ def generate_video(agent_id: str):
         "message": "Video generation started",
         "agent_id": agent_id
     }
+
+
+# =========================
+# YOUTUBE OAUTH CONNECT
+# =========================
+@router.get("/{agent_id}/youtube/connect")
+def connect_youtube(agent_id: str, request: Request):
+    """
+    Starts the OAuth flow for a specific agent
+    """
+    client_config = {
+        "web": {
+            "client_id": settings.YOUTUBE_CLIENT_ID,
+            "client_secret": settings.YOUTUBE_CLIENT_SECRET,
+            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+            "token_uri": "https://oauth2.googleapis.com/token",
+        }
+    }
+
+    flow = Flow.from_client_config(
+        client_config,
+        scopes=["https://www.googleapis.com/auth/youtube.upload"]
+    )
+
+    # Redirect URI must be registered in Google Cloud Console
+    # We use a generic callback that will handle the state
+    base_url = str(request.base_url).rstrip('/')
+    flow.redirect_uri = f"{base_url}/agents/youtube/callback"
+
+    authorization_url, state = flow.authorization_url(
+        access_type='offline',
+        include_granted_scopes='true',
+        state=agent_id # We pass agent_id as state
+    )
+
+    return RedirectResponse(authorization_url)
+
+
+# =========================
+# YOUTUBE OAUTH CALLBACK
+# =========================
+@router.get("/youtube/callback")
+def youtube_callback(request: Request, state: str, code: str):
+    """
+    Handles the redirect from Google
+    """
+    agent_id = state
+
+    client_config = {
+        "web": {
+            "client_id": settings.YOUTUBE_CLIENT_ID,
+            "client_secret": settings.YOUTUBE_CLIENT_SECRET,
+            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+            "token_uri": "https://oauth2.googleapis.com/token",
+        }
+    }
+
+    flow = Flow.from_client_config(
+        client_config,
+        scopes=["https://www.googleapis.com/auth/youtube.upload"]
+    )
+
+    base_url = str(request.base_url).rstrip('/')
+    flow.redirect_uri = f"{base_url}/agents/youtube/callback"
+
+    flow.fetch_token(code=code)
+    creds = flow.credentials
+
+    # Update agent with tokens
+    agent_service.update_agent(agent_id, {
+        "youtube_access_token": creds.token,
+        "youtube_refresh_token": creds.refresh_token,
+        "youtube_token_expiry": creds.expiry
+    })
+
+    # Redirect back to frontend agent detail page
+    # Assuming frontend runs on port 5173 by default in dev
+    frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5173")
+    return RedirectResponse(f"{frontend_url}/agent/{agent_id}")

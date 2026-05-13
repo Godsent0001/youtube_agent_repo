@@ -203,7 +203,7 @@ class PipelineService:
         self.logger.info("Uploading video to YouTube...")
 
         upload_result = youtube_service.upload_video(
-            user_id=user_id,
+            agent_id=agent_id,
             file_path=final_video,
             title=title,
             description=description,
