@@ -17,7 +17,7 @@ import {
   Pause,
   Clock,
   Globe,
-  Youtube
+  Play as YoutubeIcon
 } from 'lucide-react';
 import { apiRequest } from '../utils/api';
 
@@ -103,12 +103,12 @@ export const AgentDetail = () => {
         <div className="flex gap-2">
           {agent.youtube_connected ? (
             <Button variant="outline" size="sm" className="gap-2 text-green-500 border-green-500/50 bg-green-500/10 hover:bg-green-500/20">
-              <Youtube className="h-4 w-4" />
+              <YoutubeIcon className="h-4 w-4" />
               Connected
             </Button>
           ) : (
             <Button variant="outline" size="sm" className="gap-2 text-primary border-primary/50 bg-primary/10 hover:bg-primary/20" onClick={handleConnectYouTube}>
-              <Youtube className="h-4 w-4" />
+              <YoutubeIcon className="h-4 w-4" />
               Connect YouTube
             </Button>
           )}
