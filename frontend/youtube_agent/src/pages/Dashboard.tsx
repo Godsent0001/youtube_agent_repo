@@ -81,7 +81,7 @@ export const Dashboard = () => {
         {loading ? (
             <p className="text-white col-span-full text-center py-12">Loading agents...</p>
         ) : agents.map((agent) => (
-          <Card key={agent.id} className="group overflow-hidden relative">
+          <Card key={agent.id} className="group relative">
             <CardHeader className="pb-4">
               <div className="flex justify-between items-start">
                 <div>
@@ -132,7 +132,7 @@ export const Dashboard = () => {
                               )}
                               <button
                                 className="w-full text-left px-4 py-2 text-sm text-secondary-foreground hover:bg-neutral-800 flex items-center gap-2"
-                                onClick={() => navigate(`/agent/${agent.id}`)}
+                                onClick={() => navigate(`/edit-agent/${agent.id}`)}
                               >
                                 <Settings className="h-4 w-4" />
                                 Settings
@@ -197,7 +197,7 @@ export const Dashboard = () => {
                 >
                   {agent.is_active ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
                 </Button>
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-black text-white text-[10px] rounded opacity-0 group-hover/play:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-30">
+                <div className="absolute bottom-[110%] left-1/2 -translate-x-1/2 px-2 py-1 bg-black text-white text-[10px] rounded opacity-0 group-hover/play:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-[100] shadow-xl border border-white/10">
                   {agent.is_active ? 'Stop the agent from working' : 'Put the agent to actual work'}
                 </div>
               </div>

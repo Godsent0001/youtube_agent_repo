@@ -74,25 +74,29 @@ export const Navbar = () => {
               ) : (
                 <>
                   {isLandingPage && (
-                    <a href="#features" className="px-3 py-2 text-sm font-medium text-secondary-foreground hover:text-primary transition-colors mr-2">Features</a>
+                    <>
+                      <a href="#features" className="px-3 py-2 text-sm font-medium text-secondary-foreground hover:text-primary transition-colors mr-2">Features</a>
+                      <Link to="/dashboard">
+                        <Button variant="ghost" size="sm" className="text-secondary-foreground hover:text-primary">Dashboard</Button>
+                      </Link>
+                    </>
                   )}
-                  <span className="text-sm font-medium text-white px-3 py-2">Welcome</span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="gap-2 text-secondary-foreground hover:text-primary"
-                    onClick={() => setShowLogoutConfirm(true)}
-                  >
-                    <LogOut className="h-4 w-4" />
-                    Logout
-                  </Button>
-                  {!isLandingPage && (
-                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20 ml-2">
-                      <span className="text-xs font-bold text-primary">
-                        {localStorage.getItem('user_email')?.substring(0, 2).toUpperCase() || 'AI'}
-                      </span>
-                    </div>
+                  {(isLandingPage || location.pathname === '/settings') && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="gap-2 text-secondary-foreground hover:text-primary"
+                      onClick={() => setShowLogoutConfirm(true)}
+                    >
+                      <LogOut className="h-4 w-4" />
+                      Logout
+                    </Button>
                   )}
+                  <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20 ml-2">
+                    <span className="text-xs font-bold text-primary">
+                      {localStorage.getItem('user_email')?.substring(0, 2).toUpperCase() || 'AI'}
+                    </span>
+                  </div>
                 </>
               )}
             </div>
@@ -113,19 +117,16 @@ export const Navbar = () => {
       {/* Logout Confirmation Modal */}
       <AnimatePresence>
         {showLogoutConfirm && (
-          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
               className="w-full max-w-sm"
             >
-              <Card className="p-6 border-border shadow-2xl">
-                <h3 className="text-xl font-bold text-white mb-2">Are you sure you want to logout?</h3>
-                <p className="text-secondary-foreground mb-6">
-                  Logging out will end your current session. Your AI agents will continue to work based on their configuration.
-                </p>
-                <div className="flex gap-3 justify-end">
+              <Card className="p-6 border-border shadow-2xl bg-card">
+                <h3 className="text-xl font-bold text-white mb-4 text-center">Are you sure you want to logout?</h3>
+                <div className="flex gap-3 justify-center">
                   <Button variant="ghost" onClick={() => setShowLogoutConfirm(false)}>
                     Cancel
                   </Button>
@@ -156,9 +157,16 @@ export const Navbar = () => {
                 </>
               ) : isLoggedIn ? (
                 <>
-                  <div className="px-3 py-2 text-base font-medium text-white border-b border-border mb-2">
-                    Welcome
-                  </div>
+                  {isLandingPage && (
+                    <Link
+                      to="/dashboard"
+                      onClick={() => setIsOpen(false)}
+                      className="flex items-center gap-3 px-3 py-2 text-base font-medium text-secondary-foreground hover:text-primary"
+                    >
+                      <LayoutDashboard className="h-5 w-5" />
+                      Dashboard
+                    </Link>
+                  )}
                   {NAV_ITEMS.map((item) => (
                     <Link
                       key={item.name}
@@ -170,16 +178,18 @@ export const Navbar = () => {
                       {item.name}
                     </Link>
                   ))}
-                  <button
-                    onClick={() => {
-                      setIsOpen(false);
-                      setShowLogoutConfirm(true);
-                    }}
-                    className="flex w-full items-center gap-3 px-3 py-2 text-base font-medium text-secondary-foreground hover:text-red-500"
-                  >
-                    <LogOut className="h-5 w-5" />
-                    Logout
-                  </button>
+                  {(isLandingPage || location.pathname === '/settings') && (
+                    <button
+                      onClick={() => {
+                        setIsOpen(false);
+                        setShowLogoutConfirm(true);
+                      }}
+                      className="flex w-full items-center gap-3 px-3 py-2 text-base font-medium text-secondary-foreground hover:text-red-500"
+                    >
+                      <LogOut className="h-5 w-5" />
+                      Logout
+                    </button>
+                  )}
                 </>
               ) : (
                 NAV_ITEMS.map((item) => (

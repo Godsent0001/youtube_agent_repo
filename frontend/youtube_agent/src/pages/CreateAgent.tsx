@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Select } from '../components/ui/Select';
@@ -11,30 +11,67 @@ const NICHES = ['Facts', 'Motivation', 'Tech', 'AI', 'Finance', 'Health', 'Stori
 
 export const CreateAgent = () => {
   const navigate = useNavigate();
+  const { id } = useParams(); // For edit mode
+  const isEdit = !!id;
+
   const [name, setName] = useState('Daily AI Facts');
   const [niche, setNiche] = useState('');
   const [contentType, setContentType] = useState('shorts');
   const [videoLength, setVideoLength] = useState('30');
   const [customPrompt, setCustomPrompt] = useState('');
   const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(isEdit);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (isEdit) {
+      const fetchAgent = async () => {
+        try {
+          const data = await apiRequest(`/agents/${id}`);
+          setName(data.name);
+          setNiche(data.niche);
+          setContentType(data.content_type);
+          setVideoLength(data.video_length?.toString() || (data.content_type === 'shorts' ? '30' : '180'));
+          setCustomPrompt(data.custom_prompt || '');
+        } catch (err: any) {
+          setError('Failed to fetch agent settings');
+        } finally {
+          setFetching(false);
+        }
+      };
+      fetchAgent();
+    }
+  }, [id, isEdit]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
     try {
-      await apiRequest('/agents', {
-        method: 'POST',
-        body: JSON.stringify({
-            name,
-            niche,
-            content_type: contentType,
-            video_length: parseInt(videoLength),
-            custom_prompt: customPrompt,
-            posting_frequency: 'daily'
-        }),
-      });
+      if (isEdit) {
+        await apiRequest(`/agents/${id}`, {
+          method: 'PUT',
+          body: JSON.stringify({
+              name,
+              niche,
+              content_type: contentType,
+              video_length: parseInt(videoLength),
+              custom_prompt: customPrompt,
+          }),
+        });
+      } else {
+        await apiRequest('/agents', {
+          method: 'POST',
+          body: JSON.stringify({
+              name,
+              niche,
+              content_type: contentType,
+              video_length: parseInt(videoLength),
+              custom_prompt: customPrompt,
+              posting_frequency: 'daily'
+          }),
+        });
+      }
       navigate('/dashboard');
     } catch (err: any) {
       setError(err.message);
@@ -43,6 +80,8 @@ export const CreateAgent = () => {
     }
   };
 
+  if (fetching) return <div className="p-8 text-white text-center">Loading agent settings...</div>;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -50,8 +89,12 @@ export const CreateAgent = () => {
       className="max-w-2xl mx-auto py-8"
     >
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white">Create New AI Channel Agent</h1>
-        <p className="text-secondary-foreground">Set up your AI agent with minimal inputs</p>
+        <h1 className="text-3xl font-bold text-white">
+          {isEdit ? `Edit Agent: ${name}` : 'Create New AI Channel Agent'}
+        </h1>
+        <p className="text-secondary-foreground">
+          {isEdit ? 'Update your agent configuration' : 'Set up your AI agent with minimal inputs'}
+        </p>
       </div>
 
       <Card>
@@ -127,7 +170,7 @@ export const CreateAgent = () => {
               Cancel
             </Button>
             <Button type="submit" className="px-8" disabled={loading}>
-              {loading ? 'Creating...' : 'Done'}
+              {loading ? (isEdit ? 'Updating...' : 'Creating...') : 'Done'}
             </Button>
           </CardFooter>
         </form>
