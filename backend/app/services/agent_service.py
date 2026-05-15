@@ -66,5 +66,14 @@ class AgentService:
             self.logger.error(f"Error updating agent {agent_id}: {e}")
             return None
 
+    def delete_agent(self, agent_id: str):
+        """Delete an agent by its ID."""
+        try:
+            result = agent_collection.delete_one({"_id": ObjectId(agent_id)})
+            return result.deleted_count > 0
+        except Exception as e:
+            self.logger.error(f"Error deleting agent {agent_id}: {e}")
+            return False
+
 
 agent_service = AgentService()

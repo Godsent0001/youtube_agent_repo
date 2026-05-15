@@ -48,7 +48,7 @@ export const LandingPage = () => {
                 Create AI-powered channels that post daily videos, generate trending content, and even run affiliate ads—without lifting a finger.
               </p>
               <div className="mt-10 flex items-center gap-x-6">
-                <Link to="/signup">
+                <Link to={localStorage.getItem('access_token') ? "/create-agent" : "/signup"}>
                   <Button size="lg" className="gap-2">
                     Create Your First Agent <ArrowRight className="h-5 w-5" />
                   </Button>
@@ -158,7 +158,7 @@ export const LandingPage = () => {
               Join thousands of creators who are automating their content creation workflow with AI.
             </p>
             <div className="mt-10 flex items-center justify-center gap-x-6">
-              <Link to="/signup">
+              <Link to={localStorage.getItem('access_token') ? "/create-agent" : "/signup"}>
                 <Button size="lg">Create Your First Agent</Button>
               </Link>
             </div>
