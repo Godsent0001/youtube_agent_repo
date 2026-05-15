@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, LayoutDashboard, PlusCircle, Megaphone, Settings, Menu, X } from 'lucide-react';
+import { Play, LayoutDashboard, PlusCircle, Megaphone, Settings, Menu, X, LogOut } from 'lucide-react';
 import { Button } from './ui/Button';
+import { Card } from './ui/Card';
 
 const NAV_ITEMS = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -13,12 +14,23 @@ const NAV_ITEMS = [
 
 export const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
   const isAuthPage = ['/login', '/signup', '/forgot-password'].includes(location.pathname);
   const isLandingPage = location.pathname === '/';
+  const isLoggedIn = !!localStorage.getItem('access_token');
 
   if (isAuthPage) return null;
+
+  const handleLogout = () => {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('user_id');
+    localStorage.removeItem('user_email');
+    setShowLogoutConfirm(false);
+    navigate('/login');
+  };
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-md">
@@ -49,12 +61,9 @@ export const Navbar = () => {
                   </Link>
                 );
               })}
-              {isLandingPage ? (
+              {isLandingPage && !isLoggedIn ? (
                 <>
                   <a href="#features" className="px-3 py-2 text-sm font-medium text-secondary-foreground hover:text-primary transition-colors">Features</a>
-                  <Link to="/dashboard">
-                    <Button variant="ghost" size="sm">Dashboard</Button>
-                  </Link>
                   <Link to="/login">
                     <Button variant="outline" size="sm">Login</Button>
                   </Link>
@@ -63,9 +72,28 @@ export const Navbar = () => {
                   </Link>
                 </>
               ) : (
-                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20">
-                  <span className="text-xs font-bold text-primary">GE</span>
-                </div>
+                <>
+                  {isLandingPage && (
+                    <a href="#features" className="px-3 py-2 text-sm font-medium text-secondary-foreground hover:text-primary transition-colors mr-2">Features</a>
+                  )}
+                  <span className="text-sm font-medium text-white px-3 py-2">Welcome</span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="gap-2 text-secondary-foreground hover:text-primary"
+                    onClick={() => setShowLogoutConfirm(true)}
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Logout
+                  </Button>
+                  {!isLandingPage && (
+                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20 ml-2">
+                      <span className="text-xs font-bold text-primary">
+                        {localStorage.getItem('user_email')?.substring(0, 2).toUpperCase() || 'AI'}
+                      </span>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>
@@ -82,6 +110,35 @@ export const Navbar = () => {
         </div>
       </div>
 
+      {/* Logout Confirmation Modal */}
+      <AnimatePresence>
+        {showLogoutConfirm && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="w-full max-w-sm"
+            >
+              <Card className="p-6 border-border shadow-2xl">
+                <h3 className="text-xl font-bold text-white mb-2">Are you sure you want to logout?</h3>
+                <p className="text-secondary-foreground mb-6">
+                  Logging out will end your current session. Your AI agents will continue to work based on their configuration.
+                </p>
+                <div className="flex gap-3 justify-end">
+                  <Button variant="ghost" onClick={() => setShowLogoutConfirm(false)}>
+                    Cancel
+                  </Button>
+                  <Button variant="destructive" onClick={handleLogout}>
+                    Logout
+                  </Button>
+                </div>
+              </Card>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       {/* Mobile Navigation */}
       <AnimatePresence>
         {isOpen && (
@@ -92,10 +149,37 @@ export const Navbar = () => {
             className="md:hidden bg-card border-b border-border overflow-hidden"
           >
             <div className="space-y-1 px-4 pb-3 pt-2">
-              {isLandingPage ? (
+              {isLandingPage && !isLoggedIn ? (
                 <>
                   <Link to="/login" className="block px-3 py-2 text-base font-medium text-secondary-foreground hover:text-primary">Login</Link>
                   <Link to="/signup" className="block px-3 py-2 text-base font-medium text-primary">Sign Up</Link>
+                </>
+              ) : isLoggedIn ? (
+                <>
+                  <div className="px-3 py-2 text-base font-medium text-white border-b border-border mb-2">
+                    Welcome
+                  </div>
+                  {NAV_ITEMS.map((item) => (
+                    <Link
+                      key={item.name}
+                      to={item.href}
+                      onClick={() => setIsOpen(false)}
+                      className="flex items-center gap-3 px-3 py-2 text-base font-medium text-secondary-foreground hover:text-primary"
+                    >
+                      <item.icon className="h-5 w-5" />
+                      {item.name}
+                    </Link>
+                  ))}
+                  <button
+                    onClick={() => {
+                      setIsOpen(false);
+                      setShowLogoutConfirm(true);
+                    }}
+                    className="flex w-full items-center gap-3 px-3 py-2 text-base font-medium text-secondary-foreground hover:text-red-500"
+                  >
+                    <LogOut className="h-5 w-5" />
+                    Logout
+                  </button>
                 </>
               ) : (
                 NAV_ITEMS.map((item) => (

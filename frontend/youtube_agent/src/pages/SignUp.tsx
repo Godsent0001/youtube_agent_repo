@@ -12,6 +12,7 @@ export const SignUp = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -32,9 +33,14 @@ export const SignUp = () => {
       localStorage.setItem('access_token', data.access_token);
       localStorage.setItem('user_id', data.user_id);
       localStorage.setItem('user_email', email);
-      navigate('/dashboard');
+      setSuccess('Account created successfully! Welcome aboard.');
+      setTimeout(() => navigate('/dashboard'), 1500);
     } catch (err: any) {
-      setError(err.message);
+      if (err.message.toLowerCase().includes('already exists')) {
+        setError('An account with this email already exists.');
+      } else {
+        setError(err.message || 'Could not create account. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -68,6 +74,7 @@ export const SignUp = () => {
       </div>
 
       {error && <p className="text-red-500 text-sm mb-4 text-center">{error}</p>}
+      {success && <p className="text-green-500 text-sm mb-4 text-center">{success}</p>}
       <form onSubmit={handleSignUp} className="space-y-4">
         <div className="space-y-2">
           <label className="text-sm font-medium text-secondary-foreground">Email</label>

@@ -7,7 +7,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { motion } from 'framer-motion';
 import { apiRequest } from '../utils/api';
 
-const NICHES = ['Facts', 'Motivation', 'AI / Tech', 'Finance', 'Health', 'Stories', 'Business', 'Self-Improvement'];
+const NICHES = ['Facts', 'Motivation', 'Tech', 'AI', 'Finance', 'Health', 'Stories', 'Business', 'Self-Improvement'];
 
 export const CreateAgent = () => {
   const navigate = useNavigate();
@@ -69,7 +69,6 @@ export const CreateAgent = () => {
                 onChange={(e) => setName(e.target.value)}
                 required
               />
-              <p className="text-[10px] text-secondary-foreground italic">Prefilled by AI based on potential niche, but editable.</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -105,10 +104,10 @@ export const CreateAgent = () => {
                 value={videoLength}
                 onChange={(e) => setVideoLength(e.target.value)}
               >
-                <option value="15">15 seconds</option>
-                <option value="30">30 seconds</option>
-                <option value="60">60 seconds</option>
-                <option value="180">3-5 minutes (Long-form)</option>
+                <option value="15" disabled={contentType === 'long'}>15 seconds</option>
+                <option value="30" disabled={contentType === 'long'}>30 seconds</option>
+                <option value="60" disabled={contentType === 'long'}>60 seconds</option>
+                <option value="180" disabled={contentType === 'shorts'}>3-5 minutes (Long-form)</option>
               </Select>
             </div>
 

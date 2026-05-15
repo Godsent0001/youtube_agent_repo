@@ -165,3 +165,17 @@ def youtube_callback(request: Request, state: str, code: str):
     # Assuming frontend runs on port 5173 by default in dev
     frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5173")
     return RedirectResponse(f"{frontend_url}/agent/{agent_id}")
+
+
+# =========================
+# DELETE AGENT
+# =========================
+@router.delete("/{agent_id}")
+def delete_agent(agent_id: str):
+
+    success = agent_service.delete_agent(agent_id)
+
+    if not success:
+        raise HTTPException(status_code=404, detail="Agent not found or could not be deleted")
+
+    return {"message": "Agent deleted successfully"}
