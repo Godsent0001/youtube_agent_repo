@@ -12,6 +12,7 @@ export const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -26,9 +27,14 @@ export const Login = () => {
       localStorage.setItem('access_token', data.access_token);
       localStorage.setItem('user_id', data.user_id);
       localStorage.setItem('user_email', email);
-      navigate('/dashboard');
+      setSuccess('Login successful! Redirecting...');
+      setTimeout(() => navigate('/dashboard'), 1500);
     } catch (err: any) {
-      setError(err.message);
+      if (err.message.includes('401') || err.message.toLowerCase().includes('invalid')) {
+        setError('Incorrect email or password, please try again.');
+      } else {
+        setError(err.message || 'An error occurred. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -66,6 +72,7 @@ export const Login = () => {
       </div>
 
       {error && <p className="text-red-500 text-sm mb-4 text-center">{error}</p>}
+      {success && <p className="text-green-500 text-sm mb-4 text-center">{success}</p>}
       <form onSubmit={handleLogin} className="space-y-4">
         <div className="space-y-2">
           <label className="text-sm font-medium text-secondary-foreground">Email</label>

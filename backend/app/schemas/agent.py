@@ -24,3 +24,4 @@ class AgentResponse(BaseModel):
     name: str
     niche: str
     content_type: str
+    youtube_connected: bool = False

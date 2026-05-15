@@ -36,6 +36,7 @@ function AnimatedRoutes() {
         <Route element={<DashboardLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/create-agent" element={<CreateAgent />} />
+          <Route path="/edit-agent/:id" element={<CreateAgent />} />
           <Route path="/agent/:id" element={<AgentDetail />} />
           <Route path="/monetization" element={<Monetization />} />
           <Route path="/settings" element={<Settings />} />

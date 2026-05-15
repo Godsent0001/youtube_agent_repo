@@ -21,12 +21,14 @@ class LLMClient:
 
         self.model_name = "gemini-3-flash-preview"
 
-        if not self.api_key:
+        if not self.api_key and not settings.DEBUG:
             raise Exception("GEMINI_API_KEY is missing")
 
-        genai.configure(api_key=self.api_key)
-
-        self.model = genai.GenerativeModel(self.model_name)
+        if self.api_key:
+            genai.configure(api_key=self.api_key)
+            self.model = genai.GenerativeModel(self.model_name)
+        else:
+            self.model = None
 
         self.max_retries = 3
 

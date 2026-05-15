@@ -6,32 +6,32 @@ from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
 from app.core.config import settings
 from app.core.logger import logger
-from app.services.user_service import user_service
-from app.db.session import users_collection
+from app.services.agent_service import agent_service
+from app.db.session import agents_collection as agent_collection
 
 class YouTubeService:
     """
-    Handles uploading videos to YouTube using per-user OAuth tokens
+    Handles uploading videos to YouTube using per-agent OAuth tokens
     """
 
     def __init__(self):
         self.logger = logger
 
-    def _get_credentials_for_user(self, user_id: str):
+    def _get_credentials_for_agent(self, agent_id: str):
         """
-        Retrieves and refreshes OAuth credentials for a specific user
+        Retrieves and refreshes OAuth credentials for a specific agent
         """
-        user = user_service.get_by_id(user_id)
-        if not user:
-             self.logger.warning(f"User {user_id} not found")
+        agent = agent_service.get_agent(agent_id)
+        if not agent:
+             self.logger.warning(f"Agent {agent_id} not found")
              return None
 
         # In case it's a dict (from DB) or an object (from Pydantic)
-        refresh_token = user.get("youtube_refresh_token") if isinstance(user, dict) else getattr(user, "youtube_refresh_token", None)
-        access_token = user.get("youtube_access_token") if isinstance(user, dict) else getattr(user, "youtube_access_token", None)
+        refresh_token = agent.get("youtube_refresh_token") if isinstance(agent, dict) else getattr(agent, "youtube_refresh_token", None)
+        access_token = agent.get("youtube_access_token") if isinstance(agent, dict) else getattr(agent, "youtube_access_token", None)
 
         if not refresh_token:
-            self.logger.warning(f"No YouTube refresh token found for user {user_id}")
+            self.logger.warning(f"No YouTube refresh token found for agent {agent_id}")
             return None
 
         creds = Credentials(
@@ -48,15 +48,17 @@ class YouTubeService:
                 try:
                     creds.refresh(Request())
                     # Update tokens in DB
-                    users_collection.update_one(
-                        {"_id": user["_id"]},
+                    agent_id_obj = agent["_id"] if isinstance(agent, dict) and "_id" in agent else agent.get("id")
+                    from bson import ObjectId
+                    agent_collection.update_one(
+                        {"_id": ObjectId(agent_id_obj) if isinstance(agent_id_obj, str) else agent_id_obj},
                         {"$set": {
                             "youtube_access_token": creds.token,
                             "youtube_token_expiry": creds.expiry
                         }}
                     )
                 except Exception as e:
-                    self.logger.error(f"Failed to refresh YouTube token for user {user_id}: {e}")
+                    self.logger.error(f"Failed to refresh YouTube token for agent {agent_id}: {e}")
                     return None
             else:
                 return None
@@ -65,7 +67,7 @@ class YouTubeService:
 
     def upload_video(
         self,
-        user_id: str,
+        agent_id: str,
         file_path: str,
         title: str,
         description: str,
@@ -76,9 +78,9 @@ class YouTubeService:
         """
         Uploads video to YouTube (or mocks it if DEBUG=True)
         """
-        self.logger.info(f"Uploading video for user {user_id}: {title}")
+        self.logger.info(f"Uploading video for agent {agent_id}: {title}")
 
-        creds = self._get_credentials_for_user(user_id)
+        creds = self._get_credentials_for_agent(agent_id)
 
         if creds:
             try:

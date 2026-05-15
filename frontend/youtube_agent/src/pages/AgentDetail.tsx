@@ -1,4 +1,5 @@
 
+import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
@@ -12,38 +13,85 @@ import {
   MessageSquare,
   ThumbsUp,
   Eye,
-  Download,
   Pause,
+  Play,
   Clock,
-  Globe
+  Globe,
+  Play as YoutubeIcon
 } from 'lucide-react';
+import { apiRequest } from '../utils/api';
 
 export const AgentDetail = () => {
   const { id } = useParams();
-  console.log("Agent ID:", id);
+  const [agentData, setAgentData] = useState<any>(null);
+  const [videos, setVideos] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Mock data for a single agent
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [agent, allVideos] = await Promise.all([
+          apiRequest(`/agents/${id}`),
+          apiRequest(`/videos`)
+        ]);
+        setAgentData(agent);
+        setVideos(allVideos.filter((v: any) => v.agent_id === id));
+      } catch (err) {
+        console.error("Failed to fetch agent data", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [id]);
+
+  const toggleAgentStatus = async () => {
+    if (!agentData.youtube_connected && !agentData.is_active) {
+      handleConnectYouTube();
+      return;
+    }
+    try {
+        const updated = await apiRequest(`/agents/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify({ is_active: !agentData.is_active })
+        });
+        setAgentData(updated);
+    } catch (err) {
+        console.error('Failed to toggle status:', err);
+    }
+  };
+
+  const handleConnectYouTube = () => {
+    // Redirect to backend OAuth initiation endpoint
+    window.location.href = `http://localhost:8000/agents/${id}/youtube/connect`;
+  };
+
+  if (loading) return <div className="p-8 text-white">Loading agent...</div>;
+  if (!agentData) return <div className="p-8 text-white">Agent not found.</div>;
+
   const agent = {
-    name: 'Daily AI Facts',
-    niche: 'Facts',
-    type: 'Shorts',
-    status: 'active',
-    lastPosted: '2 hours ago',
+    name: agentData.name,
+    niche: agentData.niche,
+    type: agentData.content_type === 'shorts' ? 'Shorts' : 'Long-form',
+    status: agentData.is_active ? 'active' : 'paused',
+    youtube_connected: agentData.youtube_connected,
+    lastPosted: agentData.last_run_at ? new Date(agentData.last_run_at).toLocaleString() : 'Never',
     metrics: [
-      { label: 'Views', value: '12,430', icon: Eye, color: 'text-blue-500' },
-      { label: 'Avg Watch Time', value: '18s', icon: Clock, color: 'text-green-500' },
-      { label: 'Retention Rate', value: '75%', icon: TrendingUp, color: 'text-primary' },
-      { label: 'Likes', value: '320', icon: ThumbsUp, color: 'text-red-500' },
-      { label: 'Comments', value: '12', icon: MessageSquare, color: 'text-purple-500' },
-      { label: 'Estimated Earnings', value: '$45', icon: DollarSign, color: 'text-emerald-500' },
+      { label: 'Views', value: videos.reduce((acc, v) => acc + (v.views || 0), 0).toLocaleString(), icon: Eye, color: 'text-blue-500' },
+      { label: 'Avg Watch Time', value: agentData.avg_watch_time ? `${agentData.avg_watch_time}s` : '0s', icon: Clock, color: 'text-green-500' },
+      { label: 'Retention Rate', value: `${agentData.avg_retention || 0}%`, icon: TrendingUp, color: 'text-primary' },
+      { label: 'Likes', value: videos.reduce((acc, v) => acc + (v.likes || 0), 0).toLocaleString(), icon: ThumbsUp, color: 'text-red-500' },
+      { label: 'Comments', value: videos.reduce((acc, v) => acc + (v.comments || 0), 0).toLocaleString(), icon: MessageSquare, color: 'text-purple-500' },
+      { label: 'Estimated Earnings', value: `$${(videos.length * 2)}`, icon: DollarSign, color: 'text-emerald-500' },
     ],
-    videoHistory: [
-      { id: 1, title: 'Black Holes Explained', date: '04/09', views: '2,340', retention: '70%', earnings: '$8' },
-      { id: 2, title: 'Solar System Facts', date: '04/08', views: '1,980', retention: '72%', earnings: '$6' },
-      { id: 3, title: 'Mars Facts', date: '04/07', views: '3,210', retention: '80%', earnings: '$12' },
-      { id: 4, title: 'Jupiter Great Red Spot', date: '04/06', views: '1,100', retention: '65%', earnings: '$4' },
-      { id: 5, title: 'Moon Landing Secrets', date: '04/05', views: '4,500', retention: '85%', earnings: '$20' },
-    ],
+    videoHistory: videos.map(v => ({
+      id: v.id,
+      title: v.title || 'Untitled Video',
+      date: new Date(v.created_at).toLocaleDateString(),
+      views: v.views || 0,
+      retention: `${v.retention_rate || 0}%`,
+      earnings: `$${(v.views || 0) * 0.002}`
+    })),
     audience: {
       age: [
         { range: '18–24', percentage: 45 },
@@ -74,13 +122,24 @@ export const AgentDetail = () => {
           <p className="text-secondary-foreground">{agent.niche} • {agent.type}</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" className="gap-2">
-            <Download className="h-4 w-4" />
-            Export
-          </Button>
-          <Button size="sm" className="gap-2">
-            <Pause className="h-4 w-4" />
-            Pause Agent
+          {agent.youtube_connected ? (
+            <Button variant="outline" size="sm" className="gap-2 text-green-500 border-green-500/50 bg-green-500/10 hover:bg-green-500/20">
+              <YoutubeIcon className="h-4 w-4" />
+              Connected
+            </Button>
+          ) : (
+            <Button variant="outline" size="sm" className="gap-2 text-primary border-primary/50 bg-primary/10 hover:bg-primary/20" onClick={handleConnectYouTube}>
+              <YoutubeIcon className="h-4 w-4" />
+              Connect YouTube
+            </Button>
+          )}
+          <Button
+            size="sm"
+            className="gap-2"
+            onClick={toggleAgentStatus}
+          >
+            {agentData.is_active ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+            {agentData.is_active ? 'Pause Agent' : 'Resume Agent'}
           </Button>
         </div>
       </div>
@@ -144,21 +203,30 @@ export const AgentDetail = () => {
                 <CardDescription>Recent actions taken by your AI agent</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {[
-                  { action: 'Video Posted', detail: 'Black Holes Explained', time: '2 hours ago' },
-                  { action: 'Script Generated', detail: 'Neutron Stars (Upcoming)', time: '4 hours ago' },
-                  { action: 'Ad Integrated', detail: 'Summer AI Tools Promo', time: '6 hours ago' },
-                  { action: 'Analytics Synced', detail: 'Success', time: '12 hours ago' },
-                ].map((log, i) => (
+                {videos.length > 0 ? videos.slice(0, 5).map((v, i) => (
                   <div key={i} className="flex items-center gap-4 text-sm">
                     <div className="w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_rgba(255,0,0,0.5)]" />
                     <div className="flex-1">
-                      <div className="text-white font-medium">{log.action}</div>
-                      <div className="text-secondary-foreground text-xs">{log.detail}</div>
+                      <div className="text-white font-medium">Video Created & Posted</div>
+                      <div className="text-secondary-foreground text-xs">{v.title || v.topic}</div>
                     </div>
-                    <div className="text-xs text-secondary-foreground">{log.time}</div>
+                    <div className="text-xs text-secondary-foreground">{new Date(v.created_at).toLocaleDateString()}</div>
                   </div>
-                ))}
+                )) : (
+                  <div className="text-center py-8 text-secondary-foreground text-sm italic">
+                    No recent activity recorded.
+                  </div>
+                )}
+                {agentData.created_at && (
+                  <div className="flex items-center gap-4 text-sm">
+                    <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
+                    <div className="flex-1">
+                      <div className="text-white font-medium">Agent Initialized</div>
+                      <div className="text-secondary-foreground text-xs">System ready</div>
+                    </div>
+                    <div className="text-xs text-secondary-foreground">{new Date(agentData.created_at).toLocaleDateString()}</div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>

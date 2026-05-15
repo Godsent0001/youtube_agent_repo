@@ -14,6 +14,7 @@ from moviepy.editor import (
     ColorClip
 )
 
+from tqdm import tqdm
 from app.core.logger import logger
 from app.services.video.effects_service import effects_service
 
@@ -80,7 +81,7 @@ class VideoBuilderService:
         # ==================================================
         # SCENE LOOP
         # ==================================================
-        for i, scene in enumerate(scenes):
+        for i, scene in tqdm(enumerate(scenes), total=len(scenes), desc="Building scenes"):
 
             try:
                 self.logger.info(f"Processing scene {i + 1}")
@@ -154,7 +155,7 @@ class VideoBuilderService:
                 audio_codec="aac",
                 preset="ultrafast",   # EXTREME SPEED
                 threads=4,
-                logger=None
+                logger="bar" # Enable MoviePy progress bar
             )
 
         finally:
