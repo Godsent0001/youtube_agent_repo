@@ -72,6 +72,11 @@ CRITICAL REQUIREMENTS:
 - Maximize click-through rate
 - Focus on emotion, mystery, surprise, fear, urgency, status, or hidden knowledge
 
+TOPIC CONSTRAINTS:
+- AVOID topics that require physical explaining (e.g., "How to tie a tie", "DIY furniture assembly").
+- AVOID topics that are very complex to explain without specific visuals, as we rely on stock media which might not be perfectly accurate for niche technical tutorials.
+- PREFER topics that can be effectively illustrated with high-quality stock footage (nature, technology, people, cities, abstract concepts).
+
 CONTENT RULES:
 {content_rules}
 

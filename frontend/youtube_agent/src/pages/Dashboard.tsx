@@ -30,19 +30,30 @@ export const Dashboard = () => {
     fetchAgents();
   }, []);
 
-  const toggleAgentStatus = async (agentId: string, currentStatus: boolean, youtubeConnected: boolean) => {
-    if (!youtubeConnected && !currentStatus) {
+  const startAgent = async (agentId: string, youtubeConnected: boolean) => {
+    if (!youtubeConnected) {
       window.location.href = `http://localhost:8000/agents/${agentId}/youtube/connect`;
       return;
     }
     try {
+        await apiRequest(`/agents/${agentId}/generate`, {
+            method: 'POST'
+        });
+        setAgents(agents.map(a => a.id === agentId ? { ...a, is_active: true } : a));
+    } catch (err) {
+        console.error('Failed to start agent:', err);
+    }
+  };
+
+  const pauseAgent = async (agentId: string) => {
+    try {
         await apiRequest(`/agents/${agentId}`, {
             method: 'PUT',
-            body: JSON.stringify({ is_active: !currentStatus })
+            body: JSON.stringify({ is_active: false })
         });
-        setAgents(agents.map(a => a.id === agentId ? { ...a, is_active: !currentStatus } : a));
+        setAgents(agents.map(a => a.id === agentId ? { ...a, is_active: false } : a));
     } catch (err) {
-        console.error('Failed to toggle status:', err);
+        console.error('Failed to pause agent:', err);
     }
   };
 
@@ -139,7 +150,7 @@ export const Dashboard = () => {
                               </button>
                               <button
                                 className="w-full text-left px-4 py-2 text-sm text-secondary-foreground hover:bg-neutral-800 flex items-center gap-2"
-                                onClick={() => toggleAgentStatus(agent.id, agent.is_active, agent.youtube_connected)}
+                                onClick={() => agent.is_active ? pauseAgent(agent.id) : startAgent(agent.id, agent.youtube_connected)}
                               >
                                 {agent.is_active ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
                                 {agent.is_active ? 'Pause Agent' : 'Resume Agent'}
@@ -193,7 +204,7 @@ export const Dashboard = () => {
                 <Button
                   variant="ghost"
                   className="px-3"
-                  onClick={() => toggleAgentStatus(agent.id, agent.is_active, agent.youtube_connected)}
+                  onClick={() => agent.is_active ? pauseAgent(agent.id) : startAgent(agent.id, agent.youtube_connected)}
                 >
                   {agent.is_active ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
                 </Button>

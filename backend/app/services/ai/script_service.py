@@ -16,7 +16,21 @@ class ScriptService:
     # =========================
     # MAIN GENERATION
     # =========================
-    def generate_script(self, topic: str, niche: str, content_type: str, research: dict):
+    def generate_script(self, topic: str, niche: str, content_type: str, research: dict, video_length: int = None):
+
+        # Determine target duration message
+        duration_instruction = ""
+        if video_length:
+            if content_type == "shorts":
+                # Shorts length is usually in seconds
+                target = min(video_length, 60)
+                duration_instruction = f"The script MUST be exactly sized for a {target} second video. Aim for approximately {target * 2.5} words."
+            else:
+                # Long form might be in minutes or seconds, let's assume minutes if small, seconds if large
+                if video_length < 20: # Likely minutes
+                    duration_instruction = f"The script MUST be sized for a {video_length} minute video. Aim for approximately {video_length * 150} words."
+                else:
+                    duration_instruction = f"The script MUST be sized for a {video_length} second video. Aim for approximately {video_length * 2.5} words."
 
         messages = [
             {
@@ -56,6 +70,7 @@ OUTPUT FORMAT (ONLY VALID JSON):
 Topic: {topic}
 Niche: {niche}
 Content Type: {content_type}
+{duration_instruction}
 
 Research Data:
 {json.dumps(research, indent=2)}

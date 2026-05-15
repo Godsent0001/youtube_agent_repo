@@ -90,7 +90,8 @@ class PipelineService:
             topic=topic,
             niche=agent.get("niche", ""),
             content_type=agent.get("content_type", "youtube"),
-            research=research
+            research=research,
+            video_length=agent.get("video_length")
         )
 
         script = script_data.get("script")
@@ -105,7 +106,8 @@ class PipelineService:
 
         scenes = scene_service.generate_scenes(
             script=script,
-            content_type=agent.get("content_type", "youtube")
+            content_type=agent.get("content_type", "youtube"),
+            video_length=agent.get("video_length")
         )
 
         if not scenes:
@@ -187,7 +189,8 @@ class PipelineService:
             scenes=scenes,
             audio_path=audio_path,
             output_path=f"storage/videos/final_{agent_id}.mp4",
-            content_type=agent.get("content_type", "shorts")
+            content_type=agent.get("content_type", "shorts"),
+            video_length=agent.get("video_length")
         )
 
         if not final_video:
