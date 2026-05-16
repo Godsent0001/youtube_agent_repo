@@ -10,9 +10,16 @@ export const apiRequest = async (endpoint: string, options: any = {}) => {
     ...options.headers,
   };
 
+  // Normalize endpoint to always have a trailing slash (to avoid 404s on FastAPI)
+  // unless it's a specific file or already has one
+  let normalizedEndpoint = endpoint;
+  if (!normalizedEndpoint.includes('?') && !normalizedEndpoint.endsWith('/')) {
+    normalizedEndpoint = `${normalizedEndpoint}/`;
+  }
+
   // Auto-append user_id to query params if not already there
-  let url = `${API_BASE_URL}${endpoint}`;
-  if (userId && !endpoint.includes('auth')) {
+  let url = `${API_BASE_URL}${normalizedEndpoint}`;
+  if (userId && !normalizedEndpoint.includes('auth')) {
       const separator = url.includes('?') ? '&' : '?';
       if (!url.includes('user_id=')) {
           url = `${url}${separator}user_id=${userId}`;
