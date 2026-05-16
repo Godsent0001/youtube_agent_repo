@@ -29,10 +29,10 @@ COPY backend/ .
 
 # Start FastAPI app using Gunicorn with Uvicorn workers
 # -k uvicorn.workers.UvicornWorker: use uvicorn workers
-# --timeout 120: increase timeout for long-running video generation
+# --timeout 600: increase timeout for long-running video generation (5-10 mins)
 # --workers 1: stay within 512MB RAM limits
 CMD gunicorn app.main:app \
     --bind 0.0.0.0:${PORT} \
     -k uvicorn.workers.UvicornWorker \
     --workers 1 \
-    --timeout 120
+    --timeout 600
