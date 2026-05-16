@@ -165,9 +165,7 @@ def youtube_callback(request: Request, state: str, code: str):
     })
 
     # Redirect back to frontend agent detail page
-    # Assuming frontend runs on port 5173 by default in dev
-    frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5173")
-    return RedirectResponse(f"{frontend_url}/agent/{agent_id}")
+    return RedirectResponse(f"{settings.FRONTEND_URL}/agent/{agent_id}")
 
 
 # =========================

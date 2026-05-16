@@ -39,7 +39,10 @@ app = FastAPI(
 # =========================
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # in production restrict this to frontend URL
+    allow_origins=[
+        "http://localhost:5173",
+        "https://youtube-agent-liart.vercel.app"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
