@@ -33,7 +33,7 @@ export const Dashboard = () => {
   const startAgent = async (agentId: string, youtubeConnected: boolean) => {
     if (!youtubeConnected) {
       const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://youtube-backend-agent-repo.onrender.com';
-      window.location.href = `${API_BASE}/agents/${agentId}/youtube/connect/`;
+      window.location.href = `${API_BASE}/agents/${agentId}/youtube/connect`;
       return;
     }
     try {
@@ -138,7 +138,7 @@ export const Dashboard = () => {
                                   className="w-full text-left px-4 py-2 text-sm text-secondary-foreground hover:bg-neutral-800 flex items-center gap-2"
                                   onClick={() => {
                                     const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://youtube-backend-agent-repo.onrender.com';
-                                    window.location.href = `${API_BASE}/agents/${agent.id}/youtube/connect/`;
+                                    window.location.href = `${API_BASE}/agents/${agent.id}/youtube/connect`;
                                   }}
                                 >
                                   <YoutubeIcon className="h-4 w-4 text-red-500" />
