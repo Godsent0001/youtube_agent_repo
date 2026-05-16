@@ -10,12 +10,9 @@ export const apiRequest = async (endpoint: string, options: any = {}) => {
     ...options.headers,
   };
 
-  // Normalize endpoint to always have a trailing slash (to avoid 404s on FastAPI)
-  // unless it's a specific file or already has one
-  let normalizedEndpoint = endpoint;
-  if (!normalizedEndpoint.includes('?') && !normalizedEndpoint.endsWith('/')) {
-    normalizedEndpoint = `${normalizedEndpoint}/`;
-  }
+  // Standardize API structure: ALWAYS remove trailing slashes
+  // to follow canonical REST patterns and avoid redirect loops.
+  const normalizedEndpoint = endpoint.replace(/\/+$/, "");
 
   // Auto-append user_id to query params if not already there
   let url = `${API_BASE_URL}${normalizedEndpoint}`;

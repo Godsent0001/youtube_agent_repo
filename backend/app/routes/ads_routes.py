@@ -10,7 +10,7 @@ router = APIRouter(prefix="/ads", tags=["Ads & Monetization"])
 # =========================
 # CREATE AD CAMPAIGN
 # =========================
-@router.post("/", response_model=str)
+@router.post("", response_model=str)
 def create_campaign(payload: CampaignCreate):
 
     campaign_id = ad_service.create_campaign(payload.dict())

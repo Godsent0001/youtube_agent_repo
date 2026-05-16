@@ -19,7 +19,7 @@ if settings.DEBUG:
 # =========================
 # CREATE AGENT
 # =========================
-@router.post("/", response_model=str)
+@router.post("", response_model=str)
 def create_agent(payload: AgentCreate, user_id: str):
 
     agent_id = agent_service.create_agent(
@@ -33,7 +33,7 @@ def create_agent(payload: AgentCreate, user_id: str):
 # =========================
 # GET ALL USER AGENTS
 # =========================
-@router.get("/", response_model=List[dict])
+@router.get("", response_model=List[dict])
 def get_agents(user_id: str):
 
     return agent_service.list_user_agents(user_id)

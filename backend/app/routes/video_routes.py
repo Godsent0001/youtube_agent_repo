@@ -10,7 +10,7 @@ router = APIRouter(prefix="/videos", tags=["Videos"])
 # =========================
 # GET ALL VIDEOS (USER)
 # =========================
-@router.get("/")
+@router.get("")
 def get_user_videos(user_id: str):
 
     videos = video_service.get_user_videos(user_id)
