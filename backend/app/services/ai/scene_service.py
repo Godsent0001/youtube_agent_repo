@@ -30,7 +30,8 @@ class SceneService:
     def generate_scenes(
         self,
         script: str,
-        content_type: str
+        content_type: str,
+        video_length: int = None
     ) -> List[Dict[str, Any]]:
 
         is_shorts = (
@@ -38,7 +39,8 @@ class SceneService:
         )
 
         rules = self._get_scene_rules(
-            is_shorts
+            is_shorts,
+            video_length
         )
 
         messages = [
@@ -215,14 +217,18 @@ SCRIPT:
 
     def _get_scene_rules(
         self,
-        is_shorts: bool
+        is_shorts: bool,
+        video_length: int = None
     ):
 
         if is_shorts:
+            num_scenes = "7 to 12"
+            if video_length and video_length < 30:
+                num_scenes = "4 to 6"
 
-            return """
+            return f"""
 SHORTS RULES:
-- Create 7 to 12 scenes
+- Create {num_scenes} scenes
 - Fast pacing
 - Strong emotional movement
 - Strong hook in first scene
@@ -231,9 +237,17 @@ SHORTS RULES:
 - Average 3 to 5 seconds per scene
 """
 
-        return """
+        num_scenes = "10 to 25"
+        if video_length:
+            # simple heuristic: ~3-4 scenes per minute
+            if video_length < 20: # minutes
+                num_scenes = f"{max(10, video_length * 3)} to {max(15, video_length * 5)}"
+            else: # seconds
+                num_scenes = f"{max(5, video_length // 10)} to {max(8, video_length // 6)}"
+
+        return f"""
 LONG FORM RULES:
-- Create 10 to 25 scenes
+- Create {num_scenes} scenes
 - Slower cinematic pacing
 - Build narrative progression
 - Mix calm and intense scenes

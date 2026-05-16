@@ -32,6 +32,10 @@ class AgentService:
 
             "posting_frequency": data.get("posting_frequency", "daily"),
 
+            "video_length": data.get("video_length", None),
+
+            "is_active": True,
+
             "created_at": datetime.utcnow(),
 
             "stats": {

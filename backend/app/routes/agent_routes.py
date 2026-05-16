@@ -75,15 +75,18 @@ def generate_video(agent_id: str):
 
     """
     THIS is the most important endpoint:
-    pushes job into worker queue
+    pushes job into worker queue and sets agent to active
     """
+
+    # Ensure agent is active when starting manual generation
+    agent_service.update_agent(agent_id, {"is_active": True})
 
     worker.add_job("generate_video", {
         "agent_id": agent_id
     })
 
     return {
-        "message": "Video generation started",
+        "message": "Video generation started and agent activated",
         "agent_id": agent_id
     }
 

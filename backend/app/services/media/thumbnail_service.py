@@ -142,15 +142,33 @@ class ThumbnailService:
                 )
 
                 # Ensure image is in RGB format for JPEG saving
+                # The new google-genai SDK might return a PIL Image or a bytes object
                 img = generated_image.image
-                if img.mode != 'RGB':
-                    img = img.convert('RGB')
 
-                img.save(
-                    file_path,
-                    "JPEG",
-                    quality=95
-                )
+                # Check if img is a PIL Image object
+                if hasattr(img, 'convert'):
+                    if img.mode != 'RGB':
+                        img = img.convert('RGB')
+
+                    img.save(
+                        file_path,
+                        "JPEG",
+                        quality=95
+                    )
+                elif hasattr(generated_image, 'image_bytes'):
+                    # Fallback if it's bytes
+                    from io import BytesIO
+                    img = Image.open(BytesIO(generated_image.image_bytes))
+                    if img.mode != 'RGB':
+                        img = img.convert('RGB')
+                    img.save(file_path, "JPEG", quality=95)
+                else:
+                    # Last resort: try to save whatever it is if it has a save method,
+                    # or raise to trigger retry
+                    if hasattr(img, 'save'):
+                        img.save(file_path)
+                    else:
+                        raise Exception(f"Generated image object of type {type(img)} is not savable")
 
                 # ======================================
                 # VALIDATE FILE
@@ -267,11 +285,24 @@ class ThumbnailService:
             # ==========================================
 
             try:
-
-                font = ImageFont.truetype(
+                # Try common Linux fonts if arial is not available
+                font_paths = [
                     "arial.ttf",
-                    70
-                )
+                    "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+                    "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
+                    "/usr/share/fonts/truetype/freefont/FreeSansBold.ttf"
+                ]
+
+                font = None
+                for path in font_paths:
+                    try:
+                        font = ImageFont.truetype(path, 70)
+                        break
+                    except:
+                        continue
+
+                if font is None:
+                    font = ImageFont.load_default()
 
             except:
 

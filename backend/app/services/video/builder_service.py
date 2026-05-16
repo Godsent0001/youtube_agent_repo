@@ -53,7 +53,7 @@ class VideoBuilderService:
     # ==================================================
     # MAIN PIPELINE
     # ==================================================
-    def build_video(self, scenes: list, audio_path: str, output_path: str, content_type: str = "youtube"):
+    def build_video(self, scenes: list, audio_path: str, output_path: str, content_type: str = "youtube", video_length: int = None):
 
         self.logger.info("Starting video build process")
 
@@ -134,7 +134,29 @@ class VideoBuilderService:
         if audio:
             try:
                 # Force video duration to match audio EXACTLY to prevent black screen
-                final_video = final_video.set_duration(audio_duration)
+                target_duration = audio_duration
+
+                # STRICT DURATION ENFORCEMENT
+                if video_length:
+                    if content_type == "shorts":
+                        limit = min(video_length, 60)
+                        if target_duration > limit:
+                            self.logger.info(f"Clipping audio to {limit}s for Shorts compliance")
+                            audio = audio.subclip(0, limit)
+                            target_duration = limit
+                    else:
+                        # Long form
+                        if video_length < 20: # minutes
+                            limit = video_length * 60
+                        else: # seconds
+                            limit = video_length
+
+                        if target_duration > limit:
+                            self.logger.info(f"Clipping audio to {limit}s for duration compliance")
+                            audio = audio.subclip(0, limit)
+                            target_duration = limit
+
+                final_video = final_video.set_duration(target_duration)
                 final_video = final_video.set_audio(audio)
 
             except Exception as e:

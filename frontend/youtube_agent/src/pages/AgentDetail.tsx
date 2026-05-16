@@ -45,19 +45,38 @@ export const AgentDetail = () => {
     fetchData();
   }, [id]);
 
-  const toggleAgentStatus = async () => {
-    if (!agentData.youtube_connected && !agentData.is_active) {
+  const startAgent = async () => {
+    if (!agentData.youtube_connected) {
       handleConnectYouTube();
       return;
     }
     try {
+        await apiRequest(`/agents/${id}/generate`, {
+            method: 'POST'
+        });
+        setAgentData({ ...agentData, is_active: true });
+    } catch (err) {
+        console.error('Failed to start agent:', err);
+    }
+  };
+
+  const pauseAgent = async () => {
+    try {
         const updated = await apiRequest(`/agents/${id}`, {
             method: 'PUT',
-            body: JSON.stringify({ is_active: !agentData.is_active })
+            body: JSON.stringify({ is_active: false })
         });
         setAgentData(updated);
     } catch (err) {
-        console.error('Failed to toggle status:', err);
+        console.error('Failed to pause agent:', err);
+    }
+  };
+
+  const toggleAgentStatus = () => {
+    if (agentData.is_active) {
+      pauseAgent();
+    } else {
+      startAgent();
     }
   };
 
@@ -76,6 +95,7 @@ export const AgentDetail = () => {
     status: agentData.is_active ? 'active' : 'paused',
     youtube_connected: agentData.youtube_connected,
     lastPosted: agentData.last_run_at ? new Date(agentData.last_run_at).toLocaleString() : 'Never',
+    is_active: agentData.is_active,
     metrics: [
       { label: 'Views', value: videos.reduce((acc, v) => acc + (v.views || 0), 0).toLocaleString(), icon: Eye, color: 'text-blue-500' },
       { label: 'Avg Watch Time', value: agentData.avg_watch_time ? `${agentData.avg_watch_time}s` : '0s', icon: Clock, color: 'text-green-500' },
@@ -135,11 +155,11 @@ export const AgentDetail = () => {
           )}
           <Button
             size="sm"
-            className="gap-2"
+            className={`gap-2 ${agent.is_active ? 'bg-amber-600 hover:bg-amber-700' : 'bg-primary'}`}
             onClick={toggleAgentStatus}
           >
-            {agentData.is_active ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-            {agentData.is_active ? 'Pause Agent' : 'Resume Agent'}
+            {agent.is_active ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+            {agent.is_active ? 'Pause Agent' : 'Start Agent'}
           </Button>
         </div>
       </div>
