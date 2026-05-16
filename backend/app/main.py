@@ -1,6 +1,5 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware.proxy_headers import ProxyHeadersMiddleware
 
 from app.core.config import settings
 from app.core.logger import logger
@@ -34,11 +33,6 @@ app = FastAPI(
     version="1.0.0",
     redirect_slashes=False # Disable automatic trailing slash redirects
 )
-
-# =========================
-# PROXY HEADERS (For HTTPS on Render)
-# =========================
-app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
 
 # =========================
 # CORS CONFIGURATION
