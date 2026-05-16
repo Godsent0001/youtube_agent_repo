@@ -116,6 +116,8 @@ def connect_youtube(agent_id: str, request: Request):
     # Redirect URI must be registered in Google Cloud Console
     # We use a generic callback that will handle the state
     base_url = str(request.base_url).rstrip('/')
+    if not settings.DEBUG:
+        base_url = base_url.replace("http://", "https://")
     flow.redirect_uri = f"{base_url}/agents/youtube/callback"
 
     authorization_url, state = flow.authorization_url(
@@ -152,6 +154,8 @@ def youtube_callback(request: Request, state: str, code: str):
     )
 
     base_url = str(request.base_url).rstrip('/')
+    if not settings.DEBUG:
+        base_url = base_url.replace("http://", "https://")
     flow.redirect_uri = f"{base_url}/agents/youtube/callback"
 
     flow.fetch_token(code=code)
