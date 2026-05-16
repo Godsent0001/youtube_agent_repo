@@ -1,6 +1,10 @@
 from fastapi import APIRouter, HTTPException
 
-from app.workers.worker import worker
+from app.queue.redis_queue import video_queue
+from app.services.video_jobs import generate_video_job
+from app.db.session import db
+from datetime import datetime
+import uuid
 from app.services.video.video_service import video_service
 from app.services.analytics.metrics_service import metrics_service
 
@@ -48,13 +52,32 @@ def regenerate_video(video_id: str):
     if not video:
         raise HTTPException(status_code=404, detail="Video not found")
 
-    worker.add_job("generate_video", {
-        "agent_id": video["agent_id"]
+    if not video_queue:
+        raise HTTPException(status_code=503, detail="Redis queue not available")
+
+    job_id = str(uuid.uuid4())
+    video_queue.enqueue(
+        generate_video_job,
+        agent_id=video["agent_id"],
+        job_id=job_id
+    )
+
+    # Record in MongoDB
+    db["jobs"].insert_one({
+        "job_id": job_id,
+        "user_id": video.get("user_id"),
+        "agent_id": video["agent_id"],
+        "status": "queued",
+        "created_at": datetime.utcnow(),
+        "updated_at": datetime.utcnow(),
+        "result_url": None,
+        "error": None
     })
 
     return {
         "message": "Video regeneration started",
-        "video_id": video_id
+        "video_id": video_id,
+        "job_id": job_id
     }
 
 
@@ -74,13 +97,32 @@ def retry_video(video_id: str):
             "message": "Video is not in failed state"
         }
 
-    worker.add_job("generate_video", {
-        "agent_id": video["agent_id"]
+    if not video_queue:
+        raise HTTPException(status_code=503, detail="Redis queue not available")
+
+    job_id = str(uuid.uuid4())
+    video_queue.enqueue(
+        generate_video_job,
+        agent_id=video["agent_id"],
+        job_id=job_id
+    )
+
+    # Record in MongoDB
+    db["jobs"].insert_one({
+        "job_id": job_id,
+        "user_id": video.get("user_id"),
+        "agent_id": video["agent_id"],
+        "status": "queued",
+        "created_at": datetime.utcnow(),
+        "updated_at": datetime.utcnow(),
+        "result_url": None,
+        "error": None
     })
 
     return {
         "message": "Retry initiated",
-        "video_id": video_id
+        "video_id": video_id,
+        "job_id": job_id
     }
 
 

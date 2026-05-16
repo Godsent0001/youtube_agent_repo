@@ -5,7 +5,10 @@ import os
 
 from app.schemas.agent import AgentCreate, AgentResponse, AgentUpdate
 from app.services.agent_service import agent_service
-from app.workers.worker import worker
+from app.queue.redis_queue import video_queue
+from app.services.video_jobs import generate_video_job
+from app.db.session import db
+from datetime import datetime
 from app.core.config import settings
 from google_auth_oauthlib.flow import Flow
 
@@ -75,19 +78,45 @@ def generate_video(agent_id: str):
 
     """
     THIS is the most important endpoint:
-    pushes job into worker queue and sets agent to active
+    pushes job into Redis worker queue and records in MongoDB
     """
+    agent = agent_service.get_agent(agent_id)
+    if not agent:
+        raise HTTPException(status_code=404, detail="Agent not found")
 
     # Ensure agent is active when starting manual generation
     agent_service.update_agent(agent_id, {"is_active": True})
 
-    worker.add_job("generate_video", {
-        "agent_id": agent_id
+    if not video_queue:
+        raise HTTPException(status_code=503, detail="Redis queue not available")
+
+    # 1. Enqueue job
+    user_id = agent.get("user_id")
+    import uuid
+    custom_job_id = str(uuid.uuid4())
+
+    video_queue.enqueue(
+        generate_video_job,
+        agent_id=agent_id,
+        job_id=custom_job_id
+    )
+
+    # 3. Create job record in MongoDB
+    db["jobs"].insert_one({
+        "job_id": custom_job_id,
+        "user_id": user_id,
+        "agent_id": agent_id,
+        "status": "queued",
+        "created_at": datetime.utcnow(),
+        "updated_at": datetime.utcnow(),
+        "result_url": None,
+        "error": None
     })
 
     return {
         "message": "Video generation started and agent activated",
-        "agent_id": agent_id
+        "agent_id": agent_id,
+        "job_id": custom_job_id
     }
 
 

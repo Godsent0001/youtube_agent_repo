@@ -13,11 +13,7 @@ from app.routes.ads_routes import router as ads_router
 from app.routes.dashboard_routes import router as dashboard_router
 from app.routes.settings_routes import router as settings_router
 from app.routes.video_routes import router as video_router
-
-# =========================
-# WORKER IMPORT
-# =========================
-from app.workers.worker import worker
+from app.routes.job_routes import router as job_router
 
 # =========================
 # DB INIT (MongoDB)
@@ -58,6 +54,7 @@ app.include_router(ads_router)
 app.include_router(dashboard_router)
 app.include_router(settings_router)
 app.include_router(video_router)
+app.include_router(job_router)
 
 
 # =========================
@@ -70,9 +67,6 @@ def startup_event():
 
     # Initialize MongoDB
     init_db()
-
-    # Start background worker
-    worker.start_background()
 
     logger.info("System fully initialized 🚀")
 
