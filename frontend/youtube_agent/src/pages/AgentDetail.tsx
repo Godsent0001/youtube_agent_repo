@@ -82,7 +82,8 @@ export const AgentDetail = () => {
 
   const handleConnectYouTube = () => {
     // Redirect to backend OAuth initiation endpoint
-    window.location.href = `http://localhost:8000/agents/${id}/youtube/connect`;
+    const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://youtube-backend-agent-repo.onrender.com';
+    window.location.href = `${API_BASE}/agents/${id}/youtube/connect/`;
   };
 
   if (loading) return <div className="p-8 text-white">Loading agent...</div>;

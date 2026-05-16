@@ -32,7 +32,8 @@ export const Dashboard = () => {
 
   const startAgent = async (agentId: string, youtubeConnected: boolean) => {
     if (!youtubeConnected) {
-      window.location.href = `http://localhost:8000/agents/${agentId}/youtube/connect`;
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://youtube-backend-agent-repo.onrender.com';
+      window.location.href = `${API_BASE}/agents/${agentId}/youtube/connect/`;
       return;
     }
     try {
@@ -135,7 +136,10 @@ export const Dashboard = () => {
                               {!agent.youtube_connected && (
                                 <button
                                   className="w-full text-left px-4 py-2 text-sm text-secondary-foreground hover:bg-neutral-800 flex items-center gap-2"
-                                  onClick={() => window.location.href = `http://localhost:8000/agents/${agent.id}/youtube/connect`}
+                                  onClick={() => {
+                                    const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://youtube-backend-agent-repo.onrender.com';
+                                    window.location.href = `${API_BASE}/agents/${agent.id}/youtube/connect/`;
+                                  }}
                                 >
                                   <YoutubeIcon className="h-4 w-4 text-red-500" />
                                   Connect YouTube
