@@ -128,6 +128,12 @@ def connect_youtube(agent_id: str, request: Request):
     """
     Starts the OAuth flow for a specific agent
     """
+    logger.info(f"Initiating YouTube OAuth for agent: {agent_id}")
+
+    if not settings.YOUTUBE_CLIENT_ID or not settings.YOUTUBE_CLIENT_SECRET:
+        logger.error("YouTube credentials missing in settings")
+        raise HTTPException(status_code=500, detail="YouTube service not configured")
+
     client_config = {
         "web": {
             "client_id": settings.YOUTUBE_CLIENT_ID,
@@ -145,17 +151,21 @@ def connect_youtube(agent_id: str, request: Request):
     # Redirect URI must be registered in Google Cloud Console
     # We use a generic callback that will handle the state
     base_url = str(request.base_url).rstrip('/')
+    # Force HTTPS on production proxies
     if not settings.DEBUG:
         base_url = base_url.replace("http://", "https://")
+
     flow.redirect_uri = f"{base_url}/agents/youtube/callback"
+    logger.info(f"OAuth redirect URI: {flow.redirect_uri}")
 
     authorization_url, state = flow.authorization_url(
         access_type='offline',
         include_granted_scopes='true',
+        prompt='consent', # Force consent screen to ensure refresh token is returned
         state=agent_id # We pass agent_id as state
     )
 
-    return RedirectResponse(authorization_url)
+    return RedirectResponse(authorization_url, status_code=302)
 
 
 # =========================
@@ -167,6 +177,7 @@ def youtube_callback(request: Request, state: str, code: str):
     Handles the redirect from Google
     """
     agent_id = state
+    logger.info(f"Received YouTube OAuth callback for agent: {agent_id}")
 
     client_config = {
         "web": {
@@ -187,7 +198,13 @@ def youtube_callback(request: Request, state: str, code: str):
         base_url = base_url.replace("http://", "https://")
     flow.redirect_uri = f"{base_url}/agents/youtube/callback"
 
-    flow.fetch_token(code=code)
+    try:
+        flow.fetch_token(code=code)
+    except Exception as e:
+        logger.error(f"Failed to fetch YouTube token: {e}")
+        # Redirect back with error or to a safe place
+        return RedirectResponse(f"{settings.FRONTEND_URL}/agent/{agent_id}?error=oauth_failed")
+
     creds = flow.credentials
 
     # Update agent with tokens

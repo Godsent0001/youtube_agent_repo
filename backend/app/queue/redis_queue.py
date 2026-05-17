@@ -1,6 +1,7 @@
 import os
 import redis
 from rq import Queue
+from rq_scheduler import Scheduler
 
 REDIS_URL = os.getenv("REDIS_URL")
 
@@ -9,6 +10,8 @@ if not REDIS_URL:
     # For now, we'll assume it's provided in production as per requirements
     redis_conn = None
     video_queue = None
+    video_scheduler = None
 else:
     redis_conn = redis.from_url(REDIS_URL)
     video_queue = Queue("video_generation", connection=redis_conn)
+    video_scheduler = Scheduler(queue=video_queue, connection=redis_conn)

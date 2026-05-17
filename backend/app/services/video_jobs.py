@@ -1,4 +1,5 @@
-from datetime import datetime
+from datetime import datetime, timedelta
+import uuid
 from app.services.pipeline_service import pipeline_service
 from app.services.agent_service import agent_service
 from app.db.session import db
@@ -25,6 +26,12 @@ def generate_video_job(agent_id: str, job_id: str):
     """
     logger.info(f"Starting video generation job {job_id} for agent {agent_id}")
 
+    # Ensure storage directories exist in the worker environment
+    import os
+    os.makedirs("storage/audio", exist_ok=True)
+    os.makedirs("storage/images", exist_ok=True)
+    os.makedirs("storage/videos", exist_ok=True)
+
     # 1. Update status to processing
     update_job_status(job_id, "processing")
 
@@ -41,8 +48,42 @@ def generate_video_job(agent_id: str, job_id: str):
         agent_service.update_agent(agent_id, {"last_run_at": datetime.utcnow()})
 
         # 5. Update job as completed
-        update_job_status(job_id, "completed", result_url=result.get("video_url") if isinstance(result, dict) else None)
+        # Check result for youtube_upload and final_video_path
+        res_url = None
+        if isinstance(result, dict):
+            res_url = result.get("final_video_path")
+
+        update_job_status(job_id, "completed", result_url=res_url)
         logger.info(f"Job {job_id} completed successfully")
+
+        # 6. Schedule NEXT run in 24 hours if agent is still active
+        try:
+            from app.queue.redis_queue import video_scheduler
+            updated_agent = agent_service.get_agent(agent_id)
+            if updated_agent and updated_agent.get("is_active", True) and video_scheduler:
+                next_job_id = str(uuid.uuid4())
+
+                # Create the job record for the future job
+                db["jobs"].insert_one({
+                    "job_id": next_job_id,
+                    "user_id": updated_agent.get("user_id"),
+                    "agent_id": agent_id,
+                    "status": "queued",
+                    "created_at": datetime.utcnow() + timedelta(hours=24),
+                    "updated_at": datetime.utcnow(),
+                    "result_url": None,
+                    "error": None
+                })
+
+                video_scheduler.enqueue_in(
+                    timedelta(hours=24),
+                    generate_video_job,
+                    agent_id=agent_id,
+                    job_id=next_job_id
+                )
+                logger.info(f"Scheduled next run for agent {agent_id} in 24 hours (Job ID: {next_job_id})")
+        except Exception as sched_err:
+            logger.error(f"Failed to schedule next run: {sched_err}")
 
         return result
 

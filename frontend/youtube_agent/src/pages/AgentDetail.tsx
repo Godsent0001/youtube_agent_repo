@@ -82,7 +82,7 @@ export const AgentDetail = () => {
 
   const handleConnectYouTube = () => {
     // Redirect to backend OAuth initiation endpoint
-    const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://youtube-backend-agent-repo.onrender.com';
+    const API_BASE = (import.meta.env.VITE_API_BASE_URL || 'https://youtube-backend-agent-repo.onrender.com').replace(/\/+$/, "");
     window.location.href = `${API_BASE}/agents/${id}/youtube/connect`;
   };
 
