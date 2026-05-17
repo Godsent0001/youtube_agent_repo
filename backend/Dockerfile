@@ -8,7 +8,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     MALLOC_ARENA_MAX=2 \
     OMP_NUM_THREADS=1 \
     DEBUG=False \
-    PORT=8000
+    PORT=8000 \
+    PYTHONPATH=/app
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -27,12 +28,13 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy all backend files into the current WORKDIR (/app)
 COPY backend/ .
 
-# Start FastAPI app using Gunicorn with Uvicorn workers
-# -k uvicorn.workers.UvicornWorker: use uvicorn workers
-# --timeout 600: increase timeout for long-running video generation (5-10 mins)
-# --workers 1: stay within 512MB RAM limits
-CMD gunicorn app.main:app \
-    --bind 0.0.0.0:${PORT} \
-    -k uvicorn.workers.UvicornWorker \
-    --workers 1 \
-    --timeout 600
+# Ensure storage directories exist
+RUN mkdir -p storage/audio storage/images storage/videos
+
+# Make scripts executable
+RUN chmod +x scripts/*.sh
+
+# Default to Web Service entrypoint
+# Render users should override the CMD for the Worker service:
+# ./scripts/start-worker.sh
+CMD ["./scripts/start-web.sh"]
