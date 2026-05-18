@@ -34,7 +34,9 @@ class AgentService:
 
             "video_length": data.get("video_length", None),
 
-            "is_active": True,
+            "is_active": False,
+            "status": "idle",
+            "next_run_time": datetime.utcnow(),
 
             "created_at": datetime.utcnow(),
 

@@ -37,8 +37,9 @@ export const Dashboard = () => {
       return;
     }
     try {
-        await apiRequest(`/agents/${agentId}/generate`, {
-            method: 'POST'
+        await apiRequest(`/agents/${agentId}`, {
+            method: 'PUT',
+            body: JSON.stringify({ is_active: true })
         });
         setAgents(agents.map(a => a.id === agentId ? { ...a, is_active: true } : a));
     } catch (err) {

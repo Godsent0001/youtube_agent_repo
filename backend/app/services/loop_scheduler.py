@@ -29,6 +29,9 @@ class LoopScheduler:
     def process_due_agents(self):
         now = datetime.utcnow()
 
+        # Log periodic check
+        # logger.debug(f"Scheduler: Checking for due agents at {now}")
+
         # 1. Atomic check and update using find_one_and_update
         # Find one agent that is active, due for a run, and idle
         agent = db["agents"].find_one_and_update(
@@ -47,6 +50,7 @@ class LoopScheduler:
         )
 
         if agent:
+            logger.info(f"Scheduler: Found due agent {agent.get('name')} ({agent.get('_id')}). Next run was scheduled for {agent.get('next_run_time')}")
             self.enqueue_agent_job(agent)
             # Recursively check for more due agents without waiting the full interval
             # This allows processing multiple agents quickly if they are all due

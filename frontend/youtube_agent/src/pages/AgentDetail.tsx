@@ -25,17 +25,20 @@ export const AgentDetail = () => {
   const { id } = useParams();
   const [agentData, setAgentData] = useState<any>(null);
   const [videos, setVideos] = useState<any[]>([]);
+  const [jobs, setJobs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [agent, allVideos] = await Promise.all([
+        const [agent, allVideos, agentJobs] = await Promise.all([
           apiRequest(`/agents/${id}`),
-          apiRequest(`/videos`)
+          apiRequest(`/videos`),
+          apiRequest(`/jobs/agent/${id}`)
         ]);
         setAgentData(agent);
         setVideos(allVideos.filter((v: any) => v.agent_id === id));
+        setJobs(agentJobs);
       } catch (err) {
         console.error("Failed to fetch agent data", err);
       } finally {
@@ -43,6 +46,8 @@ export const AgentDetail = () => {
       }
     };
     fetchData();
+    const interval = setInterval(fetchData, 10000); // Refresh every 10s for live activities
+    return () => clearInterval(interval);
   }, [id]);
 
   const startAgent = async () => {
@@ -51,8 +56,9 @@ export const AgentDetail = () => {
       return;
     }
     try {
-        await apiRequest(`/agents/${id}/generate`, {
-            method: 'POST'
+        await apiRequest(`/agents/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify({ is_active: true })
         });
         setAgentData({ ...agentData, is_active: true });
     } catch (err) {
@@ -228,17 +234,53 @@ export const AgentDetail = () => {
                 <CardTitle>Agent Activity</CardTitle>
                 <CardDescription>Recent actions taken by your AI agent</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                {videos.length > 0 ? videos.slice(0, 5).map((v, i) => (
-                  <div key={i} className="flex items-center gap-4 text-sm">
-                    <div className="w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_rgba(255,0,0,0.5)]" />
-                    <div className="flex-1">
-                      <div className="text-white font-medium">Video Created & Posted</div>
-                      <div className="text-secondary-foreground text-xs">{v.title || v.topic}</div>
+              <CardContent className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                {jobs.length > 0 ? (
+                  jobs.map((job, jobIdx) => (
+                    <div key={jobIdx} className="space-y-3 pb-4 border-b border-white/5 last:border-0">
+                      <div className="flex items-center gap-4 text-sm">
+                        <div className={`w-2 h-2 rounded-full ${job.status === 'completed' ? 'bg-green-500' : job.status === 'failed' ? 'bg-red-500' : 'bg-primary animate-pulse'}`} />
+                        <div className="flex-1">
+                          <div className="text-white font-medium">
+                            {job.status === 'processing' ? 'Generating Content...' :
+                             job.status === 'completed' ? 'Video Successfully Posted' :
+                             job.status === 'failed' ? 'Generation Failed' : 'In Queue'}
+                          </div>
+                          <div className="text-[10px] text-secondary-foreground uppercase">{new Date(job.created_at).toLocaleString()}</div>
+                        </div>
+                      </div>
+
+                      {/* Granular Activities */}
+                      {job.activities && job.activities.length > 0 && (
+                        <div className="ml-6 space-y-2 border-l border-white/10 pl-4 py-1">
+                          {job.activities.map((activity: any, actIdx: number) => (
+                            <div key={actIdx} className="flex justify-between items-center text-xs">
+                              <span className="text-secondary-foreground">{activity.step}</span>
+                              <span className="text-[10px] text-neutral-500">{new Date(activity.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {job.error && (
+                        <div className="ml-6 text-xs text-red-400 bg-red-400/10 p-2 rounded">
+                          Error: {job.error}
+                        </div>
+                      )}
                     </div>
-                    <div className="text-xs text-secondary-foreground">{new Date(v.created_at).toLocaleDateString()}</div>
-                  </div>
-                )) : (
+                  ))
+                ) : videos.length > 0 ? (
+                    videos.slice(0, 5).map((v, i) => (
+                        <div key={i} className="flex items-center gap-4 text-sm">
+                          <div className="w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_rgba(255,0,0,0.5)]" />
+                          <div className="flex-1">
+                            <div className="text-white font-medium">Video Created & Posted</div>
+                            <div className="text-secondary-foreground text-xs">{v.title || v.topic}</div>
+                          </div>
+                          <div className="text-xs text-secondary-foreground">{new Date(v.created_at).toLocaleDateString()}</div>
+                        </div>
+                      ))
+                ) : (
                   <div className="text-center py-8 text-secondary-foreground text-sm italic">
                     No recent activity recorded.
                   </div>

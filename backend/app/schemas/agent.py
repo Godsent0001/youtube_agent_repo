@@ -29,7 +29,7 @@ class AgentResponse(BaseModel):
     niche: str
     content_type: str
     video_length: Optional[int] = None
-    is_active: bool = True
+    is_active: bool = False
     status: str = "idle"
     next_run_time: Optional[str] = None
     youtube_connected: bool = False

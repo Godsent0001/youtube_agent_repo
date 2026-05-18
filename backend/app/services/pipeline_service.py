@@ -30,7 +30,9 @@ class PipelineService:
         self.render_service = RenderService()
         self.thumbnail_service = ThumbnailService()
 
-    def run(self, agent: dict):
+    def run(self, agent: dict, job_id: str = None):
+
+        from app.services.video_jobs import update_job_activity
 
         # =========================
         # SAFE AGENT ACCESS
@@ -57,6 +59,8 @@ class PipelineService:
         # 1. TOPIC GENERATION
         # =========================
         self.logger.info("Generating topic...")
+        if job_id:
+            update_job_activity(job_id, "Generating topic...")
 
         topic_data = topic_service.generate_topic(
             niche=agent.get("niche", ""),
@@ -75,6 +79,8 @@ class PipelineService:
         # 2. RESEARCH
         # =========================
         self.logger.info("Generating research...")
+        if job_id:
+            update_job_activity(job_id, "Generating research...")
 
         research = research_service.generate_research(
             topic=topic,
@@ -85,6 +91,8 @@ class PipelineService:
         # 3. SCRIPT
         # =========================
         self.logger.info("Generating script...")
+        if job_id:
+            update_job_activity(job_id, "Generating script...")
 
         script_data = script_service.generate_script(
             topic=topic,
@@ -103,6 +111,8 @@ class PipelineService:
         # 4. SCENES
         # =========================
         self.logger.info("Generating scenes...")
+        if job_id:
+            update_job_activity(job_id, "Generating scenes...")
 
         scenes = scene_service.generate_scenes(
             script=script,
@@ -117,6 +127,8 @@ class PipelineService:
         # 5. MEDIA ATTACHMENT
         # =========================
         self.logger.info("Attaching media to scenes...")
+        if job_id:
+            update_job_activity(job_id, "Selecting best media for scenes...")
 
         for scene in scenes:
             try:
@@ -131,12 +143,16 @@ class PipelineService:
         # 6. PRE-DOWNLOAD MEDIA (SERIAL)
         # =========================
         self.logger.info("Pre-downloading media serially...")
+        if job_id:
+            update_job_activity(job_id, "Downloading media files...")
         video_builder_service.prefetch_media(scenes)
 
         # =========================
         # 7. AUDIO GENERATION (SYNCED WITH SCENES)
         # =========================
         self.logger.info("Generating audio...")
+        if job_id:
+            update_job_activity(job_id, "Generating AI voiceover...")
 
         # FIX: ensure audio script matches exactly what's in scenes
         # this prevents "hanging" narration at the end of the video
@@ -169,6 +185,8 @@ class PipelineService:
         # 9. THUMBNAIL
         # =========================
         self.logger.info("Generating thumbnail...")
+        if job_id:
+            update_job_activity(job_id, "Generating video thumbnail...")
 
         thumbnail_path = self.thumbnail_service.generate_thumbnail(
             title=title,
@@ -184,6 +202,8 @@ class PipelineService:
         # 10. BUILD VIDEO (INTEGRATED)
         # =========================
         self.logger.info("Building and rendering video...")
+        if job_id:
+            update_job_activity(job_id, "Rendering final video...")
 
         final_video = video_builder_service.build_video(
             scenes=scenes,
@@ -204,6 +224,8 @@ class PipelineService:
         # 11. UPLOAD TO YOUTUBE
         # =========================
         self.logger.info("Uploading video to YouTube...")
+        if job_id:
+            update_job_activity(job_id, "Uploading to YouTube...")
 
         upload_result = youtube_service.upload_video(
             agent_id=agent_id,
