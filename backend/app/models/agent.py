@@ -64,7 +64,13 @@ class Agent(BaseModel):
     # =========================
     is_active: bool = True
 
+    status: Literal["idle", "queued", "processing"] = "idle"
+
+    next_run_time: Optional[datetime] = Field(default_factory=datetime.utcnow)
+
     last_run_at: Optional[datetime] = None
+
+    last_queued_at: Optional[datetime] = None
 
     # =========================
     # YOUTUBE OAUTH (AGENT LEVEL)

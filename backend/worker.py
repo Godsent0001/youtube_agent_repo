@@ -1,37 +1,69 @@
 import os
-import threading
+import multiprocessing
 import sys
+import time
 
 # Ensure current directory is in path
 sys.path.append(os.getcwd())
 
 from rq import Worker, Queue, Connection
-from app.queue.redis_queue import redis_conn, video_scheduler
+from app.queue.redis_queue import redis_conn
 
 listen = ["video_generation"]
 
-def run_scheduler():
-    if video_scheduler:
-        print("Starting RQ Scheduler...")
-        try:
-            video_scheduler.run()
-        except Exception as e:
-            print(f"Scheduler failed: {e}")
-
-if __name__ == "__main__":
-    print("Worker entry point started...")
-
+def run_worker():
+    # Re-initialize for process safety
+    from app.queue.redis_queue import redis_conn
+    print("Starting RQ Worker...")
     if not redis_conn:
         print("REDIS_URL not set. Worker cannot start.")
-        sys.exit(1)
-
-    # Start scheduler in a separate thread within the same worker process
-    # rq-scheduler is lightweight.
-    print("Initializing components...")
-    scheduler_thread = threading.Thread(target=run_scheduler, daemon=True)
-    scheduler_thread.start()
+        return
 
     with Connection(redis_conn):
         worker = Worker(list(map(Queue, listen)))
         print("Worker listening on 'video_generation' queue...")
         worker.work()
+
+def run_scheduler_loop():
+    # Re-import inside child process
+    from app.services.loop_scheduler import loop_scheduler
+    print("Starting Centralized Loop Scheduler Process...")
+    try:
+        loop_scheduler.run()
+    except Exception as e:
+        print(f"Loop Scheduler process failed: {e}")
+
+if __name__ == "__main__":
+    print("Worker Service entry point started...")
+
+    if not redis_conn:
+        print("REDIS_URL not set. Process cannot start.")
+        sys.exit(1)
+
+    # Use multiprocessing to run both the worker and the centralized scheduler
+    # This keeps them in the same container but separate processes.
+
+    worker_process = multiprocessing.Process(target=run_worker)
+    scheduler_process = multiprocessing.Process(target=run_scheduler_loop)
+
+    worker_process.start()
+    scheduler_process.start()
+
+    try:
+        while True:
+            # Monitor processes
+            if not worker_process.is_alive():
+                print("RQ Worker process died. Exiting container.")
+                scheduler_process.terminate()
+                sys.exit(1)
+
+            if not scheduler_process.is_alive():
+                print("Scheduler process died. Restarting...")
+                scheduler_process = multiprocessing.Process(target=run_scheduler_loop)
+                scheduler_process.start()
+
+            time.sleep(15)
+    except KeyboardInterrupt:
+        print("Shutting down processes...")
+        worker_process.terminate()
+        scheduler_process.terminate()
