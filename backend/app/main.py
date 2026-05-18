@@ -19,6 +19,7 @@ from app.routes.job_routes import router as job_router
 # DB INIT (MongoDB)
 # =========================
 from app.db.init_db import init_db
+from migrate_agents import migrate as migrate_agents
 
 
 # =========================
@@ -69,6 +70,12 @@ def startup_event():
 
     # Initialize MongoDB
     init_db()
+
+    # Run migrations
+    try:
+        migrate_agents()
+    except Exception as e:
+        logger.error(f"Migration failed: {e}")
 
     logger.info("System fully initialized 🚀")
 
