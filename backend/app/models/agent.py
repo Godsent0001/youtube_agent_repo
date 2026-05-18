@@ -62,7 +62,7 @@ class Agent(BaseModel):
     # =========================
     # STATUS
     # =========================
-    is_active: bool = True
+    is_active: bool = False
 
     status: Literal["idle", "queued", "processing"] = "idle"
 

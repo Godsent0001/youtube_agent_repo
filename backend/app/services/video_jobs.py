@@ -22,6 +22,23 @@ def update_job_status(job_id: str, status: str, result_url: str = None, error: s
 
     db["jobs"].update_one({"job_id": job_id}, {"$set": update_data})
 
+def update_job_activity(job_id: str, activity: str):
+    """
+    Append a granular activity log to the job record
+    """
+    db["jobs"].update_one(
+        {"job_id": job_id},
+        {
+            "$push": {
+                "activities": {
+                    "step": activity,
+                    "timestamp": datetime.utcnow()
+                }
+            },
+            "$set": {"updated_at": datetime.utcnow()}
+        }
+    )
+
 def generate_video_job(agent_id: str, job_id: str):
     """
     Background job to run the full video generation pipeline
@@ -50,7 +67,7 @@ def generate_video_job(agent_id: str, job_id: str):
             raise Exception(f"Agent {agent_id} not found")
 
         # 4. Run pipeline
-        result = pipeline_service.run(agent)
+        result = pipeline_service.run(agent, job_id)
 
         # 5. Update agent stats and next run
         now = datetime.utcnow()
