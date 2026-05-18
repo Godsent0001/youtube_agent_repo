@@ -27,48 +27,48 @@ export const LandingPage = () => {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden py-24 sm:py-32">
+      <section className="relative overflow-hidden py-16 sm:py-24 md:py-32">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="lg:flex lg:items-center lg:gap-x-16">
             <motion.div
-              className="mx-auto max-w-2xl lg:mx-0 lg:flex-auto"
+              className="mx-auto max-w-2xl lg:mx-0 lg:flex-auto text-center lg:text-left"
               initial={{ opacity: 0, x: -50 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8 }}
             >
-              <div className="flex items-center gap-x-2 mb-6">
-                <div className="rounded-full bg-primary/10 px-3 py-1 text-sm font-semibold leading-6 text-primary ring-1 ring-inset ring-primary/20">
+              <div className="flex items-center justify-center lg:justify-start gap-x-2 mb-6">
+                <div className="rounded-full bg-primary/10 px-3 py-1 text-xs sm:text-sm font-semibold leading-6 text-primary ring-1 ring-inset ring-primary/20">
                   New: AI Shorts Agent
                 </div>
               </div>
-              <h1 className="text-4xl font-bold tracking-tight sm:text-6xl text-white">
+              <h1 className="text-3xl font-bold tracking-tight sm:text-5xl lg:text-6xl text-white">
                 Automate Your YouTube Channel with <span className="text-primary">AI</span>
               </h1>
-              <p className="mt-6 text-lg leading-8 text-secondary-foreground">
+              <p className="mt-6 text-base sm:text-lg leading-7 sm:leading-8 text-secondary-foreground">
                 Create AI-powered channels that post daily videos, generate trending content, and even run affiliate ads—without lifting a finger.
               </p>
-              <div className="mt-10 flex items-center gap-x-6">
-                <Link to={localStorage.getItem('access_token') ? "/create-agent" : "/signup"}>
-                  <Button size="lg" className="gap-2">
+              <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 sm:gap-6">
+                <Link to={localStorage.getItem('access_token') ? "/create-agent" : "/signup"} className="w-full sm:w-auto">
+                  <Button size="lg" className="w-full sm:w-auto gap-2">
                     Create Your First Agent <ArrowRight className="h-5 w-5" />
                   </Button>
                 </Link>
-                <Link to="/login">
-                  <Button variant="ghost" size="lg">
+                <Link to="/login" className="w-full sm:w-auto">
+                  <Button variant="ghost" size="lg" className="w-full sm:w-auto">
                     Learn How It Works
                   </Button>
                 </Link>
               </div>
             </motion.div>
             <motion.div
-              className="mt-16 sm:mt-24 lg:mt-0 lg:flex-shrink-0 lg:flex-grow"
+              className="mt-12 sm:mt-16 lg:mt-0 lg:flex-shrink-0 lg:flex-grow"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 1, delay: 0.2 }}
             >
-              <div className="relative mx-auto max-w-[500px] aspect-square bg-gradient-to-br from-primary/20 to-transparent rounded-full flex items-center justify-center p-8">
+              <div className="relative mx-auto max-w-[300px] sm:max-w-[400px] lg:max-w-[500px] aspect-square bg-gradient-to-br from-primary/20 to-transparent rounded-full flex items-center justify-center p-4 sm:p-8">
                 <div className="absolute inset-0 bg-primary/5 blur-3xl rounded-full animate-pulse" />
-                <div className="relative z-10 w-full h-full bg-card rounded-2xl border border-border overflow-hidden shadow-2xl flex flex-col p-4">
+                <div className="relative z-10 w-full h-full bg-card rounded-2xl border border-border overflow-hidden shadow-2xl flex flex-col p-4 sm:p-6">
                   <div className="flex items-center justify-between mb-4 border-b border-border pb-2">
                     <div className="flex gap-1.5">
                       <div className="w-3 h-3 rounded-full bg-red-500" />
@@ -95,11 +95,11 @@ export const LandingPage = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-24 sm:py-32 bg-card/30">
+      <section className="py-16 sm:py-24 md:py-32 bg-card/30" id="features">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-2xl text-center mb-16">
-            <h2 className="text-base font-semibold leading-7 text-primary">How It Works</h2>
-            <p className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl text-white">Everything you need to scale</p>
+          <div className="mx-auto max-w-2xl text-center mb-12 sm:mb-16">
+            <h2 className="text-sm sm:text-base font-semibold leading-7 text-primary uppercase tracking-wider">How It Works</h2>
+            <p className="mt-2 text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-white">Everything you need to scale</p>
           </div>
           <motion.div
             className="grid grid-cols-1 md:grid-cols-3 gap-8"
@@ -142,24 +142,24 @@ export const LandingPage = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-24 sm:py-32 overflow-hidden">
+      <section className="py-16 sm:py-24 md:py-32 overflow-hidden">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <motion.div
-            className="relative isolate overflow-hidden bg-card px-6 py-24 text-center shadow-2xl rounded-3xl sm:px-16"
+            className="relative isolate overflow-hidden bg-card px-6 py-16 sm:py-24 text-center shadow-2xl rounded-3xl sm:px-16"
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
           >
-            <h2 className="mx-auto max-w-2xl text-3xl font-bold tracking-tight text-white sm:text-4xl">
+            <h2 className="mx-auto max-w-2xl text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-white">
               Ready to start your AI channel?
             </h2>
-            <p className="mx-auto mt-6 max-w-xl text-lg leading-8 text-secondary-foreground">
+            <p className="mx-auto mt-6 max-w-xl text-base sm:text-lg leading-7 sm:leading-8 text-secondary-foreground">
               Join thousands of creators who are automating their content creation workflow with AI.
             </p>
-            <div className="mt-10 flex items-center justify-center gap-x-6">
-              <Link to={localStorage.getItem('access_token') ? "/create-agent" : "/signup"}>
-                <Button size="lg">Create Your First Agent</Button>
+            <div className="mt-8 sm:mt-10 flex items-center justify-center gap-x-6">
+              <Link to={localStorage.getItem('access_token') ? "/create-agent" : "/signup"} className="w-full sm:w-auto">
+                <Button size="lg" className="w-full sm:w-auto">Create Your First Agent</Button>
               </Link>
             </div>
             {/* Background pattern */}

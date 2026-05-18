@@ -29,34 +29,34 @@ export const Settings = () => {
   if (loading) return <p className="text-white text-center py-12">Loading settings...</p>;
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold text-white">Settings</h1>
-        <p className="text-secondary-foreground">Manage your account and preferences</p>
+    <div className="max-w-4xl mx-auto space-y-6 sm:space-y-8">
+      <div className="text-center sm:text-left">
+        <h1 className="text-2xl sm:text-3xl font-bold text-white">Settings</h1>
+        <p className="text-sm sm:text-base text-secondary-foreground">Manage your account and preferences</p>
       </div>
 
       <div className="space-y-6">
         {/* Account Settings */}
         <Card>
-          <CardHeader>
+          <CardHeader className="px-4 sm:px-6">
             <div className="flex items-center gap-2">
               <UserIcon className="h-5 w-5 text-primary" />
-              <CardTitle>Account Settings</CardTitle>
+              <CardTitle className="text-lg sm:text-xl">Account Settings</CardTitle>
             </div>
-            <CardDescription>Update your personal information and profile settings.</CardDescription>
+            <CardDescription className="text-xs sm:text-sm">Update your personal information and profile settings.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 px-4 sm:px-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-white">Full Name</label>
-                <Input defaultValue={user?.full_name || ''} />
+                <Input defaultValue={user?.full_name || ''} className="py-5 sm:py-2" />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-white">Email Address</label>
-                <Input type="email" defaultValue={user?.email || ''} readOnly />
+                <Input type="email" defaultValue={user?.email || ''} readOnly className="py-5 sm:py-2 opacity-70" />
               </div>
             </div>
-            <div className="flex items-center justify-between p-4 bg-neutral-900 rounded-lg border border-border">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-neutral-900 rounded-lg border border-border gap-4">
               <div className="flex items-center gap-3">
                 <Play className="h-6 w-6 text-red-600" />
                 <div>
@@ -66,7 +66,7 @@ export const Settings = () => {
                   </div>
                 </div>
               </div>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" className="w-full sm:w-auto py-5 sm:py-2">
                   {user?.youtube_refresh_token ? 'Reconnect' : 'Connect'}
               </Button>
             </div>
@@ -75,14 +75,14 @@ export const Settings = () => {
 
         {/* Notifications */}
         <Card>
-          <CardHeader>
+          <CardHeader className="px-4 sm:px-6">
             <div className="flex items-center gap-2">
               <Bell className="h-5 w-5 text-primary" />
-              <CardTitle>Notification Settings</CardTitle>
+              <CardTitle className="text-lg sm:text-xl">Notification Settings</CardTitle>
             </div>
-            <CardDescription>Choose what updates you want to receive.</CardDescription>
+            <CardDescription className="text-xs sm:text-sm">Choose what updates you want to receive.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 px-4 sm:px-6">
             {[
               { label: 'Email Notifications for New Videos', description: 'Get an email every time an agent posts a video.' },
               { label: 'Campaign Performance Updates', description: 'Weekly reports on your monetization campaigns.' },
@@ -101,26 +101,26 @@ export const Settings = () => {
 
         {/* API Keys */}
         <Card>
-          <CardHeader>
+          <CardHeader className="px-4 sm:px-6">
             <div className="flex items-center gap-2">
               <Key className="h-5 w-5 text-primary" />
-              <CardTitle>API & Integration</CardTitle>
+              <CardTitle className="text-lg sm:text-xl">API & Integration</CardTitle>
             </div>
-            <CardDescription>Access keys for advanced integrations and developer tools.</CardDescription>
+            <CardDescription className="text-xs sm:text-sm">Access keys for advanced integrations and developer tools.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 px-4 sm:px-6">
             <div className="space-y-2">
               <label className="text-sm font-medium text-white">YouTube API Key</label>
-              <div className="flex gap-2">
-                <Input type="password" value="********************************" readOnly />
-                <Button variant="outline">Edit</Button>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Input type="password" value="********************************" readOnly className="py-5 sm:py-2" />
+                <Button variant="outline" className="w-full sm:w-auto py-5 sm:py-2">Edit</Button>
               </div>
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-white">AI Engine API Key</label>
-              <div className="flex gap-2">
-                <Input type="password" value="********************************" readOnly />
-                <Button variant="outline">Edit</Button>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Input type="password" value="********************************" readOnly className="py-5 sm:py-2" />
+                <Button variant="outline" className="w-full sm:w-auto py-5 sm:py-2">Edit</Button>
               </div>
             </div>
           </CardContent>
@@ -128,14 +128,14 @@ export const Settings = () => {
 
         {/* Preferences */}
         <Card>
-          <CardHeader>
+          <CardHeader className="px-4 sm:px-6">
             <div className="flex items-center gap-2">
               <Shield className="h-5 w-5 text-primary" />
-              <CardTitle>Default Preferences</CardTitle>
+              <CardTitle className="text-lg sm:text-xl">Default Preferences</CardTitle>
             </div>
-            <CardDescription>Set defaults for newly created agents.</CardDescription>
+            <CardDescription className="text-xs sm:text-sm">Set defaults for newly created agents.</CardDescription>
           </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4 px-4 sm:px-6">
             <div className="space-y-2">
               <label className="text-sm font-medium text-white">Video Length</label>
               <Select defaultValue="30s">
@@ -162,25 +162,25 @@ export const Settings = () => {
 
         {/* Danger Zone */}
         <Card className="border-red-900/50">
-          <CardHeader>
+          <CardHeader className="px-4 sm:px-6">
             <div className="flex items-center gap-2">
               <Trash2 className="h-5 w-5 text-red-500" />
-              <CardTitle className="text-red-500">Danger Zone</CardTitle>
+              <CardTitle className="text-red-500 text-lg sm:text-xl">Danger Zone</CardTitle>
             </div>
-            <CardDescription>Irreversible actions for your account and agents.</CardDescription>
+            <CardDescription className="text-xs sm:text-sm">Irreversible actions for your account and agents.</CardDescription>
           </CardHeader>
-          <CardContent className="flex flex-col md:flex-row gap-4">
-            <Button variant="outline" className="border-red-900 text-red-500 hover:bg-red-950/30">
+          <CardContent className="flex flex-col sm:flex-row gap-3 sm:gap-4 px-4 sm:px-6">
+            <Button variant="outline" className="w-full sm:w-auto border-red-900 text-red-500 hover:bg-red-950/30 py-6 sm:py-2">
               Disconnect All Agents
             </Button>
-            <Button variant="outline" className="border-red-900 text-red-500 hover:bg-red-950/30">
+            <Button variant="outline" className="w-full sm:w-auto border-red-900 text-red-500 hover:bg-red-950/30 py-6 sm:py-2">
               Delete Account
             </Button>
           </CardContent>
         </Card>
 
         <div className="flex justify-end pt-6">
-          <Button size="lg" className="px-12 gap-2">
+          <Button size="lg" className="w-full sm:w-auto sm:px-12 gap-2 py-6 sm:py-2">
             <Save className="h-5 w-5" />
             Save Changes
           </Button>

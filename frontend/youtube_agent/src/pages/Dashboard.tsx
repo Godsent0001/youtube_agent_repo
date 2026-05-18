@@ -70,18 +70,18 @@ export const Dashboard = () => {
     }
   };
   return (
-    <div className="space-y-8">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="space-y-6 sm:space-y-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-white">Your AI Agents</h1>
-          <p className="text-secondary-foreground">Monitor performance and manage your agents</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white">Your AI Agents</h1>
+          <p className="text-sm sm:text-base text-secondary-foreground">Monitor performance and manage your agents</p>
         </div>
-        <div className="flex gap-3">
-          <Link to="/monetization">
-            <Button variant="outline">Run Ads</Button>
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+          <Link to="/monetization" className="w-full sm:w-auto">
+            <Button variant="outline" className="w-full sm:w-auto">Run Ads</Button>
           </Link>
-          <Link to="/create-agent">
-            <Button className="gap-2">
+          <Link to="/create-agent" className="w-full sm:w-auto">
+            <Button className="w-full sm:w-auto gap-2">
               <Plus className="h-5 w-5" />
               Create Agent
             </Button>
@@ -89,7 +89,7 @@ export const Dashboard = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {loading ? (
             <p className="text-white col-span-full text-center py-12">Loading agents...</p>
         ) : agents.map((agent) => (
@@ -197,22 +197,23 @@ export const Dashboard = () => {
                 </div>
               </div>
             </CardContent>
-            <CardFooter className="gap-2 bg-neutral-900/50 pt-4">
+            <CardFooter className="gap-2 bg-neutral-900/50 pt-4 px-4 sm:px-6">
               <Link to={`/agent/${agent.id}`} className="flex-1">
-                <Button variant="secondary" className="w-full gap-2 text-xs">
-                  <ExternalLink className="h-3 w-3" />
+                <Button variant="secondary" className="w-full gap-2 text-xs py-5 sm:py-2">
+                  <ExternalLink className="h-4 w-4 sm:h-3 sm:w-3" />
                   Details
                 </Button>
               </Link>
               <div className="relative group/play">
                 <Button
                   variant="ghost"
-                  className="px-3"
+                  className="px-4 py-5 sm:px-3 sm:py-2"
                   onClick={() => agent.is_active ? pauseAgent(agent.id) : startAgent(agent.id, agent.youtube_connected)}
                 >
-                  {agent.is_active ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                  {agent.is_active ? <Pause className="h-5 w-5 sm:h-4 sm:w-4" /> : <Play className="h-5 w-5 sm:h-4 sm:w-4" />}
                 </Button>
-                <div className="absolute bottom-[110%] left-1/2 -translate-x-1/2 px-2 py-1 bg-black text-white text-[10px] rounded opacity-0 group-hover/play:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-[100] shadow-xl border border-white/10">
+                {/* Tooltip hidden on mobile via md:group-hover/play:opacity-100 */}
+                <div className="hidden md:block absolute bottom-[110%] left-1/2 -translate-x-1/2 px-2 py-1 bg-black text-white text-[10px] rounded opacity-0 group-hover/play:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-[100] shadow-xl border border-white/10">
                   {agent.is_active ? 'Stop the agent from working' : 'Put the agent to actual work'}
                 </div>
               </div>
@@ -234,11 +235,11 @@ export const Dashboard = () => {
       {/* Delete Confirmation Modal */}
       <AnimatePresence>
         {deleteConfirm && (
-          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
               className="w-full max-w-sm"
             >
               <Card className="p-6 border-border shadow-2xl">

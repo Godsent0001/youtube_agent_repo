@@ -106,6 +106,7 @@ export const Navbar = () => {
           <div className="md:hidden">
             <button
               onClick={() => setIsOpen(!isOpen)}
+              aria-label="Toggle menu"
               className="inline-flex items-center justify-center p-2 rounded-md text-secondary-foreground hover:text-white hover:bg-card focus:outline-none"
             >
               {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
@@ -149,21 +150,46 @@ export const Navbar = () => {
             exit={{ opacity: 0, height: 0 }}
             className="md:hidden bg-card border-b border-border overflow-hidden"
           >
-            <div className="space-y-1 px-4 pb-3 pt-2">
+            <div className="space-y-1 px-4 pb-6 pt-2">
               {isLandingPage && !isLoggedIn ? (
-                <>
-                  <Link to="/login" className="block px-3 py-2 text-base font-medium text-secondary-foreground hover:text-primary">Login</Link>
-                  <Link to="/signup" className="block px-3 py-2 text-base font-medium text-primary">Sign Up</Link>
-                </>
+                <div className="flex flex-col gap-2 p-2">
+                  <Link
+                    to="/login"
+                    onClick={() => setIsOpen(false)}
+                    className="block px-3 py-4 text-base font-medium text-secondary-foreground hover:text-primary bg-neutral-900/50 rounded-lg"
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    to="/signup"
+                    onClick={() => setIsOpen(false)}
+                    className="block px-3 py-4 text-base font-medium text-primary bg-primary/10 rounded-lg"
+                  >
+                    Sign Up
+                  </Link>
+                </div>
               ) : isLoggedIn ? (
-                <>
+                <div className="flex flex-col gap-1">
+                  <div className="px-3 py-4 mb-2 flex items-center gap-3 border-b border-border/50">
+                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20">
+                      <span className="text-sm font-bold text-primary">
+                        {localStorage.getItem('user_email')?.substring(0, 2).toUpperCase() || 'AI'}
+                      </span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium text-white">Account</span>
+                      <span className="text-xs text-secondary-foreground truncate max-w-[200px]">
+                        {localStorage.getItem('user_email')}
+                      </span>
+                    </div>
+                  </div>
                   {isLandingPage && (
                     <Link
                       to="/dashboard"
                       onClick={() => setIsOpen(false)}
-                      className="flex items-center gap-3 px-3 py-2 text-base font-medium text-secondary-foreground hover:text-primary"
+                      className="flex items-center gap-4 px-4 py-4 text-base font-medium text-secondary-foreground hover:text-primary hover:bg-neutral-900/50 rounded-lg mx-2"
                     >
-                      <LayoutDashboard className="h-5 w-5" />
+                      <LayoutDashboard className="h-6 w-6" />
                       Dashboard
                     </Link>
                   )}
@@ -172,37 +198,41 @@ export const Navbar = () => {
                       key={item.name}
                       to={item.href}
                       onClick={() => setIsOpen(false)}
-                      className="flex items-center gap-3 px-3 py-2 text-base font-medium text-secondary-foreground hover:text-primary"
+                      className={`flex items-center gap-4 px-4 py-4 text-base font-medium rounded-lg mx-2 ${
+                        location.pathname === item.href
+                          ? 'text-primary bg-primary/10'
+                          : 'text-secondary-foreground hover:text-primary hover:bg-neutral-900/50'
+                      }`}
                     >
-                      <item.icon className="h-5 w-5" />
+                      <item.icon className="h-6 w-6" />
                       {item.name}
                     </Link>
                   ))}
-                  {(isLandingPage || location.pathname === '/settings') && (
-                    <button
-                      onClick={() => {
-                        setIsOpen(false);
-                        setShowLogoutConfirm(true);
-                      }}
-                      className="flex w-full items-center gap-3 px-3 py-2 text-base font-medium text-secondary-foreground hover:text-red-500"
-                    >
-                      <LogOut className="h-5 w-5" />
-                      Logout
-                    </button>
-                  )}
-                </>
-              ) : (
-                NAV_ITEMS.map((item) => (
-                  <Link
-                    key={item.name}
-                    to={item.href}
-                    onClick={() => setIsOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2 text-base font-medium text-secondary-foreground hover:text-primary"
+                  <button
+                    onClick={() => {
+                      setIsOpen(false);
+                      setShowLogoutConfirm(true);
+                    }}
+                    className="flex w-full items-center gap-4 px-4 py-4 text-base font-medium text-secondary-foreground hover:text-red-500 hover:bg-red-500/10 rounded-lg mx-2 mt-4"
                   >
-                    <item.icon className="h-5 w-5" />
-                    {item.name}
-                  </Link>
-                ))
+                    <LogOut className="h-6 w-6" />
+                    Logout
+                  </button>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-1">
+                  {NAV_ITEMS.map((item) => (
+                    <Link
+                      key={item.name}
+                      to={item.href}
+                      onClick={() => setIsOpen(false)}
+                      className="flex items-center gap-4 px-4 py-4 text-base font-medium text-secondary-foreground hover:text-primary hover:bg-neutral-900/50 rounded-lg mx-2"
+                    >
+                      <item.icon className="h-6 w-6" />
+                      {item.name}
+                    </Link>
+                  ))}
+                </div>
               )}
             </div>
           </motion.div>

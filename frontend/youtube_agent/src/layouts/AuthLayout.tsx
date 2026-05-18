@@ -16,7 +16,7 @@ export const AuthLayout = () => {
             <span className="text-2xl font-bold tracking-tight">AI Agents</span>
           </Link>
         </div>
-        <div className="bg-card p-8 rounded-2xl border border-border shadow-xl">
+        <div className="bg-card p-6 sm:p-8 rounded-2xl border border-border shadow-xl">
           <Outlet />
         </div>
       </motion.div>

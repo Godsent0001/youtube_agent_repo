@@ -86,24 +86,24 @@ export const CreateAgent = () => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="max-w-2xl mx-auto py-8"
+      className="max-w-2xl mx-auto py-4 sm:py-8"
     >
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white">
+      <div className="mb-6 sm:mb-8 text-center sm:text-left">
+        <h1 className="text-2xl sm:text-3xl font-bold text-white">
           {isEdit ? `Edit Agent: ${name}` : 'Create New AI Channel Agent'}
         </h1>
-        <p className="text-secondary-foreground">
+        <p className="text-sm sm:text-base text-secondary-foreground">
           {isEdit ? 'Update your agent configuration' : 'Set up your AI agent with minimal inputs'}
         </p>
       </div>
 
-      <Card>
+      <Card className="rounded-xl sm:rounded-2xl">
         <form onSubmit={handleSubmit}>
-          <CardHeader>
-            <CardTitle>Agent Configuration</CardTitle>
-            <CardDescription>Configure how your AI agent will generate and post content.</CardDescription>
+          <CardHeader className="px-4 sm:px-6">
+            <CardTitle className="text-lg sm:text-xl">Agent Configuration</CardTitle>
+            <CardDescription className="text-xs sm:text-sm">Configure how your AI agent will generate and post content.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-6 px-4 sm:px-6">
             {error && <p className="text-red-500 text-sm">{error}</p>}
             <div className="space-y-2">
               <label className="text-sm font-medium text-white">Channel Name</label>
@@ -165,11 +165,11 @@ export const CreateAgent = () => {
               />
             </div>
           </CardContent>
-          <CardFooter className="flex gap-4 justify-end border-t border-border pt-6">
-            <Button variant="secondary" type="button" onClick={() => navigate('/dashboard')}>
+          <CardFooter className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-end border-t border-border pt-6 px-4 sm:px-6">
+            <Button variant="secondary" type="button" onClick={() => navigate('/dashboard')} className="w-full sm:w-auto py-6 sm:py-2">
               Cancel
             </Button>
-            <Button type="submit" className="px-8" disabled={loading}>
+            <Button type="submit" className="w-full sm:w-auto px-8 py-6 sm:py-2" disabled={loading}>
               {loading ? (isEdit ? 'Updating...' : 'Creating...') : 'Done'}
             </Button>
           </CardFooter>

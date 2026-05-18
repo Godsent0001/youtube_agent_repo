@@ -58,7 +58,7 @@ export const SignUp = () => {
       </div>
 
       <div className="space-y-4">
-        <Button variant="outline" className="w-full gap-2 bg-white text-black hover:bg-neutral-200 border-none">
+        <Button variant="outline" className="w-full gap-2 bg-white text-black hover:bg-neutral-200 border-none py-6 sm:py-2">
           <Play className="h-5 w-5 text-red-600" />
           Sign up with YouTube
         </Button>
@@ -106,7 +106,7 @@ export const SignUp = () => {
             onChange={(e) => setConfirmPassword(e.target.value)}
           />
         </div>
-        <Button type="submit" className="w-full" disabled={loading}>
+        <Button type="submit" className="w-full py-6 sm:py-2" disabled={loading}>
           {loading ? 'Creating Account...' : 'Sign Up'}
         </Button>
       </form>
