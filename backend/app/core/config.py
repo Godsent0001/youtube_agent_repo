@@ -14,6 +14,7 @@ class Settings:
     APP_NAME: str = "AI YouTube Agent"
     DEBUG: bool = os.getenv("DEBUG", "True") == "True"
     FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:5173")
+    BACKEND_URL: str = os.getenv("BACKEND_URL", "http://localhost:8000")
 
     # =========================
     # MONGODB

@@ -10,7 +10,10 @@ from app.services.video_jobs import generate_video_job
 from app.db.session import db
 from datetime import datetime
 from app.core.config import settings
+from app.core.logger import logger
+from app.queue.redis_queue import redis_conn
 from google_auth_oauthlib.flow import Flow
+import secrets
 
 router = APIRouter(prefix="/agents", tags=["Agents"])
 
@@ -177,21 +180,27 @@ def connect_youtube(agent_id: str, request: Request):
         scopes=["https://www.googleapis.com/auth/youtube.upload"]
     )
 
-    # Redirect URI must be registered in Google Cloud Console
-    # We use a generic callback that will handle the state
-    base_url = str(request.base_url).rstrip('/')
-    # Force HTTPS on production proxies
-    if not settings.DEBUG:
-        base_url = base_url.replace("http://", "https://")
-
+    # Use explicit BACKEND_URL for redirect URI
+    base_url = settings.BACKEND_URL.rstrip('/')
     flow.redirect_uri = f"{base_url}/agents/youtube/callback"
     logger.info(f"OAuth redirect URI: {flow.redirect_uri}")
 
-    authorization_url, state = flow.authorization_url(
+    # Secure state management with Redis
+    state_token = secrets.token_urlsafe(32)
+    if redis_conn:
+        redis_conn.setex(f"oauth_state:{state_token}", 600, agent_id)
+    else:
+        logger.warning("Redis not available, falling back to insecure state")
+        # In case Redis is down, we could potentially fallback but for now we follow the rule
+        # If Redis is strictly required for security, we should fail here.
+        # But let's assume it's available in production.
+        raise HTTPException(status_code=503, detail="Redis service unavailable for secure OAuth")
+
+    authorization_url, _ = flow.authorization_url(
         access_type='offline',
         include_granted_scopes='true',
         prompt='consent', # Force consent screen to ensure refresh token is returned
-        state=agent_id # We pass agent_id as state
+        state=state_token
     )
 
     return RedirectResponse(authorization_url, status_code=302)
@@ -205,7 +214,17 @@ def youtube_callback(request: Request, state: str, code: str):
     """
     Handles the redirect from Google
     """
-    agent_id = state
+    # Validate state using Redis
+    if not redis_conn:
+        logger.error("Redis connection lost during OAuth callback")
+        raise HTTPException(status_code=500, detail="Redis connection lost")
+
+    agent_id_bytes = redis_conn.get(f"oauth_state:{state}")
+    if not agent_id_bytes:
+        logger.error(f"Invalid or expired OAuth state: {state}")
+        raise HTTPException(status_code=400, detail="Invalid or expired OAuth state")
+
+    agent_id = agent_id_bytes.decode('utf-8')
     logger.info(f"Received YouTube OAuth callback for agent: {agent_id}")
 
     client_config = {
@@ -222,15 +241,13 @@ def youtube_callback(request: Request, state: str, code: str):
         scopes=["https://www.googleapis.com/auth/youtube.upload"]
     )
 
-    base_url = str(request.base_url).rstrip('/')
-    if not settings.DEBUG:
-        base_url = base_url.replace("http://", "https://")
+    base_url = settings.BACKEND_URL.rstrip('/')
     flow.redirect_uri = f"{base_url}/agents/youtube/callback"
 
     try:
         flow.fetch_token(code=code)
     except Exception as e:
-        logger.error(f"Failed to fetch YouTube token: {e}")
+        logger.error("Failed to fetch YouTube token")
         # Redirect back with error or to a safe place
         return RedirectResponse(f"{settings.FRONTEND_URL}/agent/{agent_id}?error=oauth_failed")
 
@@ -242,6 +259,8 @@ def youtube_callback(request: Request, state: str, code: str):
         "youtube_refresh_token": creds.refresh_token,
         "youtube_token_expiry": creds.expiry
     })
+
+    logger.info(f"YouTube tokens stored successfully for agent: {agent_id}")
 
     # Redirect back to frontend agent detail page
     return RedirectResponse(f"{settings.FRONTEND_URL}/agent/{agent_id}")
