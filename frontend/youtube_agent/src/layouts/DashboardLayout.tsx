@@ -13,7 +13,7 @@ export const DashboardLayout = () => {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.3 }}
-          className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8"
+          className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 sm:py-8"
         >
           <Outlet />
         </motion.div>

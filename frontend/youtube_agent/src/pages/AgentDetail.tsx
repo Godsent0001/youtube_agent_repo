@@ -130,33 +130,36 @@ export const AgentDetail = () => {
   };
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center gap-4">
-        <Link to="/dashboard">
-          <Button variant="ghost" size="sm">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
-          </Button>
-        </Link>
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold text-white">{agent.name}</h1>
-          <p className="text-secondary-foreground">{agent.niche} • {agent.type}</p>
+    <div className="space-y-6 sm:space-y-8">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+        <div className="flex items-center gap-4 w-full sm:w-auto">
+          <Link to="/dashboard">
+            <Button variant="ghost" size="sm" className="px-2 sm:px-3">
+              <ArrowLeft className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Back</span>
+            </Button>
+          </Link>
+          <div className="flex-1">
+            <h1 className="text-xl sm:text-3xl font-bold text-white truncate max-w-[200px] sm:max-w-none">{agent.name}</h1>
+            <p className="text-xs sm:text-sm text-secondary-foreground">{agent.niche} • {agent.type}</p>
+          </div>
         </div>
-        <div className="flex gap-2">
+
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto sm:ml-auto">
           {agent.youtube_connected ? (
-            <Button variant="outline" size="sm" className="gap-2 text-green-500 border-green-500/50 bg-green-500/10 hover:bg-green-500/20">
+            <Button variant="outline" size="sm" className="w-full sm:w-auto gap-2 text-green-500 border-green-500/50 bg-green-500/10 hover:bg-green-500/20 py-5 sm:py-2">
               <YoutubeIcon className="h-4 w-4" />
               Connected
             </Button>
           ) : (
-            <Button variant="outline" size="sm" className="gap-2 text-primary border-primary/50 bg-primary/10 hover:bg-primary/20" onClick={handleConnectYouTube}>
+            <Button variant="outline" size="sm" className="w-full sm:w-auto gap-2 text-primary border-primary/50 bg-primary/10 hover:bg-primary/20 py-5 sm:py-2" onClick={handleConnectYouTube}>
               <YoutubeIcon className="h-4 w-4" />
               Connect YouTube
             </Button>
           )}
           <Button
             size="sm"
-            className={`gap-2 ${agent.is_active ? 'bg-amber-600 hover:bg-amber-700' : 'bg-primary'}`}
+            className={`w-full sm:w-auto gap-2 py-5 sm:py-2 ${agent.is_active ? 'bg-amber-600 hover:bg-amber-700' : 'bg-primary'}`}
             onClick={toggleAgentStatus}
           >
             {agent.is_active ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
@@ -165,25 +168,27 @@ export const AgentDetail = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
         {agent.metrics.map((metric, idx) => (
-          <Card key={idx} className="p-4">
-            <div className="flex items-center gap-2 text-secondary-foreground mb-2 text-xs font-medium uppercase tracking-wider">
+          <Card key={idx} className="p-3 sm:p-4">
+            <div className="flex items-center gap-2 text-secondary-foreground mb-1 sm:mb-2 text-[10px] sm:text-xs font-medium uppercase tracking-wider">
               <metric.icon className={`h-3 w-3 ${metric.color}`} />
-              {metric.label}
+              <span className="truncate">{metric.label}</span>
             </div>
-            <div className="text-2xl font-bold text-white">{metric.value}</div>
+            <div className="text-lg sm:text-2xl font-bold text-white">{metric.value}</div>
           </Card>
         ))}
       </div>
 
       <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="history">Video History</TabsTrigger>
-          <TabsTrigger value="audience">Audience</TabsTrigger>
-          <TabsTrigger value="revenue">Revenue</TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0 no-scrollbar">
+          <TabsList className="w-max sm:w-auto min-w-full">
+            <TabsTrigger value="overview" className="flex-1 px-4">Overview</TabsTrigger>
+            <TabsTrigger value="history" className="flex-1 px-4">Video History</TabsTrigger>
+            <TabsTrigger value="audience" className="flex-1 px-4">Audience</TabsTrigger>
+            <TabsTrigger value="revenue" className="flex-1 px-4">Revenue</TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="overview">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -254,8 +259,9 @@ export const AgentDetail = () => {
         </TabsContent>
 
         <TabsContent value="history">
-          <Card>
-            <div className="overflow-x-auto">
+          <Card className="overflow-hidden">
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="border-b border-border bg-neutral-900/50">
@@ -279,8 +285,36 @@ export const AgentDetail = () => {
                 </tbody>
               </table>
             </div>
+
+            {/* Mobile Card View */}
+            <div className="md:hidden divide-y divide-border">
+              {agent.videoHistory.length > 0 ? agent.videoHistory.map((video) => (
+                <div key={video.id} className="p-4 space-y-3">
+                  <div className="flex justify-between items-start">
+                    <div className="text-xs text-secondary-foreground uppercase font-semibold">{video.date}</div>
+                    <div className="text-primary font-bold">{video.earnings}</div>
+                  </div>
+                  <div className="text-sm font-bold text-white leading-tight">{video.title}</div>
+                  <div className="grid grid-cols-2 gap-4 pt-2 border-t border-border/30">
+                    <div>
+                      <div className="text-[10px] text-secondary-foreground uppercase">Views</div>
+                      <div className="text-sm font-medium text-white">{video.views}</div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] text-secondary-foreground uppercase">Retention</div>
+                      <div className="text-sm font-medium text-white">{video.retention}</div>
+                    </div>
+                  </div>
+                </div>
+              )) : (
+                <div className="p-8 text-center text-sm text-secondary-foreground italic">
+                  No video history found.
+                </div>
+              )}
+            </div>
+
             <div className="p-4 border-t border-border flex justify-center">
-              <Button variant="ghost" size="sm">View All History</Button>
+              <Button variant="ghost" size="sm" className="w-full sm:w-auto">View All History</Button>
             </div>
           </Card>
         </TabsContent>
@@ -342,9 +376,9 @@ export const AgentDetail = () => {
         </TabsContent>
 
         <TabsContent value="revenue">
-          <Card className="p-8">
-            <div className="flex flex-col md:flex-row items-center justify-center gap-12">
-              <div className="relative w-48 h-48">
+          <Card className="p-6 sm:p-8">
+            <div className="flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-12">
+              <div className="relative w-40 h-40 sm:w-48 sm:h-48">
                 {/* Simplified Pie Chart Representation */}
                 <svg className="w-full h-full transform -rotate-90">
                   <circle

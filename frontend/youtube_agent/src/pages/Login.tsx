@@ -52,11 +52,11 @@ export const Login = () => {
       </div>
 
       <div className="space-y-4">
-        <Button variant="outline" className="w-full gap-2 bg-white text-black hover:bg-neutral-200 border-none">
+        <Button variant="outline" className="w-full gap-2 bg-white text-black hover:bg-neutral-200 border-none py-6 sm:py-2">
           <Play className="h-5 w-5 text-red-600" />
           Continue with YouTube
         </Button>
-        <Button variant="outline" className="w-full gap-2">
+        <Button variant="outline" className="w-full gap-2 py-6 sm:py-2">
           <Mail className="h-5 w-5" />
           Continue with Google
         </Button>
@@ -99,7 +99,7 @@ export const Login = () => {
             onChange={(e) => setPassword(e.target.value)}
           />
         </div>
-        <Button type="submit" className="w-full" disabled={loading}>
+        <Button type="submit" className="w-full py-6 sm:py-2" disabled={loading}>
           {loading ? 'Logging in...' : 'Login'}
         </Button>
       </form>

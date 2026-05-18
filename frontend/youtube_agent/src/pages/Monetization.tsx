@@ -7,20 +7,20 @@ import { Sparkles, Save, X } from 'lucide-react';
 
 export const Monetization = () => {
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold text-white">Advertise & Monetize Your AI Agents</h1>
-        <p className="text-secondary-foreground">Add products, affiliate links, or campaigns for your agents to promote.</p>
+    <div className="max-w-4xl mx-auto space-y-6 sm:space-y-8">
+      <div className="text-center sm:text-left">
+        <h1 className="text-2xl sm:text-3xl font-bold text-white">Advertise & Monetize Your AI Agents</h1>
+        <p className="text-sm sm:text-base text-secondary-foreground">Add products, affiliate links, or campaigns for your agents to promote.</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
         <div className="lg:col-span-2 space-y-6">
           <Card>
-            <CardHeader>
-              <CardTitle>Campaign Details</CardTitle>
-              <CardDescription>Configure how the AI should integrate your promotions.</CardDescription>
+            <CardHeader className="px-4 sm:px-6">
+              <CardTitle className="text-lg sm:text-xl">Campaign Details</CardTitle>
+              <CardDescription className="text-xs sm:text-sm">Configure how the AI should integrate your promotions.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-6 px-4 sm:px-6">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-white">Select Agent</label>
                 <Select required>
@@ -69,12 +69,12 @@ export const Monetization = () => {
                 />
               </div>
             </CardContent>
-            <CardFooter className="flex justify-between border-t border-border pt-6">
-              <Button variant="secondary" className="gap-2">
+            <CardFooter className="flex flex-col sm:flex-row gap-3 sm:justify-between border-t border-border pt-6 px-4 sm:px-6">
+              <Button variant="secondary" className="w-full sm:w-auto gap-2 py-6 sm:py-2 order-2 sm:order-1">
                 <X className="h-4 w-4" />
                 Cancel
               </Button>
-              <Button className="gap-2">
+              <Button className="w-full sm:w-auto gap-2 py-6 sm:py-2 order-1 sm:order-2">
                 <Save className="h-4 w-4" />
                 Save Campaign
               </Button>
@@ -84,13 +84,13 @@ export const Monetization = () => {
 
         <div className="space-y-6">
           <Card className="bg-primary/5 border-primary/20">
-            <CardHeader>
+            <CardHeader className="px-4 sm:px-6">
               <CardTitle className="flex items-center gap-2 text-lg">
                 <Sparkles className="h-5 w-5 text-primary" />
                 AI Preview
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="px-4 sm:px-6">
               <p className="text-sm text-secondary-foreground leading-relaxed">
                 "Your agent will integrate the ad into upcoming videos naturally, staying on topic. Based on your niche (Facts), the AI will mention the product as a recommended tool for viewers interested in space technology."
               </p>
@@ -104,10 +104,10 @@ export const Monetization = () => {
           </Card>
 
           <Card>
-            <CardHeader>
+            <CardHeader className="px-4 sm:px-6">
               <CardTitle className="text-lg">Active Campaigns</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 px-4 sm:px-6">
               <div className="p-3 bg-neutral-900 rounded-lg border border-border flex justify-between items-center">
                 <div>
                   <div className="text-sm font-medium text-white">Notion AI Promo</div>
