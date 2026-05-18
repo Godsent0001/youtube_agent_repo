@@ -63,7 +63,9 @@ app.include_router(job_router)
 @app.on_event("startup")
 def startup_event():
 
-    logger.info("Starting AI Video Backend...")
+    logger.info(f"Starting AI Video Backend (DEBUG={settings.DEBUG})...")
+    logger.info(f"BACKEND_URL: {settings.BACKEND_URL}")
+    logger.info(f"FRONTEND_URL: {settings.FRONTEND_URL}")
 
     # Initialize MongoDB
     init_db()

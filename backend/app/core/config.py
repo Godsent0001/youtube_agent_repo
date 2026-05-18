@@ -12,9 +12,27 @@ class Settings:
     # APP SETTINGS
     # =========================
     APP_NAME: str = "AI YouTube Agent"
-    DEBUG: bool = os.getenv("DEBUG", "True") == "True"
+    # Default DEBUG to False for production safety
+    DEBUG: bool = os.getenv("DEBUG", "False") == "True"
     FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:5173")
-    BACKEND_URL: str = os.getenv("BACKEND_URL", "http://localhost:8000")
+    BACKEND_URL: str = os.getenv("BACKEND_URL")
+
+    def __init__(self):
+        # Default to localhost ONLY if explicitly in DEBUG mode
+        if not self.BACKEND_URL:
+            if self.DEBUG:
+                self.BACKEND_URL = "http://localhost:8000"
+            else:
+                # In production, we MUST NOT have a localhost fallback.
+                self.BACKEND_URL = ""
+
+        # Validate critical settings in production
+        if not self.DEBUG:
+            if not self.BACKEND_URL or "localhost" in self.BACKEND_URL:
+                print("🚨 CRITICAL ERROR: BACKEND_URL is missing or invalid (localhost) in production!")
+                print("YouTube OAuth will fail. Ensure BACKEND_URL environment variable is set.")
+            if not os.getenv("FRONTEND_URL"):
+                print("🚨 WARNING: FRONTEND_URL is not set in production.")
 
     # =========================
     # MONGODB
