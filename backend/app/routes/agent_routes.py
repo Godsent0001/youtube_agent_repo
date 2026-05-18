@@ -80,31 +80,59 @@ def generate_video(agent_id: str):
     THIS is the most important endpoint:
     pushes job into Redis worker queue and records in MongoDB
     """
-    agent = agent_service.get_agent(agent_id)
-    if not agent:
-        raise HTTPException(status_code=404, detail="Agent not found")
+    from bson import ObjectId
 
-    # Ensure agent is active when starting manual generation
-    agent_service.update_agent(agent_id, {"is_active": True})
+    # Atomic check and update to prevent duplicate generation
+    agent = db["agents"].find_one_and_update(
+        {
+            "_id": ObjectId(agent_id),
+            "status": "idle"
+        },
+        {
+            "$set": {
+                "status": "queued",
+                "is_active": True,
+                "last_queued_at": datetime.utcnow()
+            }
+        },
+        return_document=True
+    )
+
+    if not agent:
+        # Check if agent exists at all
+        existing = db["agents"].find_one({"_id": ObjectId(agent_id)})
+        if not existing:
+            raise HTTPException(status_code=404, detail="Agent not found")
+
+        # If it exists but isn't idle
+        raise HTTPException(
+            status_code=409,
+            detail=f"Agent is already {existing.get('status', 'busy')}. Please wait."
+        )
 
     if not video_queue:
+        # Reset status if queue is down
+        db["agents"].update_one(
+            {"_id": ObjectId(agent_id)},
+            {"$set": {"status": "idle"}}
+        )
         raise HTTPException(status_code=503, detail="Redis queue not available")
 
-    # 1. Enqueue job
+    # 1. Enqueue job with POSITIONAL arguments
     user_id = agent.get("user_id")
     import uuid
-    video_job_id = str(uuid.uuid4())
+    custom_job_id = str(uuid.uuid4())
 
     new_job = video_queue.enqueue(
         generate_video_job,
-        agent_id=agent_id,
-        video_job_id=video_job_id
+        agent_id,
+        custom_job_id
     )
 
-    # 3. Create job record in MongoDB using RQ job ID
+    # 3. Create job record in MongoDB
     db["jobs"].insert_one({
-        "job_id": new_job.id,
-        "video_job_id": video_job_id,
+        "job_id": custom_job_id,
+        "rq_job_id": new_job.id,
         "user_id": user_id,
         "agent_id": agent_id,
         "status": "queued",
@@ -117,7 +145,7 @@ def generate_video(agent_id: str):
     return {
         "message": "Video generation started and agent activated",
         "agent_id": agent_id,
-        "job_id": new_job.id
+        "job_id": custom_job_id
     }
 
 

@@ -55,19 +55,40 @@ def regenerate_video(video_id: str):
     if not video_queue:
         raise HTTPException(status_code=503, detail="Redis queue not available")
 
-    video_job_id = str(uuid.uuid4())
-    new_job = video_queue.enqueue(
-        generate_video_job,
-        agent_id=video["agent_id"],
-        video_job_id=video_job_id
+    from bson import ObjectId
+    agent_id = video["agent_id"]
+
+    # Atomic status update
+    agent = db["agents"].find_one_and_update(
+        {
+            "_id": ObjectId(agent_id),
+            "status": "idle"
+        },
+        {
+            "$set": {
+                "status": "queued",
+                "last_queued_at": datetime.utcnow()
+            }
+        },
+        return_document=True
     )
 
-    # Record in MongoDB using RQ job ID
+    if not agent:
+        raise HTTPException(status_code=409, detail="Agent is currently busy processing another job")
+
+    custom_job_id = str(uuid.uuid4())
+    new_job = video_queue.enqueue(
+        generate_video_job,
+        agent_id,
+        custom_job_id
+    )
+
+    # Record in MongoDB
     db["jobs"].insert_one({
-        "job_id": new_job.id,
-        "video_job_id": video_job_id,
+        "job_id": custom_job_id,
+        "rq_job_id": new_job.id,
         "user_id": video.get("user_id"),
-        "agent_id": video["agent_id"],
+        "agent_id": agent_id,
         "status": "queued",
         "created_at": datetime.utcnow(),
         "updated_at": datetime.utcnow(),
@@ -78,7 +99,7 @@ def regenerate_video(video_id: str):
     return {
         "message": "Video regeneration started",
         "video_id": video_id,
-        "job_id": new_job.id
+        "job_id": custom_job_id
     }
 
 
@@ -101,19 +122,40 @@ def retry_video(video_id: str):
     if not video_queue:
         raise HTTPException(status_code=503, detail="Redis queue not available")
 
-    video_job_id = str(uuid.uuid4())
-    new_job = video_queue.enqueue(
-        generate_video_job,
-        agent_id=video["agent_id"],
-        video_job_id=video_job_id
+    from bson import ObjectId
+    agent_id = video["agent_id"]
+
+    # Atomic status update
+    agent = db["agents"].find_one_and_update(
+        {
+            "_id": ObjectId(agent_id),
+            "status": "idle"
+        },
+        {
+            "$set": {
+                "status": "queued",
+                "last_queued_at": datetime.utcnow()
+            }
+        },
+        return_document=True
     )
 
-    # Record in MongoDB using RQ job ID
+    if not agent:
+        raise HTTPException(status_code=409, detail="Agent is currently busy processing another job")
+
+    custom_job_id = str(uuid.uuid4())
+    new_job = video_queue.enqueue(
+        generate_video_job,
+        agent_id,
+        custom_job_id
+    )
+
+    # Record in MongoDB
     db["jobs"].insert_one({
-        "job_id": new_job.id,
-        "video_job_id": video_job_id,
+        "job_id": custom_job_id,
+        "rq_job_id": new_job.id,
         "user_id": video.get("user_id"),
-        "agent_id": video["agent_id"],
+        "agent_id": agent_id,
         "status": "queued",
         "created_at": datetime.utcnow(),
         "updated_at": datetime.utcnow(),
@@ -124,7 +166,7 @@ def retry_video(video_id: str):
     return {
         "message": "Retry initiated",
         "video_id": video_id,
-        "job_id": new_job.id
+        "job_id": custom_job_id
     }
 
 
