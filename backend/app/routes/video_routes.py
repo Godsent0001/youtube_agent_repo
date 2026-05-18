@@ -55,16 +55,17 @@ def regenerate_video(video_id: str):
     if not video_queue:
         raise HTTPException(status_code=503, detail="Redis queue not available")
 
-    job_id = str(uuid.uuid4())
-    video_queue.enqueue(
+    video_job_id = str(uuid.uuid4())
+    new_job = video_queue.enqueue(
         generate_video_job,
         agent_id=video["agent_id"],
-        job_id=job_id
+        video_job_id=video_job_id
     )
 
-    # Record in MongoDB
+    # Record in MongoDB using RQ job ID
     db["jobs"].insert_one({
-        "job_id": job_id,
+        "job_id": new_job.id,
+        "video_job_id": video_job_id,
         "user_id": video.get("user_id"),
         "agent_id": video["agent_id"],
         "status": "queued",
@@ -77,7 +78,7 @@ def regenerate_video(video_id: str):
     return {
         "message": "Video regeneration started",
         "video_id": video_id,
-        "job_id": job_id
+        "job_id": new_job.id
     }
 
 
@@ -100,16 +101,17 @@ def retry_video(video_id: str):
     if not video_queue:
         raise HTTPException(status_code=503, detail="Redis queue not available")
 
-    job_id = str(uuid.uuid4())
-    video_queue.enqueue(
+    video_job_id = str(uuid.uuid4())
+    new_job = video_queue.enqueue(
         generate_video_job,
         agent_id=video["agent_id"],
-        job_id=job_id
+        video_job_id=video_job_id
     )
 
-    # Record in MongoDB
+    # Record in MongoDB using RQ job ID
     db["jobs"].insert_one({
-        "job_id": job_id,
+        "job_id": new_job.id,
+        "video_job_id": video_job_id,
         "user_id": video.get("user_id"),
         "agent_id": video["agent_id"],
         "status": "queued",
@@ -122,7 +124,7 @@ def retry_video(video_id: str):
     return {
         "message": "Retry initiated",
         "video_id": video_id,
-        "job_id": job_id
+        "job_id": new_job.id
     }
 
 

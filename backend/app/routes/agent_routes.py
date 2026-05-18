@@ -93,17 +93,18 @@ def generate_video(agent_id: str):
     # 1. Enqueue job
     user_id = agent.get("user_id")
     import uuid
-    custom_job_id = str(uuid.uuid4())
+    video_job_id = str(uuid.uuid4())
 
-    video_queue.enqueue(
+    new_job = video_queue.enqueue(
         generate_video_job,
         agent_id=agent_id,
-        job_id=custom_job_id
+        video_job_id=video_job_id
     )
 
-    # 3. Create job record in MongoDB
+    # 3. Create job record in MongoDB using RQ job ID
     db["jobs"].insert_one({
-        "job_id": custom_job_id,
+        "job_id": new_job.id,
+        "video_job_id": video_job_id,
         "user_id": user_id,
         "agent_id": agent_id,
         "status": "queued",
@@ -116,7 +117,7 @@ def generate_video(agent_id: str):
     return {
         "message": "Video generation started and agent activated",
         "agent_id": agent_id,
-        "job_id": custom_job_id
+        "job_id": new_job.id
     }
 
 
