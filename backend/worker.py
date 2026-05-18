@@ -36,6 +36,14 @@ def run_scheduler_loop():
 if __name__ == "__main__":
     print("Worker Service entry point started...")
 
+    # Log agent count for diagnosis
+    try:
+        from app.db.session import db
+        count = db["agents"].count_documents({})
+        print(f"DIAGNOSTIC: Found {count} agents in the database.")
+    except Exception as e:
+        print(f"DIAGNOSTIC ERROR: Could not count agents: {e}")
+
     if not redis_conn:
         print("REDIS_URL not set. Process cannot start.")
         sys.exit(1)

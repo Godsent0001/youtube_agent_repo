@@ -86,10 +86,11 @@ def generate_video(agent_id: str):
     from bson import ObjectId
 
     # Atomic check and update to prevent duplicate generation
+    # Also handle cases where status might be missing (treat as idle)
     agent = db["agents"].find_one_and_update(
         {
             "_id": ObjectId(agent_id),
-            "status": "idle"
+            "status": {"$in": ["idle", None]}
         },
         {
             "$set": {
@@ -108,9 +109,11 @@ def generate_video(agent_id: str):
             raise HTTPException(status_code=404, detail="Agent not found")
 
         # If it exists but isn't idle
+        current_status = existing.get('status', 'unknown')
+        logger.warning(f"Generation attempt for agent {agent_id} failed because status is {current_status}")
         raise HTTPException(
             status_code=409,
-            detail=f"Agent is already {existing.get('status', 'busy')}. Please wait."
+            detail=f"Agent is already {current_status}. Please wait."
         )
 
     if not video_queue:

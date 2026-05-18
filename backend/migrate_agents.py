@@ -14,8 +14,8 @@ def migrate():
     print("Starting MongoDB migration for agents...")
     now = datetime.utcnow()
 
-    # Update all agents that don't have status or next_run_time
-    result = db["agents"].update_many(
+    # 1. Ensure all agents have status and next_run_time
+    result1 = db["agents"].update_many(
         {
             "$or": [
                 {"status": {"$exists": False}},
@@ -30,7 +30,13 @@ def migrate():
         }
     )
 
-    print(f"Migration completed. Modified {result.modified_count} agents.")
+    # 2. Ensure all agents have is_active
+    result2 = db["agents"].update_many(
+        {"is_active": {"$exists": False}},
+        {"$set": {"is_active": False}}
+    )
+
+    print(f"Migration completed. Modified {result1.modified_count} agents for status/time and {result2.modified_count} for is_active.")
 
 if __name__ == "__main__":
     migrate()
