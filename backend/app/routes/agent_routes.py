@@ -90,7 +90,7 @@ def generate_video(agent_id: str):
     agent = db["agents"].find_one_and_update(
         {
             "_id": ObjectId(agent_id),
-            "status": {"$in": ["idle", None]}
+            "status": {"$in": ["idle", "failed", None]}
         },
         {
             "$set": {
@@ -132,7 +132,8 @@ def generate_video(agent_id: str):
     new_job = video_queue.enqueue(
         generate_video_job,
         agent_id,
-        custom_job_id
+        custom_job_id,
+        job_timeout=3600
     )
 
     # 3. Create job record in MongoDB

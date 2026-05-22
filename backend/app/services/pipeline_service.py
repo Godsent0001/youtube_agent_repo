@@ -60,7 +60,7 @@ class PipelineService:
         # =========================
         self.logger.info("Generating topic...")
         if job_id:
-            update_job_activity(job_id, "Generating topic...")
+            update_job_activity(job_id, "Generating topic...", progress=5)
 
         topic_data = topic_service.generate_topic(
             niche=agent.get("niche", ""),
@@ -80,7 +80,7 @@ class PipelineService:
         # =========================
         self.logger.info("Generating research...")
         if job_id:
-            update_job_activity(job_id, "Generating research...")
+            update_job_activity(job_id, "Generating research...", progress=10)
 
         research = research_service.generate_research(
             topic=topic,
@@ -92,7 +92,7 @@ class PipelineService:
         # =========================
         self.logger.info("Generating script...")
         if job_id:
-            update_job_activity(job_id, "Generating script...")
+            update_job_activity(job_id, "Generating script...", progress=15)
 
         script_data = script_service.generate_script(
             topic=topic,
@@ -112,7 +112,7 @@ class PipelineService:
         # =========================
         self.logger.info("Generating scenes...")
         if job_id:
-            update_job_activity(job_id, "Generating scenes...")
+            update_job_activity(job_id, "Generating scenes...", progress=20)
 
         scenes = scene_service.generate_scenes(
             script=script,
@@ -128,7 +128,7 @@ class PipelineService:
         # =========================
         self.logger.info("Attaching media to scenes...")
         if job_id:
-            update_job_activity(job_id, "Selecting best media for scenes...")
+            update_job_activity(job_id, "Selecting best media for scenes...", progress=25)
 
         for scene in scenes:
             try:
@@ -144,7 +144,7 @@ class PipelineService:
         # =========================
         self.logger.info("Pre-downloading media serially...")
         if job_id:
-            update_job_activity(job_id, "Downloading media files...")
+            update_job_activity(job_id, "Downloading media files...", progress=30)
         video_builder_service.prefetch_media(scenes)
 
         # =========================
@@ -152,7 +152,7 @@ class PipelineService:
         # =========================
         self.logger.info("Generating audio...")
         if job_id:
-            update_job_activity(job_id, "Generating AI voiceover...")
+            update_job_activity(job_id, "Generating AI voiceover...", progress=40)
 
         # FIX: ensure audio script matches exactly what's in scenes
         # this prevents "hanging" narration at the end of the video
@@ -186,7 +186,7 @@ class PipelineService:
         # =========================
         self.logger.info("Generating thumbnail...")
         if job_id:
-            update_job_activity(job_id, "Generating video thumbnail...")
+            update_job_activity(job_id, "Generating video thumbnail...", progress=50)
 
         thumbnail_path = self.thumbnail_service.generate_thumbnail(
             title=title,
@@ -203,14 +203,15 @@ class PipelineService:
         # =========================
         self.logger.info("Building and rendering video...")
         if job_id:
-            update_job_activity(job_id, "Rendering final video...")
+            update_job_activity(job_id, "Rendering final video...", progress=60)
 
         final_video = video_builder_service.build_video(
             scenes=scenes,
             audio_path=audio_path,
             output_path=f"storage/videos/final_{agent_id}.mp4",
             content_type=agent.get("content_type", "shorts"),
-            video_length=agent.get("video_length")
+            video_length=agent.get("video_length"),
+            job_id=job_id
         )
 
         if not final_video:
@@ -225,7 +226,7 @@ class PipelineService:
         # =========================
         self.logger.info("Uploading video to YouTube...")
         if job_id:
-            update_job_activity(job_id, "Uploading to YouTube...")
+            update_job_activity(job_id, "Uploading to YouTube...", progress=95)
 
         upload_result = youtube_service.upload_video(
             agent_id=agent_id,

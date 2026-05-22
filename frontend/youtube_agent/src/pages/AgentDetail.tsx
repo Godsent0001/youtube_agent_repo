@@ -86,6 +86,21 @@ export const AgentDetail = () => {
     }
   };
 
+  const triggerGeneration = async () => {
+    try {
+      await apiRequest(`/agents/${id}/generate`, { method: 'POST' });
+      // Refresh data immediately
+      const [agent, agentJobs] = await Promise.all([
+        apiRequest(`/agents/${id}`),
+        apiRequest(`/jobs/agent/${id}`)
+      ]);
+      setAgentData(agent);
+      setJobs(agentJobs);
+    } catch (err) {
+      console.error('Failed to trigger generation:', err);
+    }
+  };
+
   const handleConnectYouTube = () => {
     // Redirect to backend OAuth initiation endpoint
     const API_BASE = (import.meta.env.VITE_API_BASE_URL || 'https://youtube-backend-agent-repo.onrender.com').replace(/\/+$/, "");
@@ -99,7 +114,8 @@ export const AgentDetail = () => {
     name: agentData.name,
     niche: agentData.niche,
     type: agentData.content_type === 'shorts' ? 'Shorts' : 'Long-form',
-    status: agentData.is_active ? 'active' : 'paused',
+    status: agentData.status || (agentData.is_active ? 'active' : 'paused'),
+    raw_status: agentData.status,
     youtube_connected: agentData.youtube_connected,
     lastPosted: agentData.last_run_at ? new Date(agentData.last_run_at).toLocaleString() : 'Never',
     is_active: agentData.is_active,
@@ -171,8 +187,45 @@ export const AgentDetail = () => {
             {agent.is_active ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
             {agent.is_active ? 'Pause Agent' : 'Start Agent'}
           </Button>
+          <Button
+            size="sm"
+            variant="secondary"
+            className="w-full sm:w-auto gap-2 py-5 sm:py-2"
+            onClick={triggerGeneration}
+            disabled={agent.raw_status === 'processing' || agent.raw_status === 'queued'}
+          >
+            <Play className="h-4 w-4" />
+            Run Now
+          </Button>
         </div>
       </div>
+
+      {/* Top Progress Bar */}
+      {(agent.raw_status === 'processing' || agent.raw_status === 'queued') && (
+        <Card className="overflow-hidden border-primary/20 bg-primary/5">
+          <div className="p-3 sm:p-4 flex flex-col gap-3">
+            <div className="flex justify-between items-center text-xs sm:text-sm">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                <span className="text-white font-medium">
+                  {agent.raw_status === 'queued' ? 'In Queue...' : 'Generating Video Content...'}
+                </span>
+              </div>
+              <span className="text-primary font-bold">
+                {jobs[0]?.progress || 0}%
+              </span>
+            </div>
+            <div className="h-2 w-full bg-neutral-800 rounded-full overflow-hidden">
+              <motion.div
+                className="h-full bg-primary shadow-[0_0_10px_rgba(255,0,0,0.5)]"
+                initial={{ width: 0 }}
+                animate={{ width: `${jobs[0]?.progress || 0}%` }}
+                transition={{ duration: 0.5 }}
+              />
+            </div>
+          </div>
+        </Card>
+      )}
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
         {agent.metrics.map((metric, idx) => (
@@ -241,12 +294,28 @@ export const AgentDetail = () => {
                       <div className="flex items-center gap-4 text-sm">
                         <div className={`w-2 h-2 rounded-full ${job.status === 'completed' ? 'bg-green-500' : job.status === 'failed' ? 'bg-red-500' : 'bg-primary animate-pulse'}`} />
                         <div className="flex-1">
-                          <div className="text-white font-medium">
-                            {job.status === 'processing' ? 'Generating Content...' :
-                             job.status === 'completed' ? 'Video Successfully Posted' :
-                             job.status === 'failed' ? 'Generation Failed' : 'In Queue'}
+                          <div className="text-white font-medium flex justify-between items-center">
+                            <span>
+                              {job.status === 'processing' ? 'Generating Content...' :
+                               job.status === 'completed' ? 'Video Successfully Posted' :
+                               job.status === 'failed' ? 'Generation Failed' : 'In Queue'}
+                            </span>
+                            {job.status === 'processing' && (
+                              <span className="text-primary text-[10px] font-bold">{job.progress || 0}%</span>
+                            )}
                           </div>
                           <div className="text-[10px] text-secondary-foreground uppercase">{new Date(job.created_at).toLocaleString()}</div>
+
+                          {job.status === 'processing' && (
+                            <div className="mt-2 h-1.5 w-full bg-neutral-800 rounded-full overflow-hidden">
+                              <motion.div
+                                className="h-full bg-primary"
+                                initial={{ width: 0 }}
+                                animate={{ width: `${job.progress || 0}%` }}
+                                transition={{ duration: 0.5 }}
+                              />
+                            </div>
+                          )}
                         </div>
                       </div>
 

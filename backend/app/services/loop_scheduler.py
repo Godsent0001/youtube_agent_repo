@@ -35,6 +35,7 @@ class LoopScheduler:
 
         # 1. Atomic check and update using find_one_and_update
         # Find one agent that is active, due for a run, and idle
+        # Failed agents must be manually reset or retried to prevent infinite loops
         # Also handle cases where status or next_run_time might be missing
         agent = db["agents"].find_one_and_update(
             {
@@ -77,7 +78,8 @@ class LoopScheduler:
             new_job = video_queue.enqueue(
                 generate_video_job,
                 agent_id,
-                custom_job_id
+                custom_job_id,
+                job_timeout=3600
             )
 
             # 3. Create job record in MongoDB

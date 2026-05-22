@@ -53,7 +53,7 @@ class VideoBuilderService:
     # ==================================================
     # MAIN PIPELINE
     # ==================================================
-    def build_video(self, scenes: list, audio_path: str, output_path: str, content_type: str = "youtube", video_length: int = None):
+    def build_video(self, scenes: list, audio_path: str, output_path: str, content_type: str = "youtube", video_length: int = None, job_id: str = None):
 
         self.logger.info("Starting video build process")
 
@@ -170,6 +170,48 @@ class VideoBuilderService:
         fps = 30 if content_type == "shorts" else 24
 
         try:
+            # Custom logger for progress tracking
+            moviepy_logger = "bar"
+            if job_id:
+                from app.services.video_jobs import db
+                from datetime import datetime
+
+                # MoviePy's logger is a bit finicky to override properly without a lot of code.
+                # Let's use a simpler approach: update milestones manually if possible,
+                # or just stick to the granular milestones we already have in pipeline_service.
+                # Actually, MoviePy's write_videofile accepts a logger object.
+
+                try:
+                    from proglog import TqdmProgressBarLogger
+
+                    class MongoProgressLogger(TqdmProgressBarLogger):
+                        def __init__(self, job_id):
+                            super().__init__()
+                            self.job_id = job_id
+                            self.last_percent = -1
+                            # Map 0-100% of rendering to 60-90% of total job
+                            self.start_progress = 60
+                            self.end_progress = 90
+
+                        def callback(self, **kwargs):
+                            super().callback(**kwargs)
+                            # We want to find the percentage of the 'tqdm' bar
+                            if 'index' in kwargs and 'total' in kwargs:
+                                percent = int((kwargs['index'] / kwargs['total']) * 100)
+                                # Only update on 25% increments to avoid DB spam
+                                milestone = (percent // 25) * 25
+                                if milestone > self.last_percent:
+                                    self.last_percent = milestone
+                                    actual_progress = self.start_progress + int((milestone / 100) * (self.end_progress - self.start_progress))
+                                    db["jobs"].update_one(
+                                        {"job_id": self.job_id},
+                                        {"$set": {"progress": actual_progress, "updated_at": datetime.utcnow()}}
+                                    )
+
+                    moviepy_logger = MongoProgressLogger(job_id)
+                except ImportError:
+                    moviepy_logger = "bar"
+
             final_video.write_videofile(
                 output_path,
                 fps=fps,
@@ -177,7 +219,7 @@ class VideoBuilderService:
                 audio_codec="aac",
                 preset="ultrafast",   # EXTREME SPEED
                 threads=4,
-                logger="bar" # Enable MoviePy progress bar
+                logger=moviepy_logger
             )
 
         finally:
