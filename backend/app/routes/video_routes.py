@@ -62,7 +62,7 @@ def regenerate_video(video_id: str):
     agent = db["agents"].find_one_and_update(
         {
             "_id": ObjectId(agent_id),
-            "status": "idle"
+            "status": {"$in": ["idle", "failed"]}
         },
         {
             "$set": {
@@ -80,7 +80,8 @@ def regenerate_video(video_id: str):
     new_job = video_queue.enqueue(
         generate_video_job,
         agent_id,
-        custom_job_id
+        custom_job_id,
+        job_timeout=3600
     )
 
     # Record in MongoDB
@@ -129,7 +130,7 @@ def retry_video(video_id: str):
     agent = db["agents"].find_one_and_update(
         {
             "_id": ObjectId(agent_id),
-            "status": "idle"
+            "status": {"$in": ["idle", "failed"]}
         },
         {
             "$set": {
@@ -147,7 +148,8 @@ def retry_video(video_id: str):
     new_job = video_queue.enqueue(
         generate_video_job,
         agent_id,
-        custom_job_id
+        custom_job_id,
+        job_timeout=3600
     )
 
     # Record in MongoDB

@@ -7,7 +7,7 @@ from app.db.session import db
 from app.core.logger import logger
 from bson import ObjectId
 
-def update_job_status(job_id: str, status: str, result_url: str = None, error: str = None):
+def update_job_status(job_id: str, status: str, result_url: str = None, error: str = None, progress: int = None):
     """
     Helper to update job status in MongoDB
     """
@@ -19,25 +19,29 @@ def update_job_status(job_id: str, status: str, result_url: str = None, error: s
         update_data["result_url"] = result_url
     if error:
         update_data["error"] = error
+    if progress is not None:
+        update_data["progress"] = progress
 
     db["jobs"].update_one({"job_id": job_id}, {"$set": update_data})
 
-def update_job_activity(job_id: str, activity: str):
+def update_job_activity(job_id: str, activity: str, progress: int = None):
     """
     Append a granular activity log to the job record
     """
-    db["jobs"].update_one(
-        {"job_id": job_id},
-        {
-            "$push": {
-                "activities": {
-                    "step": activity,
-                    "timestamp": datetime.utcnow()
-                }
-            },
-            "$set": {"updated_at": datetime.utcnow()}
-        }
-    )
+    update_ops = {
+        "$push": {
+            "activities": {
+                "step": activity,
+                "timestamp": datetime.utcnow()
+            }
+        },
+        "$set": {"updated_at": datetime.utcnow()}
+    }
+
+    if progress is not None:
+        update_ops["$set"]["progress"] = progress
+
+    db["jobs"].update_one({"job_id": job_id}, update_ops)
 
 def generate_video_job(agent_id: str, job_id: str):
     """
@@ -95,10 +99,10 @@ def generate_video_job(agent_id: str, job_id: str):
     except Exception as e:
         logger.error(f"Job {job_id} failed: {str(e)}")
 
-        # Reset agent status to idle so it can be retried/rescheduled
+        # Mark agent as failed but keep is_active as is
         db["agents"].update_one(
             {"_id": ObjectId(agent_id)},
-            {"$set": {"status": "idle"}}
+            {"$set": {"status": "failed"}}
         )
 
         # Update job as failed
