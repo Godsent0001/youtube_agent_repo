@@ -6,22 +6,21 @@ import time
 # Ensure current directory is in path
 sys.path.append(os.getcwd())
 
-from rq import Worker, Queue, Connection
-from app.queue.redis_queue import redis_conn
-
-listen = ["video_generation"]
+from rq import Worker, Connection
+from app.queue.redis_queue import redis_conn, video_queue
 
 def run_worker():
     # Re-initialize for process safety
-    from app.queue.redis_queue import redis_conn
+    from app.queue.redis_queue import redis_conn, video_queue
     print("Starting RQ Worker...")
     if not redis_conn:
         print("REDIS_URL not set. Worker cannot start.")
         return
 
     with Connection(redis_conn):
-        worker = Worker(list(map(Queue, listen)))
-        print("Worker listening on 'video_generation' queue...")
+        # Use the pre-configured video_queue which has the 3600s default_timeout
+        worker = Worker([video_queue])
+        print(f"Worker listening on '{video_queue.name}' queue (Default Timeout: {video_queue.default_timeout}s)...")
         worker.work()
 
 def run_scheduler_loop():

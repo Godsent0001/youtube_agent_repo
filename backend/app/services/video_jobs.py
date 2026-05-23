@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 import uuid
-from rq import get_current_job
+import rq
 from app.services.pipeline_service import pipeline_service
 from app.services.agent_service import agent_service
 from app.db.session import db
@@ -43,11 +43,45 @@ def update_job_activity(job_id: str, activity: str, progress: int = None):
 
     db["jobs"].update_one({"job_id": job_id}, update_ops)
 
+def on_video_job_failure(job, connection, type, value, traceback):
+    """
+    Failure callback for RQ jobs to ensure agent status is updated
+    even if the standard try/except is bypassed (e.g. timeout)
+    """
+    try:
+        agent_id = job.args[0]
+        custom_job_id = job.args[1]
+        logger.error(f"RQ Failure Callback: Job {custom_job_id} failed for agent {agent_id}. Error: {value}")
+
+        from app.db.session import db
+        from bson import ObjectId
+
+        # Mark agent as failed
+        db["agents"].update_one(
+            {"_id": ObjectId(agent_id)},
+            {"$set": {"status": "failed"}}
+        )
+
+        # Mark job as failed
+        db["jobs"].update_one(
+            {"job_id": custom_job_id},
+            {"$set": {
+                "status": "failed",
+                "error": f"RQ System Error: {str(value)}",
+                "updated_at": datetime.utcnow()
+            }}
+        )
+    except Exception as e:
+        logger.error(f"Error in on_video_job_failure: {e}")
+
 def generate_video_job(agent_id: str, job_id: str):
     """
     Background job to run the full video generation pipeline
     """
-    logger.info(f"Starting video generation job {job_id} for agent {agent_id}")
+    # Diagnostic: log current timeout
+    current_job = rq.get_current_job()
+    timeout = current_job.timeout if current_job else "unknown"
+    logger.info(f"Starting video generation job {job_id} for agent {agent_id}. Timeout: {timeout}s")
 
     # Ensure storage directories exist in the worker environment
     import os
