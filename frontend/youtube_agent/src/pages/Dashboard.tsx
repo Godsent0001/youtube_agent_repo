@@ -30,32 +30,19 @@ export const Dashboard = () => {
     fetchAgents();
   }, []);
 
-  const startAgent = async (agentId: string, youtubeConnected: boolean) => {
+  const triggerGeneration = async (agentId: string, youtubeConnected: boolean) => {
     if (!youtubeConnected) {
       const API_BASE = (import.meta.env.VITE_API_BASE_URL || 'https://youtube-backend-agent-repo.onrender.com').replace(/\/+$/, "");
       window.location.href = `${API_BASE}/agents/${agentId}/youtube/connect`;
       return;
     }
     try {
-        await apiRequest(`/agents/${agentId}`, {
-            method: 'PUT',
-            body: JSON.stringify({ is_active: true })
-        });
-        setAgents(agents.map(a => a.id === agentId ? { ...a, is_active: true } : a));
+      await apiRequest(`/agents/${agentId}/generate`, { method: 'POST' });
+      // Refresh to show queued status
+      const data = await apiRequest('/agents');
+      setAgents(data);
     } catch (err) {
-        console.error('Failed to start agent:', err);
-    }
-  };
-
-  const pauseAgent = async (agentId: string) => {
-    try {
-        await apiRequest(`/agents/${agentId}`, {
-            method: 'PUT',
-            body: JSON.stringify({ is_active: false })
-        });
-        setAgents(agents.map(a => a.id === agentId ? { ...a, is_active: false } : a));
-    } catch (err) {
-        console.error('Failed to pause agent:', err);
+      console.error('Failed to trigger generation:', err);
     }
   };
 
@@ -104,9 +91,15 @@ export const Dashboard = () => {
                   </CardDescription>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Badge variant={agent.is_active ? 'success' : 'warning'}>
-                    {agent.is_active ? 'active' : 'paused'}
-                  </Badge>
+                  {agent.status === 'processing' && (
+                    <Badge variant="success" className="animate-pulse">processing</Badge>
+                  )}
+                  {agent.status === 'queued' && (
+                    <Badge variant="warning">queued</Badge>
+                  )}
+                  {agent.status === 'failed' && (
+                    <Badge variant="destructive">failed</Badge>
+                  )}
                   <div className="relative">
                     <Button
                       variant="ghost"
@@ -154,13 +147,6 @@ export const Dashboard = () => {
                                 Settings
                               </button>
                               <button
-                                className="w-full text-left px-4 py-2 text-sm text-secondary-foreground hover:bg-neutral-800 flex items-center gap-2"
-                                onClick={() => agent.is_active ? pauseAgent(agent.id) : startAgent(agent.id, agent.youtube_connected)}
-                              >
-                                {agent.is_active ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-                                {agent.is_active ? 'Pause Agent' : 'Resume Agent'}
-                              </button>
-                              <button
                                 className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-500/10 flex items-center gap-2"
                                 onClick={() => {
                                   setDeleteConfirm(agent.id);
@@ -198,26 +184,22 @@ export const Dashboard = () => {
                 </div>
               </div>
             </CardContent>
-            <CardFooter className="gap-2 bg-neutral-900/50 pt-4 px-4 sm:px-6">
-              <Link to={`/agent/${agent.id}`} className="flex-1">
+            <CardFooter className="gap-2 bg-neutral-900/50 pt-4 px-4 sm:px-6 flex-col sm:flex-row">
+              <Link to={`/agent/${agent.id}`} className="w-full sm:flex-1">
                 <Button variant="secondary" className="w-full gap-2 text-xs py-5 sm:py-2">
                   <ExternalLink className="h-4 w-4 sm:h-3 sm:w-3" />
                   Details
                 </Button>
               </Link>
-              <div className="relative group/play">
-                <Button
-                  variant="ghost"
-                  className="px-4 py-5 sm:px-3 sm:py-2"
-                  onClick={() => agent.is_active ? pauseAgent(agent.id) : startAgent(agent.id, agent.youtube_connected)}
-                >
-                  {agent.is_active ? <Pause className="h-5 w-5 sm:h-4 sm:w-4" /> : <Play className="h-5 w-5 sm:h-4 sm:w-4" />}
-                </Button>
-                {/* Tooltip hidden on mobile via md:group-hover/play:opacity-100 */}
-                <div className="hidden md:block absolute bottom-[110%] left-1/2 -translate-x-1/2 px-2 py-1 bg-black text-white text-[10px] rounded opacity-0 group-hover/play:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-[100] shadow-xl border border-white/10">
-                  {agent.is_active ? 'Stop the agent from working' : 'Put the agent to actual work'}
-                </div>
-              </div>
+              <Button
+                variant="primary"
+                className="w-full sm:flex-1 gap-2 text-xs py-5 sm:py-2"
+                onClick={() => triggerGeneration(agent.id, agent.youtube_connected)}
+                disabled={agent.status === 'processing' || agent.status === 'queued'}
+              >
+                <Play className="h-4 w-4 sm:h-3 sm:w-3" />
+                Generate Video
+              </Button>
             </CardFooter>
           </Card>
         ))}

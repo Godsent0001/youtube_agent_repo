@@ -50,43 +50,11 @@ export const AgentDetail = () => {
     return () => clearInterval(interval);
   }, [id]);
 
-  const startAgent = async () => {
+  const triggerGeneration = async () => {
     if (!agentData.youtube_connected) {
       handleConnectYouTube();
       return;
     }
-    try {
-        await apiRequest(`/agents/${id}`, {
-            method: 'PUT',
-            body: JSON.stringify({ is_active: true })
-        });
-        setAgentData({ ...agentData, is_active: true });
-    } catch (err) {
-        console.error('Failed to start agent:', err);
-    }
-  };
-
-  const pauseAgent = async () => {
-    try {
-        const updated = await apiRequest(`/agents/${id}`, {
-            method: 'PUT',
-            body: JSON.stringify({ is_active: false })
-        });
-        setAgentData(updated);
-    } catch (err) {
-        console.error('Failed to pause agent:', err);
-    }
-  };
-
-  const toggleAgentStatus = () => {
-    if (agentData.is_active) {
-      pauseAgent();
-    } else {
-      startAgent();
-    }
-  };
-
-  const triggerGeneration = async () => {
     try {
       await apiRequest(`/agents/${id}/generate`, { method: 'POST' });
       // Refresh data immediately
@@ -171,7 +139,7 @@ export const AgentDetail = () => {
           {agent.youtube_connected ? (
             <Button variant="outline" size="sm" className="w-full sm:w-auto gap-2 text-green-500 border-green-500/50 bg-green-500/10 hover:bg-green-500/20 py-5 sm:py-2">
               <YoutubeIcon className="h-4 w-4" />
-              Connected
+              YouTube Connected
             </Button>
           ) : (
             <Button variant="outline" size="sm" className="w-full sm:w-auto gap-2 text-primary border-primary/50 bg-primary/10 hover:bg-primary/20 py-5 sm:py-2" onClick={handleConnectYouTube}>
@@ -181,21 +149,12 @@ export const AgentDetail = () => {
           )}
           <Button
             size="sm"
-            className={`w-full sm:w-auto gap-2 py-5 sm:py-2 ${agent.is_active ? 'bg-amber-600 hover:bg-amber-700' : 'bg-primary'}`}
-            onClick={toggleAgentStatus}
-          >
-            {agent.is_active ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-            {agent.is_active ? 'Pause Agent' : 'Start Agent'}
-          </Button>
-          <Button
-            size="sm"
-            variant="secondary"
-            className="w-full sm:w-auto gap-2 py-5 sm:py-2"
+            className="w-full sm:w-auto gap-2 py-5 sm:py-2 bg-primary hover:bg-primary/90"
             onClick={triggerGeneration}
             disabled={agent.raw_status === 'processing' || agent.raw_status === 'queued'}
           >
             <Play className="h-4 w-4" />
-            Run Now
+            Generate Video
           </Button>
         </div>
       </div>
