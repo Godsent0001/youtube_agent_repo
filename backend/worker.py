@@ -20,7 +20,7 @@ def run_worker():
     with Connection(redis_conn):
         # Use the pre-configured video_queue which has the 3600s default_timeout
         worker = Worker([video_queue])
-        print(f"Worker listening on '{video_queue.name}' queue (Default Timeout: {video_queue.default_timeout}s)...")
+        print(f"Worker listening on '{video_queue.name}' queue...")
         worker.work()
 
 def run_scheduler_loop():
