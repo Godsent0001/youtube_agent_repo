@@ -77,10 +77,8 @@ class LoopScheduler:
             # The second argument to enqueue is the first argument to our function
             new_job = video_queue.enqueue(
                 generate_video_job,
-                agent_id,
-                custom_job_id,
+                args=(agent_id, custom_job_id),
                 job_timeout=3600,
-                timeout=3600,
                 on_failure=on_video_job_failure
             )
 

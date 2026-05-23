@@ -79,10 +79,8 @@ def regenerate_video(video_id: str):
     custom_job_id = str(uuid.uuid4())
     new_job = video_queue.enqueue(
         generate_video_job,
-        agent_id,
-        custom_job_id,
+        args=(agent_id, custom_job_id),
         job_timeout=3600,
-        timeout=3600,
         on_failure=on_video_job_failure
     )
 
@@ -149,10 +147,8 @@ def retry_video(video_id: str):
     custom_job_id = str(uuid.uuid4())
     new_job = video_queue.enqueue(
         generate_video_job,
-        agent_id,
-        custom_job_id,
+        args=(agent_id, custom_job_id),
         job_timeout=3600,
-        timeout=3600,
         on_failure=on_video_job_failure
     )
 
