@@ -6,7 +6,7 @@ import os
 from app.schemas.agent import AgentCreate, AgentResponse, AgentUpdate
 from app.services.agent_service import agent_service
 from app.queue.redis_queue import video_queue
-from app.services.video_jobs import generate_video_job
+from app.services.video_jobs import generate_video_job, on_video_job_failure
 from app.db.session import db
 from datetime import datetime
 from app.core.config import settings
@@ -133,7 +133,8 @@ def generate_video(agent_id: str):
         generate_video_job,
         agent_id,
         custom_job_id,
-        job_timeout=3600
+        job_timeout=3600,
+        on_failure=on_video_job_failure
     )
 
     # 3. Create job record in MongoDB

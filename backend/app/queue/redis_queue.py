@@ -13,5 +13,6 @@ if not REDIS_URL:
     video_scheduler = None
 else:
     redis_conn = redis.from_url(REDIS_URL)
-    video_queue = Queue("video_generation", connection=redis_conn)
+    # Set default_timeout to 1 hour (3600s) to ensure long rendering jobs don't time out
+    video_queue = Queue("video_generation", connection=redis_conn, default_timeout=3600)
     video_scheduler = Scheduler(queue=video_queue, connection=redis_conn)

@@ -3,7 +3,7 @@ import uuid
 from datetime import datetime
 from app.db.session import db
 from app.queue.redis_queue import video_queue
-from app.services.video_jobs import generate_video_job
+from app.services.video_jobs import generate_video_job, on_video_job_failure
 from app.core.logger import logger
 
 class LoopScheduler:
@@ -79,7 +79,8 @@ class LoopScheduler:
                 generate_video_job,
                 agent_id,
                 custom_job_id,
-                job_timeout=3600
+                job_timeout=3600,
+                on_failure=on_video_job_failure
             )
 
             # 3. Create job record in MongoDB

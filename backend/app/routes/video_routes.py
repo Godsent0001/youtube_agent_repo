@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 
 from app.queue.redis_queue import video_queue
-from app.services.video_jobs import generate_video_job
+from app.services.video_jobs import generate_video_job, on_video_job_failure
 from app.db.session import db
 from datetime import datetime
 import uuid
@@ -81,7 +81,8 @@ def regenerate_video(video_id: str):
         generate_video_job,
         agent_id,
         custom_job_id,
-        job_timeout=3600
+        job_timeout=3600,
+        on_failure=on_video_job_failure
     )
 
     # Record in MongoDB
@@ -149,7 +150,8 @@ def retry_video(video_id: str):
         generate_video_job,
         agent_id,
         custom_job_id,
-        job_timeout=3600
+        job_timeout=3600,
+        on_failure=on_video_job_failure
     )
 
     # Record in MongoDB
