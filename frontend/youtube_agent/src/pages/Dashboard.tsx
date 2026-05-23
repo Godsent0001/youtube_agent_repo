@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
-import { Plus, Play, Pause, ExternalLink, MoreVertical, Play as YoutubeIcon, Settings, Trash2 } from 'lucide-react';
+import { Plus, Play, ExternalLink, MoreVertical, Play as YoutubeIcon, Settings, Trash2 } from 'lucide-react';
 import { apiRequest } from '../utils/api';
 import { motion, AnimatePresence } from 'framer-motion';
 

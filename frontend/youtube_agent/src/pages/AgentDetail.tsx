@@ -13,7 +13,6 @@ import {
   MessageSquare,
   ThumbsUp,
   Eye,
-  Pause,
   Play,
   Clock,
   Globe,
@@ -82,11 +81,9 @@ export const AgentDetail = () => {
     name: agentData.name,
     niche: agentData.niche,
     type: agentData.content_type === 'shorts' ? 'Shorts' : 'Long-form',
-    status: agentData.status || (agentData.is_active ? 'active' : 'paused'),
-    raw_status: agentData.status,
+    status: agentData.status || 'idle',
     youtube_connected: agentData.youtube_connected,
     lastPosted: agentData.last_run_at ? new Date(agentData.last_run_at).toLocaleString() : 'Never',
-    is_active: agentData.is_active,
     metrics: [
       { label: 'Views', value: videos.reduce((acc, v) => acc + (v.views || 0), 0).toLocaleString(), icon: Eye, color: 'text-blue-500' },
       { label: 'Avg Watch Time', value: agentData.avg_watch_time ? `${agentData.avg_watch_time}s` : '0s', icon: Clock, color: 'text-green-500' },
@@ -151,7 +148,7 @@ export const AgentDetail = () => {
             size="sm"
             className="w-full sm:w-auto gap-2 py-5 sm:py-2 bg-primary hover:bg-primary/90"
             onClick={triggerGeneration}
-            disabled={agent.raw_status === 'processing' || agent.raw_status === 'queued'}
+            disabled={agent.status === 'processing' || agent.status === 'queued'}
           >
             <Play className="h-4 w-4" />
             Generate Video
@@ -160,14 +157,14 @@ export const AgentDetail = () => {
       </div>
 
       {/* Top Progress Bar */}
-      {(agent.raw_status === 'processing' || agent.raw_status === 'queued') && (
+      {(agent.status === 'processing' || agent.status === 'queued') && (
         <Card className="overflow-hidden border-primary/20 bg-primary/5">
           <div className="p-3 sm:p-4 flex flex-col gap-3">
             <div className="flex justify-between items-center text-xs sm:text-sm">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                 <span className="text-white font-medium">
-                  {agent.raw_status === 'queued' ? 'In Queue...' : 'Generating Video Content...'}
+                  {agent.status === 'queued' ? 'In Queue...' : 'Generating Video Content...'}
                 </span>
               </div>
               <span className="text-primary font-bold">
