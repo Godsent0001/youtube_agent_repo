@@ -134,6 +134,7 @@ def generate_video(agent_id: str):
         agent_id,
         custom_job_id,
         job_timeout=3600,
+        timeout=3600,
         on_failure=on_video_job_failure
     )
 
