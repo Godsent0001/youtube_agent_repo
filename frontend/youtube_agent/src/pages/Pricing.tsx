@@ -1,6 +1,6 @@
 
 import { motion } from 'framer-motion';
-import { Check, Waves } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 

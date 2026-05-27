@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Waves, Menu, Send, Play, Download, Clock, Maximize, Loader2, Sparkles } from 'lucide-react';
+import { Waves, Menu, Download, Loader2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { Sidebar } from '../components/layout/Sidebar';

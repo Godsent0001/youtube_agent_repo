@@ -7,6 +7,7 @@ from app.services.ai.research_service import research_service
 from app.services.ai.script_service import script_service
 from app.services.ai.metadata_service import metadata_service
 from app.services.ai.scene_service import scene_service
+from datetime import datetime
 
 from app.services.media.selector_service import selector_service
 from app.services.media.thumbnail_service import ThumbnailService

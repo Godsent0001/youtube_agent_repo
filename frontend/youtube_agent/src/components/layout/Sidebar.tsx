@@ -1,8 +1,7 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { Settings, CreditCard, User, LogOut, X, Waves } from 'lucide-react';
+import { Settings, CreditCard, LogOut, X, Waves } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Button } from '../ui/Button';
 
 interface SidebarProps {
   isOpen: boolean;

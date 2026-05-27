@@ -15,7 +15,7 @@ class Video(BaseModel):
     id: Optional[str] = None
 
     user_id: str
-    agent_id: str
+    agent_id: Optional[str] = None
 
     title: Optional[str] = None
     description: Optional[str] = None
