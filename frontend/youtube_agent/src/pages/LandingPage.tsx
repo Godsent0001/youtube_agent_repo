@@ -152,11 +152,11 @@ export const LandingPage = () => {
 
       {/* Main Content */}
       <main className="pt-32 pb-20 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
-        <div className="text-center mb-12">
+        <div className="text-center mb-8 sm:mb-12">
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-4xl sm:text-6xl font-black tracking-tight mb-4"
+            className="text-4xl sm:text-6xl font-black tracking-tight mb-4 px-4"
           >
             Imagine. <span className="text-primary">Generate.</span> Viral.
           </motion.h1>
@@ -164,52 +164,52 @@ export const LandingPage = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-lg text-secondary-foreground"
+            className="text-base sm:text-lg text-secondary-foreground px-6"
           >
             Transform any idea into a high-quality video in seconds.
           </motion.p>
         </div>
 
         {/* Prompt Section */}
-        <section className="relative z-10">
-          <div className="neo-out rounded-[40px] p-2 blue-glow">
+        <section className="relative z-10 px-2 sm:px-0">
+          <div className="neo-out rounded-[32px] sm:rounded-[40px] p-1 sm:p-2 blue-glow">
             <div className="relative">
               <textarea
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value.slice(0, 2000))}
                 placeholder="What video are you creating today?"
-                className="w-full bg-transparent border-none focus:ring-0 text-xl p-8 min-h-[200px] resize-none text-white placeholder:text-white/20"
+                className="w-full bg-transparent border-none focus:ring-0 text-lg sm:text-xl p-6 sm:p-8 min-h-[160px] sm:min-h-[200px] resize-none text-white placeholder:text-white/20"
               />
-              <div className="absolute bottom-6 right-8 text-xs text-white/30 font-mono">
+              <div className="absolute bottom-4 right-6 sm:bottom-6 sm:right-8 text-[10px] sm:text-xs text-white/30 font-mono">
                 {prompt.length}/2000
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center justify-between p-6 gap-6 border-t border-white/5">
-              <div className="flex items-center gap-6">
+            <div className="flex flex-col xl:flex-row items-center justify-between p-4 sm:p-6 gap-4 sm:gap-6 border-t border-white/5">
+              <div className="flex flex-col md:flex-row items-center gap-4 sm:gap-6 w-full xl:w-auto">
                 {/* Aspect Ratio Selector */}
-                <div className="flex items-center gap-2 bg-black/40 p-1.5 rounded-2xl neo-in">
+                <div className="flex items-center gap-1 sm:gap-2 bg-black/40 p-1 sm:p-1.5 rounded-xl sm:rounded-2xl neo-in w-full md:w-auto justify-center">
                   <button
                     onClick={() => setAspectRatio('shorts')}
-                    className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${aspectRatio === 'shorts' ? 'bg-primary text-white shadow-lg' : 'text-white/40 hover:text-white'}`}
+                    className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold transition-all ${aspectRatio === 'shorts' ? 'bg-primary text-white shadow-lg' : 'text-white/40 hover:text-white'}`}
                   >
                     Shorts
                   </button>
                   <button
                     onClick={() => setAspectRatio('long')}
-                    className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${aspectRatio === 'long' ? 'bg-primary text-white shadow-lg' : 'text-white/40 hover:text-white'}`}
+                    className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold transition-all ${aspectRatio === 'long' ? 'bg-primary text-white shadow-lg' : 'text-white/40 hover:text-white'}`}
                   >
                     Long
                   </button>
                 </div>
 
                 {/* Duration Selector */}
-                <div className="flex items-center gap-2 bg-black/40 p-1.5 rounded-2xl neo-in">
+                <div className="flex items-center gap-1 sm:gap-2 bg-black/40 p-1 sm:p-1.5 rounded-xl sm:rounded-2xl neo-in w-full md:w-auto justify-center">
                   {[15, 30, 60].map((s) => (
                     <button
                       key={s}
                       onClick={() => setDuration(s)}
-                      className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${duration === s ? 'bg-white text-black' : 'text-white/40 hover:text-white'}`}
+                      className={`flex-1 md:flex-none px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold transition-all ${duration === s ? 'bg-white text-black' : 'text-white/40 hover:text-white'}`}
                     >
                       {s}s
                     </button>
@@ -217,10 +217,10 @@ export const LandingPage = () => {
                 </div>
               </div>
 
-              <div className="flex items-center gap-4">
+              <div className="flex items-center w-full xl:w-auto">
                 <Button
                     size="lg"
-                    className="neo-btn rounded-2xl px-12 py-7 text-xl font-black text-primary hover:text-white"
+                    className="neo-btn rounded-xl sm:rounded-2xl px-8 sm:px-12 py-5 sm:py-7 text-lg sm:text-xl font-black text-primary hover:text-white w-full"
                     onClick={() => handleGenerate()}
                     disabled={isGenerating || !prompt.trim()}
                 >

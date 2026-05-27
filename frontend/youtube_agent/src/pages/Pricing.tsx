@@ -2,7 +2,6 @@
 import { motion } from 'framer-motion';
 import { Check } from 'lucide-react';
 import { Button } from '../components/ui/Button';
-import { Card } from '../components/ui/Card';
 
 const PLANS = [
   {
@@ -33,15 +32,15 @@ const PLANS = [
 
 export const Pricing = () => {
   return (
-    <div className="py-12">
-      <div className="text-center mb-16">
-        <h1 className="text-4xl font-black mb-4">Choose Your Plan</h1>
-        <p className="text-secondary-foreground max-w-2xl mx-auto">
+    <div className="py-12 px-4">
+      <div className="text-center mb-12 sm:mb-16">
+        <h1 className="text-3xl sm:text-4xl font-black mb-4">Choose Your Plan</h1>
+        <p className="text-secondary-foreground max-w-2xl mx-auto text-sm sm:text-base">
           Scale your content creation with MorphFlow. Choose the plan that fits your needs.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 sm:gap-12 max-w-6xl mx-auto">
         {PLANS.map((plan, idx) => (
           <motion.div
             key={plan.name}
@@ -49,40 +48,40 @@ export const Pricing = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: idx * 0.1 }}
           >
-            <Card className={`relative p-8 h-full flex flex-col ${plan.highlighted ? 'border-primary shadow-2xl blue-glow' : 'border-border'}`}>
+            <div className={`relative p-8 h-full flex flex-col rounded-[32px] ${plan.highlighted ? 'neo-out border border-primary/20 shadow-primary/10' : 'neo-out border border-white/5'} blue-glow transition-all hover:scale-[1.02]`}>
               {plan.highlighted && (
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-primary text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-primary text-white text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest shadow-lg">
                   Most Popular
                 </div>
               )}
 
               <div className="mb-8">
-                <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
+                <h3 className="text-xl sm:text-2xl font-black mb-2">{plan.name}</h3>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-black">{plan.price}</span>
-                  <span className="text-secondary-foreground">/mo</span>
+                  <span className="text-3xl sm:text-4xl font-black">{plan.price}</span>
+                  <span className="text-secondary-foreground text-sm">/mo</span>
                 </div>
-                <p className="mt-4 text-secondary-foreground text-sm">{plan.description}</p>
+                <p className="mt-4 text-secondary-foreground text-xs sm:text-sm font-medium leading-relaxed">{plan.description}</p>
               </div>
 
-              <div className="flex-1 space-y-4 mb-8">
+              <div className="flex-1 space-y-4 mb-10">
                 {plan.features.map((feature) => (
                   <div key={feature} className="flex items-center gap-3">
-                    <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center">
-                      <Check className="h-3 w-3 text-primary" />
+                    <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center neo-in border border-primary/20">
+                      <Check className="h-2.5 w-2.5 text-primary" />
                     </div>
-                    <span className="text-sm text-secondary-foreground">{feature}</span>
+                    <span className="text-sm text-secondary-foreground font-medium">{feature}</span>
                   </div>
                 ))}
               </div>
 
               <Button
-                variant={plan.highlighted ? 'primary' : 'outline'}
-                className="w-full py-6 rounded-xl font-bold"
+                variant="primary"
+                className={`w-full py-5 sm:py-6 rounded-2xl font-black text-sm uppercase tracking-wider neo-btn ${plan.highlighted ? 'text-white' : 'text-primary'}`}
               >
                 {plan.cta}
               </Button>
-            </Card>
+            </div>
           </motion.div>
         ))}
       </div>
