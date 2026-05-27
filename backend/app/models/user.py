@@ -24,7 +24,7 @@ class User(BaseModel):
     # =========================
     # ACCOUNT TYPE
     # =========================
-    plan: Literal["free", "pro", "enterprise"] = "free"
+    plan: Literal["free", "elite", "pro"] = "free"
 
     is_active: bool = True
     is_verified: bool = False
@@ -40,14 +40,6 @@ class User(BaseModel):
     # =========================
     total_videos_created: int = 0
     total_views: int = 0
-
-    # =========================
-    # YOUTUBE OAUTH
-    # =========================
-    youtube_access_token: Optional[str] = None
-    youtube_refresh_token: Optional[str] = None
-    youtube_token_expiry: Optional[datetime] = None
-    youtube_channel_id: Optional[str] = None
 
     # =========================
     # TIMESTAMPS

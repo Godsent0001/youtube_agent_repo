@@ -5,7 +5,7 @@
 }
 
 body {
-  @apply bg-[#121212] text-white antialiased;
+  @apply bg-background text-white antialiased;
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
@@ -13,17 +13,17 @@ body {
 }
 
 @theme {
-  --color-background: #121212;
-  --color-card: #1E1E1E;
-  --color-primary: #FF0000;
+  --color-background: #0A0B0E; /* Deeper Charcoal Black */
+  --color-card: #12141A;
+  --color-primary: #3B82F6; /* Shining Blue */
   --color-primary-foreground: #FFFFFF;
-  --color-secondary: #333333;
-  --color-secondary-foreground: #AAAAAA;
-  --color-muted: #1E1E1E;
-  --color-muted-foreground: #AAAAAA;
-  --color-accent: #FF0000;
+  --color-secondary: #1E222B;
+  --color-secondary-foreground: #94A3B8;
+  --color-muted: #12141A;
+  --color-muted-foreground: #94A3B8;
+  --color-accent: #3B82F6;
   --color-accent-foreground: #FFFFFF;
-  --color-border: #333333;
+  --color-border: #1E222B;
 }
 
 @layer base {
@@ -38,8 +38,35 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.red-glow {
-  box-shadow: 0 0 20px rgba(255, 0, 0, 0.2);
+.blue-glow {
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
+}
+
+.neo-out {
+  background: #0A0B0E;
+  box-shadow: 6px 6px 12px #040406, -6px -6px 12px #101216;
+}
+
+.neo-in {
+  background: #0A0B0E;
+  box-shadow: inset 6px 6px 12px #040406, inset -6px -6px 12px #101216;
+}
+
+.neo-btn {
+  background: #0A0B0E;
+  box-shadow: 4px 4px 8px #040406, -4px -4px 8px #101216;
+  transition: all 0.2s ease-in-out;
+}
+
+.neo-btn:active {
+  box-shadow: inset 2px 2px 5px #040406, inset -2px -2px 5px #101216;
+}
+
+.glass-pill {
+  background: rgba(15, 17, 21, 0.6);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 9999px;
 }
 
 .transition-page {

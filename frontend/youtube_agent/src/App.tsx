@@ -10,11 +10,8 @@ import { LandingPage } from './pages/LandingPage';
 import { Login } from './pages/Login';
 import { SignUp } from './pages/SignUp';
 import { ForgotPassword } from './pages/ForgotPassword';
-import { Dashboard } from './pages/Dashboard';
-import { CreateAgent } from './pages/CreateAgent';
-import { AgentDetail } from './pages/AgentDetail';
-import { Monetization } from './pages/Monetization';
 import { Settings } from './pages/Settings';
+import { Pricing } from './pages/Pricing';
 
 function AnimatedRoutes() {
   const location = useLocation();
@@ -34,12 +31,8 @@ function AnimatedRoutes() {
 
         {/* Dashboard Routes */}
         <Route element={<DashboardLayout />}>
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/create-agent" element={<CreateAgent />} />
-          <Route path="/edit-agent/:id" element={<CreateAgent />} />
-          <Route path="/agent/:id" element={<AgentDetail />} />
-          <Route path="/monetization" element={<Monetization />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/pricing" element={<Pricing />} />
         </Route>
       </Routes>
     </AnimatePresence>

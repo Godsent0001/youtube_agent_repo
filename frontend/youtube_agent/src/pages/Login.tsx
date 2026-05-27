@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
-import { Play, Mail } from 'lucide-react';
+import { Waves, Mail } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { apiRequest } from '../utils/api';
 
@@ -28,7 +28,7 @@ export const Login = () => {
       localStorage.setItem('user_id', data.user_id);
       localStorage.setItem('user_email', email);
       setSuccess('Login successful! Redirecting...');
-      setTimeout(() => navigate('/dashboard'), 1500);
+      setTimeout(() => navigate('/'), 1500);
     } catch (err: any) {
       if (err.message.includes('401') || err.message.toLowerCase().includes('invalid')) {
         setError('Incorrect email or password, please try again.');
@@ -47,15 +47,16 @@ export const Login = () => {
       exit={{ opacity: 0, x: -20 }}
     >
       <div className="text-center mb-8">
+        <div className="flex justify-center mb-4">
+            <div className="h-12 w-12 rounded-xl bg-primary flex items-center justify-center">
+                <Waves className="h-8 w-8 text-white" />
+            </div>
+        </div>
         <h1 className="text-2xl font-bold text-white">Welcome Back!</h1>
-        <p className="text-secondary-foreground">Login to manage your AI agents</p>
+        <p className="text-secondary-foreground">Login to continue creating with MorphFlow</p>
       </div>
 
       <div className="space-y-4">
-        <Button variant="outline" className="w-full gap-2 bg-white text-black hover:bg-neutral-200 border-none py-6 sm:py-2">
-          <Play className="h-5 w-5 text-red-600" />
-          Continue with YouTube
-        </Button>
         <Button variant="outline" className="w-full gap-2 py-6 sm:py-2">
           <Mail className="h-5 w-5" />
           Continue with Google

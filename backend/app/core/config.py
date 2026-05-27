@@ -11,7 +11,7 @@ class Settings:
     # =========================
     # APP SETTINGS
     # =========================
-    APP_NAME: str = "AI YouTube Agent"
+    APP_NAME: str = "MorphFlow"
     # Default DEBUG to False for production safety
     DEBUG: bool = os.getenv("DEBUG", "False") == "True"
     FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:5173")
@@ -49,12 +49,6 @@ class Settings:
     ELEVENLABS_VOICE_ID: str = os.getenv("ELEVENLABS_VOICE_ID", "wWWn96OtTHu1sn8SRGEr")
     
     PIXABAY_API_KEY: str = os.getenv("PIXABAY_API_KEY", "")
-
-    # =========================
-    # YOUTUBE API
-    # =========================
-    YOUTUBE_CLIENT_ID: str = os.getenv("YOUTUBE_CLIENT_ID", "")
-    YOUTUBE_CLIENT_SECRET: str = os.getenv("YOUTUBE_CLIENT_SECRET", "")
 
     # =========================
     # SECURITY

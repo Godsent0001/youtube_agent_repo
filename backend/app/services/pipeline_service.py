@@ -17,8 +17,6 @@ from app.services.video.builder_service import video_builder_service
 from app.services.video.render_service import RenderService
 from app.services.video.subtitle_service import subtitle_service
 
-from app.services.youtube.youtube_service import youtube_service
-
 
 class PipelineService:
     """
@@ -30,26 +28,12 @@ class PipelineService:
         self.render_service = RenderService()
         self.thumbnail_service = ThumbnailService()
 
-    def run(self, agent: dict, job_id: str = None):
+    def run(self, user_id: str, custom_prompt: str, content_type: str, video_length: int, job_id: str = None):
 
         from app.services.video_jobs import update_job_activity
 
-        # =========================
-        # SAFE AGENT ACCESS
-        # =========================
-        agent_id = str(
-            agent.get("_id") or agent.get("id") or "unknown_agent"
-        )
-
-        agent_name = agent.get("name", "Unnamed Agent")
-
-        user_id = agent.get("user_id")
-
-        if not user_id:
-            raise Exception("Agent missing user_id")
-
         self.logger.info(
-            f"Pipeline started for agent: {agent_name}"
+            f"Pipeline started for user: {user_id} with prompt: {custom_prompt}"
         )
 
         # Create folders
@@ -63,9 +47,9 @@ class PipelineService:
             update_job_activity(job_id, "Generating topic...", progress=5)
 
         topic_data = topic_service.generate_topic(
-            niche=agent.get("niche", ""),
-            content_type=agent.get("content_type", "youtube"),
-            custom_prompt=agent.get("custom_prompt")
+            niche="", # Niche is now derived from prompt
+            content_type=content_type,
+            custom_prompt=custom_prompt
         )
 
         topic = topic_data.get("topic")
@@ -84,7 +68,7 @@ class PipelineService:
 
         research = research_service.generate_research(
             topic=topic,
-            niche=agent.get("niche", "")
+            niche=""
         )
 
         # =========================
@@ -96,10 +80,11 @@ class PipelineService:
 
         script_data = script_service.generate_script(
             topic=topic,
-            niche=agent.get("niche", ""),
-            content_type=agent.get("content_type", "youtube"),
+            niche="",
+            content_type=content_type,
             research=research,
-            video_length=agent.get("video_length")
+            video_length=video_length,
+            custom_prompt=custom_prompt
         )
 
         script = script_data.get("script")
@@ -116,8 +101,8 @@ class PipelineService:
 
         scenes = scene_service.generate_scenes(
             script=script,
-            content_type=agent.get("content_type", "youtube"),
-            video_length=agent.get("video_length")
+            content_type=content_type,
+            video_length=video_length
         )
 
         if not scenes:
@@ -205,12 +190,17 @@ class PipelineService:
         if job_id:
             update_job_activity(job_id, "Rendering final video...", progress=60)
 
+        import uuid
+        video_uuid = str(uuid.uuid4())
+        final_video_filename = f"final_{video_uuid}.mp4"
+        final_video_path = f"storage/videos/{final_video_filename}"
+
         final_video = video_builder_service.build_video(
             scenes=scenes,
             audio_path=audio_path,
-            output_path=f"storage/videos/final_{agent_id}.mp4",
-            content_type=agent.get("content_type", "shorts"),
-            video_length=agent.get("video_length"),
+            output_path=final_video_path,
+            content_type=content_type,
+            video_length=video_length,
             job_id=job_id
         )
 
@@ -222,21 +212,24 @@ class PipelineService:
         )
 
         # =========================
-        # 11. UPLOAD TO YOUTUBE
+        # 11. SAVE TO DATABASE
         # =========================
-        self.logger.info("Uploading video to YouTube...")
-        if job_id:
-            update_job_activity(job_id, "Uploading to YouTube...", progress=95)
+        from app.db.session import db
 
-        upload_result = youtube_service.upload_video(
-            agent_id=agent_id,
-            file_path=final_video,
-            title=title,
-            description=description,
-            tags=tags,
-            thumbnail_path=thumbnail_path,
-            content_type=agent.get("content_type", "youtube")
-        )
+        video_record = {
+            "user_id": user_id,
+            "title": title,
+            "description": description,
+            "content_type": content_type,
+            "topic": topic,
+            "niche": "",
+            "script": script,
+            "scenes": scenes,
+            "video_url": f"/storage/videos/{final_video_filename}",
+            "upload_status": "completed",
+            "created_at": datetime.utcnow()
+        }
+        db["videos"].insert_one(video_record)
 
         self.logger.info(
             "Pipeline completed successfully"
@@ -244,13 +237,11 @@ class PipelineService:
 
         return {
             "success": True,
-            "agent_id": agent_id,
             "topic": topic,
             "title": title,
             "audio_path": audio_path,
             "thumbnail_path": thumbnail_path,
-            "final_video_path": final_video,
-            "youtube_upload": upload_result
+            "final_video_path": final_video
         }
 
 

@@ -58,35 +58,26 @@ class TopicService:
                 {
                     "role": "system",
                     "content": f"""
-You are a world-class viral YouTube strategist.
+You are a world-class viral video strategist for MorphFlow.
 
-Your ONLY job is to generate HIGHLY VIRAL,
-HIGH CTR YouTube video topics.
+Your ONLY job is to generate a HIGHLY ENGAGING and VIRAL video topic based on the user's prompt.
 
 CRITICAL REQUIREMENTS:
-- NEVER repeat previous ideas
-- EVERY topic must feel fresh
-- Avoid generic AI topics
-- Avoid overused phrasing
-- Create curiosity gaps
-- Maximize click-through rate
-- Focus on emotion, mystery, surprise, fear, urgency, status, or hidden knowledge
+- Use the user's prompt as the PRIMARY guide for the topic.
+- EVERY topic must feel fresh and viral.
+- Avoid generic AI topics.
+- Create curiosity gaps and maximize engagement.
+- Focus on emotion, mystery, surprise, fear, urgency, status, or hidden knowledge.
 
 TOPIC CONSTRAINTS:
-- AVOID topics that require physical explaining (e.g., "How to tie a tie", "DIY furniture assembly").
-- AVOID topics that are very complex to explain without specific visuals, as we rely on stock media which might not be perfectly accurate for niche technical tutorials.
-- PREFER topics that can be effectively illustrated with high-quality stock footage (nature, technology, people, cities, abstract concepts).
-
-CONTENT RULES:
-{content_rules}
-
-PREVIOUSLY GENERATED TOPICS:
-{history_text}
+- AVOID topics that require physical explaining.
+- AVOID topics that are very complex to explain without specific visuals.
+- PREFER topics that can be effectively illustrated with high-quality stock footage.
 
 STRICT RULES:
-- Return ONLY valid JSON
-- No markdown
-- No explanations
+- Return ONLY valid JSON.
+- No markdown.
+- No explanations.
 
 OUTPUT FORMAT:
 {{
@@ -102,17 +93,14 @@ OUTPUT FORMAT:
                 {
                     "role": "user",
                     "content": f"""
-NICHE:
-{niche}
+USER PROMPT:
+{custom_prompt if custom_prompt else "Generate a viral video topic about " + niche}
 
 CONTENT TYPE:
 {content_type}
 
-CUSTOM DIRECTION:
-{custom_prompt if custom_prompt else "None"}
-
 IMPORTANT:
-Generate something NEW and DIFFERENT from previous topics.
+The topic should be a catchy title for the video that follows the spirit of the user's prompt but is optimized for virality.
 """
                 }
             ]

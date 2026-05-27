@@ -1,4 +1,6 @@
 from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel, Field
+from typing import Literal
 
 from app.queue.redis_queue import video_queue
 from app.services.video_jobs import generate_video_job, on_video_job_failure
@@ -9,6 +11,11 @@ from app.services.video.video_service import video_service
 from app.services.analytics.metrics_service import metrics_service
 
 router = APIRouter(prefix="/videos", tags=["Videos"])
+
+class VideoGenerateRequest(BaseModel):
+    prompt: str = Field(..., max_length=2000)
+    content_type: Literal["shorts", "long"] = "shorts"
+    video_length: int = 60 # Default to 60s
 
 
 # =========================
@@ -42,44 +49,19 @@ def get_video(video_id: str):
 
 
 # =========================
-# REGENERATE VIDEO
+# GENERATE VIDEO
 # =========================
-@router.post("/{video_id}/regenerate")
-def regenerate_video(video_id: str):
-
-    video = video_service.get_video(video_id)
-
-    if not video:
-        raise HTTPException(status_code=404, detail="Video not found")
+@router.post("/generate")
+def generate_video(payload: VideoGenerateRequest, user_id: str):
 
     if not video_queue:
         raise HTTPException(status_code=503, detail="Redis queue not available")
 
-    from bson import ObjectId
-    agent_id = video["agent_id"]
-
-    # Atomic status update
-    agent = db["agents"].find_one_and_update(
-        {
-            "_id": ObjectId(agent_id),
-            "status": {"$in": ["idle", "failed"]}
-        },
-        {
-            "$set": {
-                "status": "queued",
-                "last_queued_at": datetime.utcnow()
-            }
-        },
-        return_document=True
-    )
-
-    if not agent:
-        raise HTTPException(status_code=409, detail="Agent is currently busy processing another job")
-
     custom_job_id = str(uuid.uuid4())
+
     new_job = video_queue.enqueue(
         generate_video_job,
-        args=(agent_id, custom_job_id),
+        args=(user_id, custom_job_id, payload.prompt, payload.content_type, payload.video_length),
         job_timeout=3600,
         on_failure=on_video_job_failure
     )
@@ -88,88 +70,22 @@ def regenerate_video(video_id: str):
     db["jobs"].insert_one({
         "job_id": custom_job_id,
         "rq_job_id": new_job.id,
-        "user_id": video.get("user_id"),
-        "agent_id": agent_id,
+        "user_id": user_id,
         "status": "queued",
         "created_at": datetime.utcnow(),
         "updated_at": datetime.utcnow(),
+        "activities": [],
+        "progress": 0,
         "result_url": None,
         "error": None
     })
 
     return {
-        "message": "Video regeneration started",
-        "video_id": video_id,
+        "message": "Video generation started",
         "job_id": custom_job_id
     }
 
 
-# =========================
-# RETRY FAILED VIDEO
-# =========================
-@router.post("/{video_id}/retry")
-def retry_video(video_id: str):
-
-    video = video_service.get_video(video_id)
-
-    if not video:
-        raise HTTPException(status_code=404, detail="Video not found")
-
-    if video.get("upload_status") != "failed":
-        return {
-            "message": "Video is not in failed state"
-        }
-
-    if not video_queue:
-        raise HTTPException(status_code=503, detail="Redis queue not available")
-
-    from bson import ObjectId
-    agent_id = video["agent_id"]
-
-    # Atomic status update
-    agent = db["agents"].find_one_and_update(
-        {
-            "_id": ObjectId(agent_id),
-            "status": {"$in": ["idle", "failed"]}
-        },
-        {
-            "$set": {
-                "status": "queued",
-                "last_queued_at": datetime.utcnow()
-            }
-        },
-        return_document=True
-    )
-
-    if not agent:
-        raise HTTPException(status_code=409, detail="Agent is currently busy processing another job")
-
-    custom_job_id = str(uuid.uuid4())
-    new_job = video_queue.enqueue(
-        generate_video_job,
-        args=(agent_id, custom_job_id),
-        job_timeout=3600,
-        on_failure=on_video_job_failure
-    )
-
-    # Record in MongoDB
-    db["jobs"].insert_one({
-        "job_id": custom_job_id,
-        "rq_job_id": new_job.id,
-        "user_id": video.get("user_id"),
-        "agent_id": agent_id,
-        "status": "queued",
-        "created_at": datetime.utcnow(),
-        "updated_at": datetime.utcnow(),
-        "result_url": None,
-        "error": None
-    })
-
-    return {
-        "message": "Retry initiated",
-        "video_id": video_id,
-        "job_id": custom_job_id
-    }
 
 
 # =========================

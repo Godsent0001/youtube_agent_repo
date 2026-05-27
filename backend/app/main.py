@@ -9,7 +9,6 @@ from app.core.logger import logger
 # =========================
 from app.routes.auth_routes import router as auth_router
 from app.routes.agent_routes import router as agent_router
-from app.routes.ads_routes import router as ads_router
 from app.routes.dashboard_routes import router as dashboard_router
 from app.routes.settings_routes import router as settings_router
 from app.routes.video_routes import router as video_router
@@ -51,7 +50,6 @@ app.add_middleware(
 # =========================
 app.include_router(auth_router)
 app.include_router(agent_router)
-app.include_router(ads_router)
 app.include_router(dashboard_router)
 app.include_router(settings_router)
 app.include_router(video_router)

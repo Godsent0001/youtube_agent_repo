@@ -40,10 +40,9 @@ class Video(BaseModel):
     video_url: Optional[str] = None
 
     # =========================
-    # YOUTUBE STATUS
+    # GENERATION STATUS
     # =========================
-    youtube_video_id: Optional[str] = None
-    upload_status: Literal["pending", "processing", "uploaded", "failed"] = "pending"
+    upload_status: Literal["pending", "processing", "completed", "failed"] = "pending"
 
     # =========================
     # PERFORMANCE METRICS (LIVE UPDATE)
