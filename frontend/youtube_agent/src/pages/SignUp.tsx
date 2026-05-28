@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
-import { Input } from '../components/ui/Input';
 import { Waves } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { apiRequest } from '../utils/api';
