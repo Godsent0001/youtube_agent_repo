@@ -153,43 +153,11 @@ class PipelineService:
         self.logger.info(f"Audio generated: {audio_path}")
 
         # =========================
-        # 8. METADATA
-        # =========================
-        self.logger.info("Generating metadata...")
-
-        metadata = metadata_service.generate_metadata(
-            topic=topic,
-            script=script,
-            niche=agent.get("niche", "")
-        )
-
-        title = metadata.get("title", topic)
-        description = metadata.get("description", "")
-        tags = metadata.get("tags", [])
-
-        # =========================
-        # 9. THUMBNAIL
-        # =========================
-        self.logger.info("Generating thumbnail...")
-        if job_id:
-            update_job_activity(job_id, "Generating video thumbnail...", progress=50)
-
-        thumbnail_path = self.thumbnail_service.generate_thumbnail(
-            title=title,
-            script=script,
-            niche=agent.get("niche", "")
-        )
-
-        self.logger.info(
-            f"Thumbnail generated successfully: {thumbnail_path}"
-        )
-
-        # =========================
-        # 10. BUILD VIDEO (INTEGRATED)
+        # 8. BUILD VIDEO (INTEGRATED)
         # =========================
         self.logger.info("Building and rendering video...")
         if job_id:
-            update_job_activity(job_id, "Rendering final video...", progress=60)
+            update_job_activity(job_id, "Rendering final video...", progress=50)
 
         import uuid
         video_uuid = str(uuid.uuid4())
@@ -213,21 +181,18 @@ class PipelineService:
         )
 
         # =========================
-        # 11. SAVE TO DATABASE
+        # 9. SAVE TO DATABASE
         # =========================
         from app.db.session import db
 
         video_record = {
             "user_id": user_id,
-            "title": title,
-            "description": description,
             "content_type": content_type,
             "topic": topic,
-            "niche": "",
             "script": script,
             "scenes": scenes,
             "video_url": f"/storage/videos/{final_video_filename}",
-            "upload_status": "completed",
+            "status": "completed",
             "created_at": datetime.utcnow()
         }
         db["videos"].insert_one(video_record)
@@ -239,9 +204,7 @@ class PipelineService:
         return {
             "success": True,
             "topic": topic,
-            "title": title,
             "audio_path": audio_path,
-            "thumbnail_path": thumbnail_path,
             "final_video_path": final_video
         }
 

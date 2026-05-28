@@ -24,7 +24,7 @@ const PLANS = [
     name: 'Pro',
     price: '$35',
     description: 'Full automation power',
-    features: ['100 videos per month', '4K resolution', 'All premium voices', 'Priority rendering'],
+    features: ['Unlimited videos', '4K resolution', 'All premium voices', 'Priority rendering'],
     cta: 'Go Pro',
     highlighted: false
   }

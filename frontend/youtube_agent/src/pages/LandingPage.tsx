@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Waves, Menu, Download, Loader2 } from 'lucide-react';
+import { Waves, Menu, Download, Play, ChevronDown } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { Sidebar } from '../components/layout/Sidebar';
@@ -10,8 +10,10 @@ import { apiRequest } from '../utils/api';
 export const LandingPage = () => {
   const [prompt, setPrompt] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [aspectRatio, setAspectRatio] = useState<'shorts' | 'long'>('shorts');
+  const [aspectRatio, setAspectRatio] = useState<'shorts' | 'long'>('long');
   const [duration, setDuration] = useState(60);
+  const [showAspectMenu, setShowAspectMenu] = useState(false);
+  const [showDurationMenu, setShowDurationMenu] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [jobId, setJobId] = useState<string | null>(null);
   const [jobStatus, setJobStatus] = useState<any>(null);
@@ -105,24 +107,26 @@ export const LandingPage = () => {
     <div className="min-h-screen bg-background text-white selection:bg-primary/30 relative">
       {/* Background Image */}
       <div
-        className="fixed inset-0 z-0 pointer-events-none opacity-20"
+        className="fixed inset-0 z-0 pointer-events-none opacity-50"
         style={{
           backgroundImage: 'url("https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?q=80&w=2070&auto=format&fit=crop")',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          filter: 'grayscale(100%) brightness(50%)'
+          filter: 'grayscale(30%) brightness(70%) contrast(110%)'
         }}
       />
       {/* Header */}
       <header className="fixed top-4 left-4 right-4 z-50 flex justify-center">
         <div className="w-full max-w-7xl glass-pill h-16 flex items-center justify-between px-6 shadow-2xl">
           <div className="flex items-center gap-4">
-            <button
-              onClick={() => setIsSidebarOpen(true)}
-              className="p-2 hover:bg-white/10 rounded-full transition-colors"
-            >
-              <Menu className="h-6 w-6 text-white" />
-            </button>
+            {isLoggedIn && (
+              <button
+                onClick={() => setIsSidebarOpen(true)}
+                className="p-2 hover:bg-white/10 rounded-full transition-colors"
+              >
+                <Menu className="h-6 w-6 text-white" />
+              </button>
+            )}
             <Link to="/" className="flex items-center gap-2">
               <Waves className="h-8 w-8 text-primary" />
               <span className="text-xl font-bold tracking-tight text-white">MorphFlow</span>
@@ -172,55 +176,101 @@ export const LandingPage = () => {
 
         {/* Prompt Section */}
         <section className="relative z-10 px-2 sm:px-0">
-          <div className="neo-out rounded-[32px] sm:rounded-[40px] p-1 sm:p-2 blue-glow">
+          <div className="bg-white/15 backdrop-blur-2xl rounded-[32px] sm:rounded-[40px] p-1 sm:p-2 border-2 border-white/40 shadow-2xl">
             <div className="relative">
               <textarea
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value.slice(0, 2000))}
                 placeholder="What video are you creating today?"
-                className="w-full bg-transparent border-none focus:ring-0 text-lg sm:text-xl p-6 sm:p-8 min-h-[160px] sm:min-h-[200px] resize-none text-white placeholder:text-white/20"
+                className="w-full bg-transparent border-none focus:ring-0 text-lg sm:text-2xl p-6 sm:p-10 min-h-[200px] sm:min-h-[240px] resize-none text-white placeholder:text-white/60 font-bold"
               />
               <div className="absolute bottom-4 right-6 sm:bottom-6 sm:right-8 text-[10px] sm:text-xs text-white/30 font-mono">
                 {prompt.length}/2000
               </div>
             </div>
 
-            <div className="flex flex-col xl:flex-row items-center justify-between p-4 sm:p-6 gap-4 sm:gap-6 border-t border-white/5">
-              <div className="flex flex-col md:flex-row items-center gap-4 sm:gap-6 w-full xl:w-auto">
-                {/* Aspect Ratio Selector */}
-                <div className="flex items-center gap-1 sm:gap-2 bg-black/40 p-1 sm:p-1.5 rounded-xl sm:rounded-2xl neo-in w-full md:w-auto justify-center">
-                  <button
-                    onClick={() => setAspectRatio('shorts')}
-                    className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold transition-all ${aspectRatio === 'shorts' ? 'bg-primary text-white shadow-lg' : 'text-white/40 hover:text-white'}`}
-                  >
-                    Shorts
-                  </button>
-                  <button
-                    onClick={() => setAspectRatio('long')}
-                    className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold transition-all ${aspectRatio === 'long' ? 'bg-primary text-white shadow-lg' : 'text-white/40 hover:text-white'}`}
-                  >
-                    Long
-                  </button>
+            <div className="flex flex-col xl:flex-row items-center justify-between p-4 sm:p-8 gap-4 sm:gap-10 border-t border-white/10">
+              <div className="flex flex-col md:flex-row items-center gap-4 sm:gap-8 w-full xl:w-auto">
+
+                {/* Aspect Ratio Dropdown */}
+                <div className="relative w-full md:w-auto">
+                    <button
+                        onClick={() => setShowAspectMenu(!showAspectMenu)}
+                        className="w-full md:w-48 flex items-center justify-between px-6 py-4 bg-white/10 hover:bg-white/20 rounded-2xl border border-white/10 transition-all font-bold"
+                    >
+                        <span className="flex items-center gap-2">
+                            <span className="text-white/40 uppercase text-[10px] tracking-widest">Ratio</span>
+                            <span className="text-white capitalize">{aspectRatio}</span>
+                        </span>
+                        <ChevronDown className={`h-4 w-4 transition-transform ${showAspectMenu ? 'rotate-180' : ''}`} />
+                    </button>
+
+                    <AnimatePresence>
+                        {showAspectMenu && (
+                            <motion.div
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: 10 }}
+                                className="absolute bottom-full mb-2 left-0 w-full bg-card border border-white/10 rounded-2xl overflow-hidden shadow-2xl z-20"
+                            >
+                                <button
+                                    onClick={() => { setAspectRatio('shorts'); setShowAspectMenu(false); }}
+                                    className="w-full text-left px-6 py-4 hover:bg-white/5 transition-colors font-bold text-white border-b border-white/5"
+                                >
+                                    Shorts (9:16)
+                                </button>
+                                <button
+                                    onClick={() => { setAspectRatio('long'); setShowAspectMenu(false); }}
+                                    className="w-full text-left px-6 py-4 hover:bg-white/5 transition-colors font-bold text-white"
+                                >
+                                    Long (16:9)
+                                </button>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                 </div>
 
-                {/* Duration Selector */}
-                <div className="flex items-center gap-1 sm:gap-2 bg-black/40 p-1 sm:p-1.5 rounded-xl sm:rounded-2xl neo-in w-full md:w-auto justify-center">
-                  {[15, 30, 60].map((s) => (
+                {/* Duration Dropdown */}
+                <div className="relative w-full md:w-auto">
                     <button
-                      key={s}
-                      onClick={() => setDuration(s)}
-                      className={`flex-1 md:flex-none px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold transition-all ${duration === s ? 'bg-white text-black' : 'text-white/40 hover:text-white'}`}
+                        onClick={() => setShowDurationMenu(!showDurationMenu)}
+                        className="w-full md:w-48 flex items-center justify-between px-6 py-4 bg-white/10 hover:bg-white/20 rounded-2xl border border-white/10 transition-all font-bold"
                     >
-                      {s}s
+                        <span className="flex items-center gap-2">
+                            <span className="text-white/40 uppercase text-[10px] tracking-widest">Length</span>
+                            <span className="text-white">{duration}s</span>
+                        </span>
+                        <ChevronDown className={`h-4 w-4 transition-transform ${showDurationMenu ? 'rotate-180' : ''}`} />
                     </button>
-                  ))}
+
+                    <AnimatePresence>
+                        {showDurationMenu && (
+                            <motion.div
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: 10 }}
+                                className="absolute bottom-full mb-2 left-0 w-full bg-card border border-white/10 rounded-2xl overflow-hidden shadow-2xl z-20"
+                            >
+                                {[15, 30, 60].map((s) => (
+                                    <button
+                                        key={s}
+                                        onClick={() => { setDuration(s); setShowDurationMenu(false); }}
+                                        className="w-full text-left px-6 py-4 hover:bg-white/5 transition-colors font-bold text-white border-b border-white/5 last:border-0"
+                                    >
+                                        {s} Seconds
+                                    </button>
+                                ))}
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                 </div>
+
               </div>
 
               <div className="flex items-center w-full xl:w-auto">
                 <Button
                     size="lg"
-                    className="neo-btn rounded-xl sm:rounded-2xl px-8 sm:px-12 py-5 sm:py-7 text-lg sm:text-xl font-black text-primary hover:text-white w-full"
+                    className="bg-white text-black hover:bg-white/90 rounded-xl sm:rounded-2xl px-8 sm:px-12 py-5 sm:py-7 text-lg sm:text-xl font-black w-full shadow-xl"
                     onClick={() => handleGenerate()}
                     disabled={isGenerating || !prompt.trim()}
                 >
@@ -230,38 +280,51 @@ export const LandingPage = () => {
             </div>
           </div>
 
-          {/* Blur Overlay for Generation */}
-          <AnimatePresence>
-            {isGenerating && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="absolute inset-0 z-10 bg-background/40 backdrop-blur-md rounded-3xl flex items-center justify-center p-8 text-center"
-              >
-                <div className="max-w-md w-full">
-                    <Loader2 className="h-12 w-12 text-primary animate-spin mx-auto mb-6" />
-                    <h3 className="text-2xl font-bold mb-2">Morphing your idea...</h3>
-                    <p className="text-secondary-foreground mb-8">
-                        {jobStatus?.activities?.[jobStatus.activities.length - 1]?.step || 'Starting the creative engine...'}
-                    </p>
-
-                    {/* Progress Bar */}
-                    <div className="w-full bg-white/10 h-2 rounded-full overflow-hidden">
-                        <motion.div
-                            className="bg-primary h-full"
-                            initial={{ width: 0 }}
-                            animate={{ width: `${jobStatus?.progress || 0}%` }}
-                        />
-                    </div>
-                    <div className="mt-2 text-right text-xs text-secondary-foreground font-mono">
-                        {jobStatus?.progress || 0}%
-                    </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
         </section>
+
+        {/* Full-screen Blur Overlay for Generation */}
+        <AnimatePresence>
+          {isGenerating && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[100] bg-background/60 backdrop-blur-xl flex items-center justify-center p-8 text-center"
+            >
+              <div className="max-w-md w-full">
+                  <motion.div
+                    animate={{
+                        scale: [1, 1.1, 1],
+                        rotate: [0, 5, -5, 0]
+                    }}
+                    transition={{ repeat: Infinity, duration: 4 }}
+                  >
+                    <Waves className="h-20 w-20 text-primary mx-auto mb-8 drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]" />
+                  </motion.div>
+
+                  <h3 className="text-3xl font-black mb-4 tracking-tight">Morphing your idea...</h3>
+                  <p className="text-secondary-foreground mb-12 text-lg font-medium italic">
+                      "{jobStatus?.activities?.[jobStatus.activities.length - 1]?.step || 'Starting the creative engine...'}"
+                  </p>
+
+                  {/* Progress Bar */}
+                  <div className="relative w-full bg-white/5 h-4 rounded-full overflow-hidden neo-in p-1 border border-white/5">
+                      <motion.div
+                          className="bg-primary h-full rounded-full blue-glow"
+                          initial={{ width: 0 }}
+                          animate={{ width: `${jobStatus?.progress || 0}%` }}
+                      />
+                  </div>
+                  <div className="mt-4 flex justify-between items-center px-2">
+                      <span className="text-[10px] uppercase tracking-widest font-black text-white/40">Neural Processing</span>
+                      <span className="text-sm font-mono font-bold text-primary">
+                          {jobStatus?.progress || 0}%
+                      </span>
+                  </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Video Output Display */}
         <AnimatePresence>
@@ -294,6 +357,11 @@ export const LandingPage = () => {
                         className="w-full h-full object-contain"
                         controls
                     />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                        <div className="h-20 w-20 rounded-full bg-primary/20 backdrop-blur-sm border border-primary/40 flex items-center justify-center">
+                            <Play className="h-10 w-10 text-white fill-white" />
+                        </div>
+                    </div>
                 </div>
               </div>
             </motion.div>

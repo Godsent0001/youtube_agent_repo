@@ -42,7 +42,7 @@ class Video(BaseModel):
     # =========================
     # GENERATION STATUS
     # =========================
-    upload_status: Literal["pending", "processing", "completed", "failed"] = "pending"
+    status: Literal["pending", "processing", "completed", "failed"] = "pending"
 
     # =========================
     # PERFORMANCE METRICS (LIVE UPDATE)

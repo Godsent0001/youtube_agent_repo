@@ -80,7 +80,7 @@ class VideoController:
         if not video:
             raise HTTPException(status_code=404, detail="Video not found")
 
-        if video.get("upload_status") != "failed":
+        if video.get("status") != "failed":
             return {
                 "message": "Video is not in failed state"
             }
@@ -108,7 +108,7 @@ class VideoController:
 
         return {
             "video_id": video_id,
-            "status": video.get("upload_status"),
+            "status": video.get("status"),
             "stage": video.get("current_stage", "unknown")
         }
 

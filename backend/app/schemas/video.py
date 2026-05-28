@@ -25,22 +25,10 @@ class VideoCreate(BaseModel):
 # UPDATE VIDEO (PIPELINE PROGRESS)
 # =========================
 class VideoUpdate(BaseModel):
-    title: Optional[str] = None
-    description: Optional[str] = None
-
     audio_url: Optional[str] = None
     video_url: Optional[str] = None
 
-    upload_status: Optional[Literal["pending", "processing", "uploaded", "failed"]] = None
-
-
-# =========================
-# YOUTUBE UPLOAD RESULT
-# =========================
-class VideoUploadResponse(BaseModel):
-    video_id: str
-    youtube_url: str
-    upload_status: Literal["uploaded", "failed"]
+    status: Optional[Literal["pending", "processing", "completed", "failed"]] = None
 
 
 # =========================
@@ -50,22 +38,17 @@ class VideoResponse(BaseModel):
     id: str
 
     user_id: str
-    agent_id: str
-
-    title: Optional[str]
-    description: Optional[str]
+    agent_id: Optional[str] = None
 
     topic: str
-    niche: str
 
     content_type: Literal["shorts", "long"]
 
     script: str
 
     video_url: Optional[str]
-    thumbnail_url: Optional[str]
 
-    upload_status: Literal["pending", "processing", "uploaded", "failed"]
+    status: Literal["pending", "processing", "completed", "failed"]
 
     views: int = 0
     likes: int = 0

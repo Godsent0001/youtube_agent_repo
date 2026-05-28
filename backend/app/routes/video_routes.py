@@ -115,6 +115,6 @@ def video_status(video_id: str):
 
     return {
         "video_id": video_id,
-        "status": video.get("upload_status"),
+        "status": video.get("status"),
         "current_stage": video.get("current_stage", "unknown")
     }

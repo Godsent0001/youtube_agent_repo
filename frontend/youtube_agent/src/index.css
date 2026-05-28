@@ -13,17 +13,17 @@ body {
 }
 
 @theme {
-  --color-background: #0A0B0E; /* Deeper Charcoal Black */
-  --color-card: #12141A;
+  --color-background: #0D0E12; /* Slightly Lighter Charcoal */
+  --color-card: #181A21;
   --color-primary: #3B82F6; /* Shining Blue */
   --color-primary-foreground: #FFFFFF;
   --color-secondary: #1E222B;
-  --color-secondary-foreground: #94A3B8;
+  --color-secondary-foreground: #CBD5E1; /* Brighter slate */
   --color-muted: #12141A;
   --color-muted-foreground: #94A3B8;
   --color-accent: #3B82F6;
   --color-accent-foreground: #FFFFFF;
-  --color-border: #1E222B;
+  --color-border: #2D3139;
 }
 
 @layer base {

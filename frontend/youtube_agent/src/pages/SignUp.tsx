@@ -15,6 +15,15 @@ export const SignUp = () => {
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // Background items for depth
+  const bgItems = Array.from({ length: 6 }).map((_, i) => ({
+    id: i,
+    size: Math.random() * 300 + 100,
+    x: Math.random() * 100,
+    y: Math.random() * 100,
+    duration: Math.random() * 10 + 10
+  }));
+
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -47,67 +56,113 @@ export const SignUp = () => {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -20 }}
-    >
-      <div className="text-center mb-8">
-        <div className="flex justify-center mb-4">
-            <div className="h-12 w-12 rounded-xl bg-primary flex items-center justify-center">
-                <Waves className="h-8 w-8 text-white" />
+    <div className="min-h-screen bg-background relative overflow-hidden flex items-center justify-center px-4">
+      {/* Dynamic Background */}
+      {bgItems.map(item => (
+        <motion.div
+          key={item.id}
+          className="absolute rounded-full bg-primary/5 blur-[100px]"
+          style={{
+            width: item.size,
+            height: item.size,
+            left: `${item.x}%`,
+            top: `${item.y}%`,
+          }}
+          animate={{
+            x: [0, 50, -50, 0],
+            y: [0, -50, 50, 0],
+          }}
+          transition={{
+            duration: item.duration,
+            repeat: Infinity,
+            ease: "linear"
+          }}
+        />
+      ))}
+
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="w-full max-w-md z-10 py-10"
+      >
+        <div className="neo-out rounded-[40px] p-8 sm:p-12 blue-glow border border-white/5">
+          <div className="text-center mb-10">
+            <div className="flex justify-center mb-6">
+                <motion.div
+                    whileHover={{ rotate: 180 }}
+                    transition={{ duration: 0.5 }}
+                    className="h-16 w-16 rounded-2xl bg-primary flex items-center justify-center shadow-[0_0_30px_rgba(59,130,246,0.4)]"
+                >
+                    <Waves className="h-10 w-10 text-white" />
+                </motion.div>
             </div>
-        </div>
-        <h1 className="text-2xl font-bold text-white">Create Your Account</h1>
-        <p className="text-secondary-foreground">Join MorphFlow and start creating viral content</p>
-      </div>
+            <h1 className="text-3xl font-black text-white tracking-tight mb-2">Join MorphFlow</h1>
+            <p className="text-secondary-foreground font-medium">Start your viral journey today</p>
+          </div>
 
-      <div className="relative my-8">
-        <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t border-border" />
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-card px-2 text-secondary-foreground">Or sign up with email</span>
-        </div>
-      </div>
+          {error && <p className="text-red-500 text-sm mb-6 text-center font-bold">{error}</p>}
+          {success && <p className="text-green-500 text-sm mb-6 text-center font-bold">{success}</p>}
 
-      {error && <p className="text-red-500 text-sm mb-4 text-center">{error}</p>}
-      {success && <p className="text-green-500 text-sm mb-4 text-center">{success}</p>}
-      <form onSubmit={handleSignUp} className="space-y-4">
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-secondary-foreground">Email</label>
-          <Input
-            type="email"
-            placeholder="name@example.com"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
+          <form onSubmit={handleSignUp} className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-xs font-black uppercase tracking-widest text-white/40 ml-1">Email Address</label>
+              <div className="neo-in rounded-2xl p-1">
+                <input
+                    type="email"
+                    placeholder="name@example.com"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full bg-transparent border-none focus:ring-0 px-5 py-4 text-white placeholder:text-white/10"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-black uppercase tracking-widest text-white/40 ml-1">Password</label>
+              <div className="neo-in rounded-2xl p-1">
+                <input
+                    type="password"
+                    placeholder="••••••••"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full bg-transparent border-none focus:ring-0 px-5 py-4 text-white placeholder:text-white/10"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-black uppercase tracking-widest text-white/40 ml-1">Confirm Password</label>
+              <div className="neo-in rounded-2xl p-1">
+                <input
+                    type="password"
+                    placeholder="••••••••"
+                    required
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="w-full bg-transparent border-none focus:ring-0 px-5 py-4 text-white placeholder:text-white/10"
+                />
+              </div>
+            </div>
+
+            <Button
+                type="submit"
+                className="w-full py-7 rounded-2xl font-black text-lg neo-btn text-primary hover:text-white transition-all mt-4"
+                disabled={loading}
+            >
+              {loading ? 'Creating Account...' : 'Create Account'}
+            </Button>
+          </form>
+
+          <p className="mt-10 text-center text-sm text-secondary-foreground font-medium">
+            Already have an account?{' '}
+            <Link to="/login" className="text-primary hover:text-white font-black transition-colors">
+              Log In →
+            </Link>
+          </p>
         </div>
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-secondary-foreground">Password</label>
-          <Input
-            type="password"
-            placeholder="••••••••"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </div>
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-secondary-foreground">Confirm Password</label>
-          <Input
-            type="password"
-            placeholder="••••••••"
-            required
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-          />
-        </div>
-        <Button type="submit" className="w-full py-6 sm:py-2" disabled={loading}>
-          {loading ? 'Creating Account...' : 'Sign Up'}
-        </Button>
-      </form>
-    </motion.div>
+      </motion.div>
+    </div>
   );
 };
