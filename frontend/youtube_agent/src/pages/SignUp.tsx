@@ -14,15 +14,6 @@ export const SignUp = () => {
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Background items for depth
-  const bgItems = Array.from({ length: 6 }).map((_, i) => ({
-    id: i,
-    size: Math.random() * 300 + 100,
-    x: Math.random() * 100,
-    y: Math.random() * 100,
-    duration: Math.random() * 10 + 10
-  }));
-
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -44,59 +35,28 @@ export const SignUp = () => {
       setSuccess('Account created successfully! Welcome aboard.');
       setTimeout(() => navigate('/'), 1500);
     } catch (err: any) {
-      if (err.message.toLowerCase().includes('already exists')) {
-        setError('An account with this email already exists.');
-      } else {
-        setError(err.message || 'Could not create account. Please try again.');
-      }
+      setError(err.message || 'Could not create account.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden flex items-center justify-center px-4">
-      {/* Dynamic Background */}
-      {bgItems.map(item => (
-        <motion.div
-          key={item.id}
-          className="absolute rounded-full bg-primary/5 blur-[100px]"
-          style={{
-            width: item.size,
-            height: item.size,
-            left: `${item.x}%`,
-            top: `${item.y}%`,
-          }}
-          animate={{
-            x: [0, 50, -50, 0],
-            y: [0, -50, 50, 0],
-          }}
-          transition={{
-            duration: item.duration,
-            repeat: Infinity,
-            ease: "linear"
-          }}
-        />
-      ))}
-
+    <div className="min-h-screen bg-[#0F1115] flex items-center justify-center px-4">
       <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
+        initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-md z-10 py-10"
+        className="w-full max-w-md py-10"
       >
-        <div className="neo-out rounded-[40px] p-8 sm:p-12 blue-glow border border-white/5">
+        <div className="bg-white/[0.03] border border-white/5 rounded-[40px] p-12 shadow-2xl">
           <div className="text-center mb-10">
             <div className="flex justify-center mb-6">
-                <motion.div
-                    whileHover={{ rotate: 180 }}
-                    transition={{ duration: 0.5 }}
-                    className="h-16 w-16 rounded-2xl bg-primary flex items-center justify-center shadow-[0_0_30px_rgba(59,130,246,0.4)]"
-                >
+                <div className="h-16 w-16 rounded-2xl bg-primary flex items-center justify-center shadow-[0_0_30px_rgba(59,130,246,0.3)]">
                     <Waves className="h-10 w-10 text-white" />
-                </motion.div>
+                </div>
             </div>
             <h1 className="text-3xl font-black text-white tracking-tight mb-2">Join MorphFlow</h1>
-            <p className="text-secondary-foreground font-medium">Start your viral journey today</p>
+            <p className="text-white/40 font-medium">Start your viral journey today</p>
           </div>
 
           {error && <p className="text-red-500 text-sm mb-6 text-center font-bold">{error}</p>}
@@ -104,57 +64,51 @@ export const SignUp = () => {
 
           <form onSubmit={handleSignUp} className="space-y-6">
             <div className="space-y-2">
-              <label className="text-xs font-black uppercase tracking-widest text-white/40 ml-1">Email Address</label>
-              <div className="neo-in rounded-2xl p-1">
-                <input
-                    type="email"
-                    placeholder="name@example.com"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full bg-transparent border-none focus:ring-0 px-5 py-4 text-white placeholder:text-white/10"
-                />
-              </div>
+              <label className="text-xs font-black uppercase tracking-widest text-white/20 ml-1">Email Address</label>
+              <input
+                  type="email"
+                  placeholder="name@example.com"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full bg-white/[0.05] border border-white/10 rounded-2xl px-6 py-4 text-white placeholder:text-white/10 focus:outline-none focus:border-primary transition-colors font-bold"
+              />
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-black uppercase tracking-widest text-white/40 ml-1">Password</label>
-              <div className="neo-in rounded-2xl p-1">
-                <input
-                    type="password"
-                    placeholder="••••••••"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full bg-transparent border-none focus:ring-0 px-5 py-4 text-white placeholder:text-white/10"
-                />
-              </div>
+              <label className="text-xs font-black uppercase tracking-widest text-white/20 ml-1">Password</label>
+              <input
+                  type="password"
+                  placeholder="••••••••"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full bg-white/[0.05] border border-white/10 rounded-2xl px-6 py-4 text-white placeholder:text-white/10 focus:outline-none focus:border-primary transition-colors font-bold"
+              />
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-black uppercase tracking-widest text-white/40 ml-1">Confirm Password</label>
-              <div className="neo-in rounded-2xl p-1">
-                <input
-                    type="password"
-                    placeholder="••••••••"
-                    required
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full bg-transparent border-none focus:ring-0 px-5 py-4 text-white placeholder:text-white/10"
-                />
-              </div>
+              <label className="text-xs font-black uppercase tracking-widest text-white/20 ml-1">Confirm Password</label>
+              <input
+                  type="password"
+                  placeholder="••••••••"
+                  required
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="w-full bg-white/[0.05] border border-white/10 rounded-2xl px-6 py-4 text-white placeholder:text-white/10 focus:outline-none focus:border-primary transition-colors font-bold"
+              />
             </div>
 
             <Button
                 type="submit"
-                className="w-full py-7 rounded-2xl font-black text-lg neo-btn text-primary hover:text-white transition-all mt-4"
+                className="w-full py-8 rounded-2xl font-black text-lg bg-primary text-white hover:bg-primary/90 transition-all mt-4"
                 disabled={loading}
             >
               {loading ? 'Creating Account...' : 'Create Account'}
             </Button>
           </form>
 
-          <p className="mt-10 text-center text-sm text-secondary-foreground font-medium">
+          <p className="mt-10 text-center text-sm text-white/40 font-medium">
             Already have an account?{' '}
             <Link to="/login" className="text-primary hover:text-white font-black transition-colors">
               Log In →

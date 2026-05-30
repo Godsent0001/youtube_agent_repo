@@ -1,6 +1,11 @@
-
 import { motion, AnimatePresence } from 'framer-motion';
-import { Settings, CreditCard, LogOut, X, Waves } from 'lucide-react';
+import {
+  Settings,
+  CreditCard,
+  LogOut,
+  X,
+  Zap
+} from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
 interface SidebarProps {
@@ -13,17 +18,17 @@ export const Sidebar = ({ isOpen, onClose, userEmail }: SidebarProps) => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('user_id');
-    localStorage.removeItem('user_email');
-    onClose();
+    localStorage.clear();
     navigate('/login');
+    onClose();
   };
 
   const menuItems = [
-    { name: 'Settings', icon: Settings, href: '/settings' },
-    { name: 'Upgrade', icon: CreditCard, href: '/pricing' },
+    { icon: Settings, label: 'Settings', path: '/settings' },
+    { icon: CreditCard, label: 'Upgrade', path: '/pricing' },
   ];
+
+  const initials = userEmail ? userEmail.substring(0, 2).toUpperCase() : 'MF';
 
   return (
     <AnimatePresence>
@@ -41,62 +46,53 @@ export const Sidebar = ({ isOpen, onClose, userEmail }: SidebarProps) => {
             animate={{ x: 0 }}
             exit={{ x: '-100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed top-0 left-0 bottom-0 w-72 bg-card border-r border-border z-[70] flex flex-col"
+            className="fixed left-0 top-0 bottom-0 w-[320px] bg-[#16191f] z-[70] border-r border-white/5 flex flex-col"
           >
-            <div className="p-6 flex items-center justify-between border-b border-border">
-              <div className="flex items-center gap-2">
-                <Waves className="h-8 w-8 text-primary" />
-                <span className="text-xl font-bold text-white">MorphFlow</span>
+            <div className="p-8 flex items-center justify-between border-b border-white/5">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center text-white font-black text-lg shadow-lg">
+                  {initials}
+                </div>
+                <div>
+                  <p className="text-sm font-black text-white truncate max-w-[160px]">
+                    {userEmail || 'User'}
+                  </p>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <Zap className="h-3 w-3 text-primary fill-primary" />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-primary">Free Plan</span>
+                  </div>
+                </div>
               </div>
-              <button onClick={onClose} className="text-secondary-foreground hover:text-white transition-colors">
+              <button
+                onClick={onClose}
+                className="p-2 hover:bg-white/5 rounded-full transition-colors text-white/40 hover:text-white"
+              >
                 <X className="h-6 w-6" />
               </button>
             </div>
 
-            <div className="flex-1 py-6 flex flex-col">
-              <nav className="space-y-2 px-4 flex-1">
-                {menuItems.map((item) => (
-                  <Link
-                    key={item.name}
-                    to={item.href}
-                    onClick={onClose}
-                    className="flex items-center gap-3 px-4 py-3 text-secondary-foreground hover:text-white hover:bg-white/5 rounded-lg transition-all"
-                  >
-                    <item.icon className="h-5 w-5" />
-                    <span className="font-medium">{item.name}</span>
-                  </Link>
-                ))}
+            <div className="flex-1 py-8 px-4 space-y-2">
+              {menuItems.map((item) => (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  onClick={onClose}
+                  className="flex items-center gap-4 px-6 py-4 rounded-2xl text-white/60 hover:text-white hover:bg-white/5 transition-all font-bold group"
+                >
+                  <item.icon className="h-5 w-5 group-hover:text-primary transition-colors" />
+                  <span>{item.label}</span>
+                </Link>
+              ))}
+            </div>
 
-                {userEmail && (
-                  <button
-                    onClick={handleLogout}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-red-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
-                  >
-                    <LogOut className="h-5 w-5" />
-                    <span className="font-medium">Logout</span>
-                  </button>
-                )}
-              </nav>
-
-              {userEmail && (
-                <div className="mx-4 mt-auto p-4 bg-white/5 rounded-2xl border border-border">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20 shrink-0">
-                      <span className="text-primary font-bold text-sm">
-                        {userEmail.substring(0, 2).toUpperCase()}
-                      </span>
-                    </div>
-                    <div className="flex flex-col min-w-0">
-                      <span className="text-sm font-bold text-white truncate">
-                        {userEmail.split('@')[0]}
-                      </span>
-                      <span className="text-[10px] text-secondary-foreground truncate">
-                        {userEmail}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              )}
+            <div className="p-8 border-t border-white/5">
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-4 w-full px-6 py-4 rounded-2xl text-red-400 hover:text-red-300 hover:bg-red-400/5 transition-all font-bold group"
+              >
+                <LogOut className="h-5 w-5" />
+                <span>Logout</span>
+              </button>
             </div>
           </motion.div>
         </>

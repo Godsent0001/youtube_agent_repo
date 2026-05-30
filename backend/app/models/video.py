@@ -26,7 +26,7 @@ class Video(BaseModel):
     content_type: Literal["shorts", "long"] = "shorts"
 
     topic: str
-    niche: str
+    niche: Optional[str] = ""
 
     script: str
 

@@ -1,190 +1,91 @@
-
-import { useState, useEffect } from 'react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/Card';
+import { motion } from 'framer-motion';
+import { User, Bell, Shield, Wallet, Globe, Mail } from 'lucide-react';
 import { Button } from '../components/ui/Button';
-import { Input } from '../components/ui/Input';
-import { Select } from '../components/ui/Select';
-import { User as UserIcon, Bell, Key, Shield, Trash2, Play, Save } from 'lucide-react';
-import { apiRequest } from '../utils/api';
 
 export const Settings = () => {
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const data = await apiRequest('/auth/me');
-        setUser(data);
-      } catch (err) {
-        console.error('Failed to fetch user:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUser();
-  }, []);
-
-  if (loading) return <p className="text-white text-center py-12">Loading settings...</p>;
+  const sections = [
+    {
+      title: 'Profile Settings',
+      icon: User,
+      fields: [
+        { label: 'Display Name', value: 'John Doe', type: 'text' },
+        { label: 'Email Address', value: 'john@example.com', type: 'email' },
+      ]
+    },
+    {
+      title: 'Preferences',
+      icon: Bell,
+      fields: [
+        { label: 'Email Notifications', value: true, type: 'switch' },
+        { label: 'Weekly Reports', value: false, type: 'switch' },
+        { label: 'Activity Alerts', value: true, type: 'switch' },
+      ]
+    }
+  ];
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 sm:space-y-8">
-      <div className="text-center sm:text-left">
-        <h1 className="text-2xl sm:text-3xl font-bold text-white">Settings</h1>
-        <p className="text-sm sm:text-base text-secondary-foreground">Manage your account and preferences</p>
+    <div className="py-20 px-8 max-w-4xl mx-auto">
+      <div className="mb-12">
+        <h1 className="text-4xl font-black text-white mb-4">Settings</h1>
+        <p className="text-white/40 font-medium">Manage your MorphFlow account and preferences.</p>
       </div>
 
-      <div className="space-y-6">
-        {/* Account Settings */}
-        <Card>
-          <CardHeader className="px-4 sm:px-6">
-            <div className="flex items-center gap-2">
-              <UserIcon className="h-5 w-5 text-primary" />
-              <CardTitle className="text-lg sm:text-xl">Account Settings</CardTitle>
-            </div>
-            <CardDescription className="text-xs sm:text-sm">Update your personal information and profile settings.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4 px-4 sm:px-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-white">Full Name</label>
-                <Input defaultValue={user?.full_name || ''} className="py-5 sm:py-2" />
+      <div className="space-y-10">
+        {sections.map((section) => (
+          <motion.div
+            key={section.title}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white/[0.03] border border-white/5 rounded-[40px] p-10 overflow-hidden shadow-2xl"
+          >
+            <div className="flex items-center gap-4 mb-10 pb-6 border-b border-white/5">
+              <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
+                <section.icon className="h-6 w-6" />
               </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-white">Email Address</label>
-                <Input type="email" defaultValue={user?.email || ''} readOnly className="py-5 sm:py-2 opacity-70" />
-              </div>
+              <h2 className="text-xl font-black text-white">{section.title}</h2>
             </div>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-neutral-900 rounded-lg border border-border gap-4">
-              <div className="flex items-center gap-3">
-                <Play className="h-6 w-6 text-red-600" />
-                <div>
-                  <div className="text-sm font-bold text-white">YouTube OAuth</div>
-                  <div className="text-xs text-secondary-foreground">
-                    {user?.youtube_refresh_token ? 'Connected' : 'Not Connected'}
+
+            <div className="space-y-8">
+              {section.fields.map((field) => (
+                <div key={field.label} className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <p className="text-sm font-black text-white uppercase tracking-widest">{field.label}</p>
+                    {typeof field.value !== 'boolean' && (
+                       <p className="text-white/40 text-sm font-medium">{field.value}</p>
+                    )}
                   </div>
+
+                  {field.type === 'switch' ? (
+                    <button className={`w-14 h-7 rounded-full transition-colors relative ${field.value ? 'bg-primary' : 'bg-white/10'}`}>
+                      <div className={`absolute top-1 w-5 h-5 bg-white rounded-full transition-all ${field.value ? 'right-1' : 'left-1'}`} />
+                    </button>
+                  ) : (
+                    <Button variant="outline" size="sm" className="rounded-xl border-white/10 text-white font-bold px-6">
+                      Edit
+                    </Button>
+                  )}
                 </div>
-              </div>
-              <Button variant="outline" size="sm" className="w-full sm:w-auto py-5 sm:py-2">
-                  {user?.youtube_refresh_token ? 'Reconnect' : 'Connect'}
-              </Button>
+              ))}
             </div>
-          </CardContent>
-        </Card>
+          </motion.div>
+        ))}
 
-        {/* Notifications */}
-        <Card>
-          <CardHeader className="px-4 sm:px-6">
-            <div className="flex items-center gap-2">
-              <Bell className="h-5 w-5 text-primary" />
-              <CardTitle className="text-lg sm:text-xl">Notification Settings</CardTitle>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-red-500/5 border border-red-500/10 rounded-[40px] p-10 shadow-2xl"
+        >
+          <h2 className="text-xl font-black text-red-500 mb-6">Danger Zone</h2>
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <p className="text-sm font-black text-white uppercase tracking-widest">Delete Account</p>
+              <p className="text-white/40 text-sm font-medium">Permanently remove all your data and videos.</p>
             </div>
-            <CardDescription className="text-xs sm:text-sm">Choose what updates you want to receive.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4 px-4 sm:px-6">
-            {[
-              { label: 'Email Notifications for New Videos', description: 'Get an email every time an agent posts a video.' },
-              { label: 'Campaign Performance Updates', description: 'Weekly reports on your monetization campaigns.' },
-              { label: 'Agent Status Alerts', description: 'Immediate alerts if an agent is paused or encounters an error.' },
-            ].map((notif, i) => (
-              <div key={i} className="flex items-start justify-between">
-                <div>
-                  <div className="text-sm font-medium text-white">{notif.label}</div>
-                  <div className="text-xs text-secondary-foreground">{notif.description}</div>
-                </div>
-                <input type="checkbox" className="mt-1 h-4 w-4 rounded border-border bg-card text-primary focus:ring-primary" />
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-
-        {/* API Keys */}
-        <Card>
-          <CardHeader className="px-4 sm:px-6">
-            <div className="flex items-center gap-2">
-              <Key className="h-5 w-5 text-primary" />
-              <CardTitle className="text-lg sm:text-xl">API & Integration</CardTitle>
-            </div>
-            <CardDescription className="text-xs sm:text-sm">Access keys for advanced integrations and developer tools.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4 px-4 sm:px-6">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-white">YouTube API Key</label>
-              <div className="flex flex-col sm:flex-row gap-2">
-                <Input type="password" value="********************************" readOnly className="py-5 sm:py-2" />
-                <Button variant="outline" className="w-full sm:w-auto py-5 sm:py-2">Edit</Button>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-white">AI Engine API Key</label>
-              <div className="flex flex-col sm:flex-row gap-2">
-                <Input type="password" value="********************************" readOnly className="py-5 sm:py-2" />
-                <Button variant="outline" className="w-full sm:w-auto py-5 sm:py-2">Edit</Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Preferences */}
-        <Card>
-          <CardHeader className="px-4 sm:px-6">
-            <div className="flex items-center gap-2">
-              <Shield className="h-5 w-5 text-primary" />
-              <CardTitle className="text-lg sm:text-xl">Default Preferences</CardTitle>
-            </div>
-            <CardDescription className="text-xs sm:text-sm">Set defaults for newly created agents.</CardDescription>
-          </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4 px-4 sm:px-6">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-white">Video Length</label>
-              <Select defaultValue="30s">
-                <option value="30s">30 Seconds</option>
-                <option value="60s">60 Seconds</option>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-white">Content Type</label>
-              <Select defaultValue="shorts">
-                <option value="shorts">Shorts</option>
-                <option value="long">Long-form</option>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-white">Language</label>
-              <Select defaultValue="en">
-                <option value="en">English (US)</option>
-                <option value="ng">English (NG)</option>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Danger Zone */}
-        <Card className="border-red-900/50">
-          <CardHeader className="px-4 sm:px-6">
-            <div className="flex items-center gap-2">
-              <Trash2 className="h-5 w-5 text-red-500" />
-              <CardTitle className="text-red-500 text-lg sm:text-xl">Danger Zone</CardTitle>
-            </div>
-            <CardDescription className="text-xs sm:text-sm">Irreversible actions for your account and agents.</CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col sm:flex-row gap-3 sm:gap-4 px-4 sm:px-6">
-            <Button variant="outline" className="w-full sm:w-auto border-red-900 text-red-500 hover:bg-red-950/30 py-6 sm:py-2">
-              Disconnect All Agents
+            <Button variant="ghost" className="text-red-500 hover:bg-red-500/10 font-black rounded-xl">
+              Delete Forever
             </Button>
-            <Button variant="outline" className="w-full sm:w-auto border-red-900 text-red-500 hover:bg-red-950/30 py-6 sm:py-2">
-              Delete Account
-            </Button>
-          </CardContent>
-        </Card>
-
-        <div className="flex justify-end pt-6">
-          <Button size="lg" className="w-full sm:w-auto sm:px-12 gap-2 py-6 sm:py-2">
-            <Save className="h-5 w-5" />
-            Save Changes
-          </Button>
-        </div>
+          </div>
+        </motion.div>
       </div>
     </div>
   );

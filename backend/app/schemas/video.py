@@ -1,57 +1,40 @@
-from pydantic import BaseModel
-from typing import Optional, List, Literal, Dict
+from pydantic import BaseModel, Field
+from typing import Optional, List, Dict, Literal
 from datetime import datetime
 
-
-# =========================
-# CREATE VIDEO (INTERNAL PIPELINE INPUT)
-# =========================
-class VideoCreate(BaseModel):
-    agent_id: str
-    user_id: str
-
-    topic: str
-    niche: str
-
-    content_type: Literal["shorts", "long"]
-
-    script: str
-
-    scenes: Optional[List[Dict]] = []
-    media_sources: Optional[List[str]] = []
-
-
-# =========================
-# UPDATE VIDEO (PIPELINE PROGRESS)
-# =========================
-class VideoUpdate(BaseModel):
-    audio_url: Optional[str] = None
-    video_url: Optional[str] = None
-
-    status: Optional[Literal["pending", "processing", "completed", "failed"]] = None
-
-
-# =========================
-# VIDEO RESPONSE (FRONTEND)
-# =========================
-class VideoResponse(BaseModel):
-    id: str
-
+class VideoBase(BaseModel):
     user_id: str
     agent_id: Optional[str] = None
-
+    title: Optional[str] = None
+    description: Optional[str] = None
+    content_type: Literal["shorts", "long"] = "shorts"
     topic: str
-
-    content_type: Literal["shorts", "long"]
-
+    niche: Optional[str] = ""
     script: str
 
-    video_url: Optional[str]
+class VideoCreate(VideoBase):
+    pass
 
-    status: Literal["pending", "processing", "completed", "failed"]
+class VideoGenerateRequest(BaseModel):
+    prompt: str
+    content_type: Literal["shorts", "long"] = "shorts"
+    video_length: int = 60
 
-    views: int = 0
-    likes: int = 0
-    retention_rate: float = 0.0
-
+class VideoResponse(VideoBase):
+    id: str
+    scenes: List[Dict] = []
+    media_sources: List[str] = []
+    audio_url: Optional[str] = None
+    video_url: Optional[str] = None
+    status: str
+    views: int
+    likes: int
+    comments: int
     created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class VideoListResponse(BaseModel):
+    videos: List[VideoResponse]
+    total: int

@@ -1,116 +1,55 @@
-from fastapi import HTTPException
-
-from app.services.video.video_service import video_service
-from app.services.analytics.metrics_service import metrics_service
-from app.workers.worker import worker
-from app.core.logger import logger
-
+from typing import List, Optional
+from app.db.session import db
+from app.models.video import Video
+from app.schemas.video import VideoCreate
+from bson import ObjectId
+from app.services.pipeline_service import pipeline_service
+from app.queue.redis_queue import video_queue
+from fastapi import BackgroundTasks
+import uuid
 
 class VideoController:
-    """
-    Controls full lifecycle of AI-generated videos
-    """
+    async def create_video(self, video_data: VideoCreate):
+        video_dict = video_data.model_dump()
+        video_dict["created_at"] = video_dict.get("created_at") or video_data.created_at
+        result = await db["videos"].insert_one(video_dict)
+        video_dict["id"] = str(result.inserted_id)
+        return video_dict
 
-    def __init__(self):
-        self.logger = logger
+    async def get_user_videos(self, user_id: str) -> List[dict]:
+        cursor = db["videos"].find({"user_id": user_id}).sort("created_at", -1)
+        videos = await cursor.to_list(length=100)
+        for v in videos:
+            v["id"] = str(v["_id"])
+        return videos
 
-    # =========================
-    # GET USER VIDEOS
-    # =========================
-    def get_user_videos(self, user_id: str):
+    async def get_video(self, video_id: str) -> Optional[dict]:
+        video = await db["videos"].find_one({"_id": ObjectId(video_id)})
+        if video:
+            video["id"] = str(video["_id"])
+        return video
 
-        return video_service.get_user_videos(user_id)
+    async def generate_video_prompt(self, user_id: str, prompt: str, content_type: str, video_length: int, background_tasks: BackgroundTasks):
+        """
+        Enqueues a background job to generate a video from a prompt
+        """
+        # Create a job record in MongoDB first to track it
+        job_id = str(uuid.uuid4())
 
-    # =========================
-    # GET SINGLE VIDEO
-    # =========================
-    def get_video(self, video_id: str):
+        from app.services.video_jobs import create_video_job
+        create_video_job(job_id, user_id, "MorphFlow Generation")
 
-        video = video_service.get_video(video_id)
+        # Enqueue to Redis Queue
+        # We use background_tasks as a fallback or if Redis is not configured,
+        # but the primary way is via the video_queue
+        video_queue.enqueue(
+            pipeline_service.run,
+            args=(user_id, prompt, content_type, video_length, job_id),
+            job_id=job_id,
+            job_timeout=3600,
+            timeout=3600
+        )
 
-        if not video:
-            raise HTTPException(status_code=404, detail="Video not found")
-
-        metrics = metrics_service.get_video_metrics(video_id)
-
-        return {
-            "video": video,
-            "metrics": metrics
-        }
-
-    # =========================
-    # DELETE VIDEO
-    # =========================
-    def delete_video(self, video_id: str):
-
-        result = video_service.delete_video(video_id)
-
-        self.logger.info(f"Video deleted: {video_id}")
-
-        return result
-
-    # =========================
-    # REGENERATE VIDEO
-    # =========================
-    def regenerate_video(self, video_id: str):
-
-        video = video_service.get_video(video_id)
-
-        if not video:
-            raise HTTPException(status_code=404, detail="Video not found")
-
-        worker.add_job("generate_video", {
-            "agent_id": video["agent_id"]
-        })
-
-        self.logger.info(f"Video regeneration triggered: {video_id}")
-
-        return {
-            "message": "Video regeneration started",
-            "video_id": video_id
-        }
-
-    # =========================
-    # RETRY FAILED VIDEO
-    # =========================
-    def retry_video(self, video_id: str):
-
-        video = video_service.get_video(video_id)
-
-        if not video:
-            raise HTTPException(status_code=404, detail="Video not found")
-
-        if video.get("status") != "failed":
-            return {
-                "message": "Video is not in failed state"
-            }
-
-        worker.add_job("generate_video", {
-            "agent_id": video["agent_id"]
-        })
-
-        self.logger.info(f"Retry initiated: {video_id}")
-
-        return {
-            "message": "Retry started",
-            "video_id": video_id
-        }
-
-    # =========================
-    # VIDEO STATUS
-    # =========================
-    def get_status(self, video_id: str):
-
-        video = video_service.get_video(video_id)
-
-        if not video:
-            raise HTTPException(status_code=404, detail="Video not found")
-
-        return {
-            "video_id": video_id,
-            "status": video.get("status"),
-            "stage": video.get("current_stage", "unknown")
-        }
-
+        return {"job_id": job_id, "status": "queued"}
 
 video_controller = VideoController()

@@ -1,90 +1,53 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-
+from app.routes import auth_routes, video_routes, job_routes, user_routes, agent_routes
 from app.core.config import settings
 from app.core.logger import logger
+import time
 
-# =========================
-# ROUTES IMPORTS
-# =========================
-from app.routes.auth_routes import router as auth_router
-from app.routes.agent_routes import router as agent_router
-from app.routes.dashboard_routes import router as dashboard_router
-from app.routes.settings_routes import router as settings_router
-from app.routes.video_routes import router as video_router
-from app.routes.job_routes import router as job_router
+app = FastAPI(title="MorphFlow API")
 
-# =========================
-# DB INIT (MongoDB)
-# =========================
-from app.db.init_db import init_db
-from migrate_agents import migrate as migrate_agents
-
-
-# =========================
-# APP INIT
-# =========================
-app = FastAPI(
-    title="AI Video Agent Platform",
-    version="1.0.0"
-)
-
-# =========================
-# CORS CONFIGURATION
-# =========================
+# Configure CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",
-        "https://youtube-agent-repo.vercel.app"
+        "https://youtube-agent-repo.vercel.app",
     ],
-    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# Request logging middleware
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    start_time = time.time()
+    response = await call_next(request)
+    duration = time.time() - start_time
+    logger.info(f"{request.method} {request.url.path} - {response.status_code} ({duration:.2f}s)")
+    return response
 
-# =========================
-# REGISTER ROUTES
-# =========================
-app.include_router(auth_router)
-app.include_router(agent_router)
-app.include_router(dashboard_router)
-app.include_router(settings_router)
-app.include_router(video_router)
-app.include_router(job_router)
+# Include routers
+app.include_router(auth_routes.router, prefix="/auth", tags=["Authentication"])
+app.include_router(video_routes.router, prefix="/videos", tags=["Videos"])
+app.include_router(job_routes.router, prefix="/jobs", tags=["Jobs"])
+app.include_router(user_routes.router, prefix="/users", tags=["Users"])
+app.include_router(agent_routes.router, prefix="/agents", tags=["Agents"])
 
-
-# =========================
-# STARTUP EVENT
-# =========================
-@app.on_event("startup")
-def startup_event():
-
-    logger.info(f"Starting AI Video Backend (DEBUG={settings.DEBUG})...")
-    logger.info(f"BACKEND_URL: {settings.BACKEND_URL}")
-    logger.info(f"FRONTEND_URL: {settings.FRONTEND_URL}")
-
-    # Initialize MongoDB
-    init_db()
-
-    # Run migrations
-    try:
-        migrate_agents()
-    except Exception as e:
-        logger.error(f"Migration failed: {e}")
-
-    logger.info("System fully initialized 🚀")
-
-
-# =========================
-# HEALTH CHECK
-# =========================
 @app.get("/")
-def root():
-
+async def root():
     return {
-        "message": "AI Video Agent API is running",
-        "status": "healthy"
+        "message": "Welcome to MorphFlow API",
+        "status": "online",
+        "debug_mode": settings.DEBUG
     }
+
+@app.on_event("startup")
+async def startup_event():
+    logger.info("************************************************")
+    logger.info(f" MorphFlow Backend Starting")
+    logger.info(f" DEBUG: {settings.DEBUG}")
+    logger.info(f" BACKEND_URL: {settings.BACKEND_URL}")
+    logger.info(f" FRONTEND_URL: {settings.FRONTEND_URL}")
+    logger.info("************************************************")

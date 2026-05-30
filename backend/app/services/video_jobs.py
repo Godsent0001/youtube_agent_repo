@@ -2,10 +2,25 @@ from datetime import datetime, timedelta
 import uuid
 import rq
 from app.services.pipeline_service import pipeline_service
-from app.services.agent_service import agent_service
 from app.db.session import db
 from app.core.logger import logger
 from bson import ObjectId
+
+def create_video_job(job_id: str, user_id: str, name: str):
+    """
+    Initializes a job record in MongoDB
+    """
+    job_record = {
+        "job_id": job_id,
+        "user_id": user_id,
+        "name": name,
+        "status": "queued",
+        "progress": 0,
+        "activities": [],
+        "created_at": datetime.utcnow(),
+        "updated_at": datetime.utcnow()
+    }
+    db["jobs"].insert_one(job_record)
 
 def update_job_status(job_id: str, status: str, result_url: str = None, error: str = None, progress: int = None):
     """
@@ -49,10 +64,8 @@ def on_video_job_failure(job, connection, type, value, traceback):
     even if the standard try/except is bypassed (e.g. timeout)
     """
     try:
-        custom_job_id = job.args[1]
+        custom_job_id = job.args[1] if len(job.args) > 1 else job.id
         logger.error(f"RQ Failure Callback: Job {custom_job_id} failed. Error: {value}")
-
-        from app.db.session import db
 
         # Mark job as failed
         db["jobs"].update_one(
@@ -70,10 +83,8 @@ def generate_video_job(user_id: str, job_id: str, prompt: str, content_type: str
     """
     Background job to run the full video generation pipeline
     """
-    # Diagnostic: log current timeout
     current_job = rq.get_current_job()
-    timeout = current_job.timeout if current_job else "unknown"
-    logger.info(f"Starting video generation job {job_id} for user {user_id}. Timeout: {timeout}s")
+    logger.info(f"Starting video generation job {job_id} for user {user_id}")
 
     # Ensure storage directories exist in the worker environment
     import os
@@ -106,7 +117,5 @@ def generate_video_job(user_id: str, job_id: str, prompt: str, content_type: str
 
     except Exception as e:
         logger.error(f"Job {job_id} failed: {str(e)}")
-
-        # Update job as failed
         update_job_status(job_id, "failed", error=str(e))
         raise e

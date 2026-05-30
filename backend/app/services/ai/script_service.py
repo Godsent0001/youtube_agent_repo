@@ -1,144 +1,48 @@
-import json
-import re
-
-from app.services.ai.llm_client import llm_client
 from app.core.logger import logger
-
+from app.services.ai.ai_service import ai_service
+import json
 
 class ScriptService:
-    """
-    LLM-powered script generator for viral YouTube content
-    """
-
     def __init__(self):
         self.logger = logger
 
-    # =========================
-    # MAIN GENERATION
-    # =========================
-    def generate_script(self, topic: str, niche: str, content_type: str, research: dict, video_length: int = None, custom_prompt: str = None):
+    def generate_script(self, topic: str, niche: str, content_type: str = "shorts", research: str = "", video_length: int = 60, custom_prompt: str = None):
+        """
+        Generate a full video script based on topic and research.
+        """
+        prompt = f"""
+        Write a high-retention, viral video script for a {content_type} video.
+        Topic: {topic}
+        Target Length: {video_length} seconds.
 
-        # Determine target duration message
-        duration_instruction = ""
-        if video_length:
-            duration_instruction = f"The script MUST be sized for a {video_length} second video. Aim for approximately {video_length * 2.5} words."
+        {f"User Input: {custom_prompt}" if custom_prompt else ""}
+        Research context: {research}
 
-        messages = [
-            {
-                "role": "system",
-                "content": """
-You are a world-class script writer for MorphFlow, specializing in viral short-form and long-form video content.
+        Guidelines:
+        1. Start with a powerful hook in the first 3 seconds.
+        2. Maintain fast pacing with clear transitions.
+        3. Use emotional triggers or curiosity gaps.
+        4. End with a strong call to action.
+        5. Tone: Energetic, concise, and modern.
 
-CRITICAL RULES (VERY IMPORTANT):
-- NEVER use numbering (1, 2, 3, 01, 002, etc.)
-- NEVER format as a list
-- NEVER write "Scene 1", "Step 1", etc.
-- Write ONLY natural spoken narration
-- Script must sound like a human talking, not a document
-- Avoid meta commentary (no "in this video", no instructions)
-
-YOUR JOB:
-- Write highly engaging scripts optimized for watch time and viral engagement.
-- Use storytelling, hooks, tension, and payoff.
-- Make it emotionally engaging and natural.
-- Keep pacing fast and addictive.
-
-OUTPUT FORMAT (ONLY VALID JSON):
-
-{
-  "script": "natural spoken narration only",
-  "hook": "strong opening line",
-  "key_moments": ["moment 1", "moment 2", "moment 3"],
-  "cta": "short call to action (e.g. check the link in bio or share your thoughts)"
-}
-"""
-            },
-            {
-                "role": "user",
-                "content": f"""
-User Prompt: {custom_prompt}
-Selected Topic: {topic}
-Video Duration: {video_length} seconds
-{duration_instruction}
-
-Research Data (use this if relevant to the topic and prompt):
-{json.dumps(research, indent=2)}
-
-IMPORTANT:
-The script must follow the user's prompt closely while incorporating the viral elements of the topic.
-"""
-            }
-        ]
-
-        response = llm_client.generate(messages)
+        Return ONLY a JSON object:
+        {{
+            "script": "The full spoken text of the video",
+            "estimated_duration": {video_length},
+            "pacing_notes": "e.g., fast, dramatic pauses"
+        }}
+        """
 
         try:
-            cleaned = self._clean_response(response)
-            parsed = json.loads(cleaned)
-
-            return {
-                "script": self._clean_script(parsed.get("script", "")),
-                "hook": parsed.get("hook", ""),
-                "key_moments": parsed.get("key_moments", []),
-                "cta": parsed.get("cta", "")
-            }
-
+            response = ai_service.generate_text(prompt)
+            clean_response = response.strip().replace('```json', '').replace('```', '')
+            return json.loads(clean_response)
         except Exception as e:
             self.logger.error(f"Script generation failed: {e}")
-
             return {
-                "script": "",
-                "hook": "",
-                "key_moments": [],
-                "cta": ""
+                "script": f"Today we are talking about {topic}. This is going to be amazing. Make sure to watch until the end!",
+                "estimated_duration": video_length,
+                "pacing_notes": "Standard"
             }
 
-    # =========================
-    # CLEAN LLM OUTPUT
-    # =========================
-    def _clean_response(self, text: str) -> str:
-        """
-        Fix common LLM JSON breaking issues
-        """
-
-        if not text:
-            return "{}"
-
-        # remove markdown code blocks
-        text = text.replace("```json", "").replace("```", "")
-
-        # sometimes models add commentary before JSON
-        match = re.search(r"\{.*\}", text, re.DOTALL)
-        if match:
-            return match.group(0)
-
-        return text.strip()
-
-    # =========================
-    # REMOVE NUMBERING FROM SCRIPT
-    # =========================
-    def _clean_script(self, script: str) -> str:
-        """
-        Removes hidden numbering that causes ElevenLabs to read "003", "004"
-        """
-
-        if not script:
-            return ""
-
-        # remove numbered bullets (1. 2. 3.)
-        script = re.sub(r"\b\d+\.\s*", "", script)
-
-        # remove weird zero-padded numbers (001, 002, 003)
-        script = re.sub(r"\b0+\d+\b", "", script)
-
-        # remove step labels
-        script = re.sub(r"\b(step|scene)\s*\d+\b", "", script, flags=re.IGNORECASE)
-
-        # normalize spaces
-        script = re.sub(r"\s+", " ", script).strip()
-
-        return script
-
-
-# Singleton
 script_service = ScriptService()
