@@ -1,5 +1,4 @@
-import { motion } from 'framer-motion';
-import { Waves, Github, Twitter, Linkedin, Youtube } from 'lucide-react';
+import { Waves } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export const Footer = () => {
@@ -15,13 +14,6 @@ export const Footer = () => {
             <p className="text-white/40 max-w-sm mb-8 font-medium">
               Revolutionizing digital content with state-of-the-art AI. Generate viral videos in seconds.
             </p>
-            <div className="flex gap-4">
-              {[Twitter, Github, Linkedin, Youtube].map((Icon, i) => (
-                <a key={i} href="#" className="h-10 w-10 rounded-xl bg-white/5 flex items-center justify-center text-white/40 hover:text-primary hover:bg-primary/10 transition-all border border-white/5">
-                  <Icon className="h-5 w-5" />
-                </a>
-              ))}
-            </div>
           </div>
 
           <div>

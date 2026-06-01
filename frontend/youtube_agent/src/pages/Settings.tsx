@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { User, Bell, Shield, Wallet, Globe, Mail } from 'lucide-react';
+import { User, Bell } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 
 export const Settings = () => {
