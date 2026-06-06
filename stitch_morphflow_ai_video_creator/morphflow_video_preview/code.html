@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MorphFlow - Video Preview</title>
+<!-- Font Links -->
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;900&amp;family=Geist:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "inverse-surface": "#313030",
+                        "on-primary-fixed-variant": "#474646",
+                        "surface-variant": "#e5e2e1",
+                        "background": "#fdf8f8",
+                        "tertiary-fixed": "#e6e1df",
+                        "error-container": "#ffdad6",
+                        "outline-variant": "#c4c7c7",
+                        "error": "#ba1a1a",
+                        "surface-container-high": "#ebe7e6",
+                        "tertiary-fixed-dim": "#cac6c3",
+                        "surface-container-highest": "#e5e2e1",
+                        "on-secondary-container": "#626262",
+                        "on-secondary-fixed-variant": "#464747",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-fixed": "#1d1b1a",
+                        "surface-tint": "#5f5e5e",
+                        "on-error": "#ffffff",
+                        "secondary-container": "#e1dfdf",
+                        "secondary-fixed-dim": "#c7c6c6",
+                        "on-secondary": "#ffffff",
+                        "on-primary-fixed": "#1c1b1b",
+                        "on-tertiary": "#ffffff",
+                        "on-surface": "#1c1b1b",
+                        "inverse-primary": "#c8c6c5",
+                        "on-background": "#1c1b1b",
+                        "secondary": "#5e5e5e",
+                        "primary-fixed": "#e5e2e1",
+                        "surface-bright": "#fdf8f8",
+                        "primary": "#000000",
+                        "surface": "#fdf8f8",
+                        "tertiary-container": "#1d1b1a",
+                        "on-tertiary-container": "#868381",
+                        "on-primary-container": "#858383",
+                        "surface-container-low": "#f7f3f2",
+                        "on-error-container": "#93000a",
+                        "primary-container": "#1c1b1b",
+                        "secondary-fixed": "#e4e2e2",
+                        "primary-fixed-dim": "#c8c6c5",
+                        "on-secondary-fixed": "#1b1c1c",
+                        "on-tertiary-fixed-variant": "#484645",
+                        "surface-container": "#f1edec",
+                        "on-surface-variant": "#444748",
+                        "tertiary": "#000000",
+                        "outline": "#747878",
+                        "surface-dim": "#ddd9d8",
+                        "on-primary": "#ffffff",
+                        "inverse-on-surface": "#f4f0ef"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-padding-mobile": "20px",
+                        "stack-md": "16px",
+                        "gutter": "24px",
+                        "unit": "4px",
+                        "stack-lg": "32px",
+                        "section-gap": "64px",
+                        "container-padding-desktop": "48px",
+                        "stack-sm": "8px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Hanken Grotesk"],
+                        "mono-sm": ["Geist"],
+                        "headline-lg": ["Hanken Grotesk"],
+                        "headline-md": ["Hanken Grotesk"],
+                        "body-lg": ["Hanken Grotesk"],
+                        "label-md": ["Geist"],
+                        "display": ["Hanken Grotesk"],
+                        "body-md": ["Hanken Grotesk"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["24px", {"lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "mono-sm": ["13px", {"lineHeight": "1.5", "letterSpacing": "0", "fontWeight": "400"}],
+                        "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "headline-md": ["20px", {"lineHeight": "1.4", "letterSpacing": "-0.01em", "fontWeight": "500"}],
+                        "body-lg": ["16px", {"lineHeight": "1.6", "letterSpacing": "0", "fontWeight": "400"}],
+                        "label-md": ["12px", {"lineHeight": "1", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                        "display": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "body-md": ["14px", {"lineHeight": "1.5", "letterSpacing": "0", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .video-container:hover .video-controls {
+            opacity: 1;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface min-h-screen flex flex-col font-body-md overflow-x-hidden">
+<!-- TopNavBar (Shared Component) -->
+<nav class="fixed top-0 left-1/2 -translate-x-1/2 z-50 flex items-center gap-8 bg-surface/80 dark:bg-surface-container/80 backdrop-blur-xl rounded-full mt-4 mx-auto max-w-fit px-6 py-2 border border-outline-variant/30 shadow-[0_10px_30px_rgba(0,0,0,0.04)]">
+<div class="font-headline-md text-headline-md font-bold text-primary dark:text-on-primary-fixed">MorphFlow</div>
+<div class="hidden md:flex items-center gap-6">
+<a class="text-on-surface-variant dark:text-on-secondary-container font-body-md text-body-md hover:opacity-80 transition-opacity" href="#">Create</a>
+<a class="text-primary dark:text-on-primary-fixed font-bold border-b-2 border-primary font-body-md text-body-md hover:opacity-80 transition-opacity" href="#">Library</a>
+<a class="text-on-surface-variant dark:text-on-secondary-container font-body-md text-body-md hover:opacity-80 transition-opacity" href="#">Discover</a>
+</div>
+<div class="flex items-center gap-4">
+<button class="bg-primary text-on-primary px-4 py-1.5 rounded-full font-label-md text-label-md active:scale-95 transition-transform duration-200">Generate</button>
+<span class="material-symbols-outlined text-on-surface cursor-pointer">account_circle</span>
+</div>
+</nav>
+<!-- SideNavBar (Shared Component - Hidden on Preview Page to focus content canvas) -->
+<main class="flex-grow pt-32 pb-24 px-container-padding-mobile md:px-container-padding-desktop max-w-[1440px] mx-auto w-full">
+<!-- Header Section -->
+<header class="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6">
+<div class="space-y-2">
+<div class="flex items-center gap-3">
+<span class="flex h-2.5 w-2.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)]"></span>
+<span class="font-label-md text-label-md text-on-surface-variant tracking-wider uppercase">Completed</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-primary tracking-tight">Cyberpunk Metropolis Dawn</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Generated on October 24, 2023 • 4K Cinema Pro</p>
+</div>
+<!-- Quick Actions Mobile View (Stacked) / Desktop (Inline) -->
+<div class="flex items-center gap-3 w-full md:w-auto">
+<button class="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 border border-outline-variant bg-surface hover:bg-surface-container-low transition-colors rounded-xl font-label-md text-label-md active:scale-95 transition-all">
+<span class="material-symbols-outlined text-[20px]">share</span>
+                    Share
+                </button>
+<button class="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-primary text-on-primary hover:opacity-90 transition-opacity rounded-xl font-label-md text-label-md active:scale-95 transition-all">
+<span class="material-symbols-outlined text-[20px]">download</span>
+                    Download
+                </button>
+</div>
+</header>
+<!-- Centered Video Player Area -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<div class="lg:col-span-8 space-y-8">
+<!-- Video Container -->
+<div class="relative group video-container bg-surface-container-lowest rounded-[24px] overflow-hidden border border-outline-variant/30 shadow-[0_20px_50px_rgba(0,0,0,0.08)] aspect-video cursor-pointer">
+<img alt="Video Poster" class="w-full h-full object-cover grayscale-[0.2] transition-transform duration-700 group-hover:scale-105" data-alt="A cinematic wide shot of a futuristic cyberpunk city at dawn, with towering skyscrapers glowing with neon signs and a dense atmospheric haze. The scene is illuminated by the soft, diffused light of a rising sun through high-rise structures, featuring deep blacks and sharp highlights of electric blue and magenta. The visual style is highly polished, professional, and evocative of high-end sci-fi film production with meticulous detail in every architectural layer." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDQbhcUzDvJuacfp83BU7U9amOXJ3XRh9nLL3VPatyiVU9vPTX3AGrZ7gkGaIJEUnObAn4a0KXmxyIY8Ny1n_5GWLCf8n5ySCb7Ch16Xy-2A8N7glbTZhr802Ls6AYOhx577Tx2TbWBlz8VQmcAUHkukYUidvE2aHOOw9mCGgJraKnYu5wCXFUtsXqDyLRZ4GXjybUcsp-WQalarWhHqFxPvePfDMQCEti5IpzlXx9NaWkJXiRtC15dtz7Fv7OOyWdXiYCGwOi7YcQ"/>
+<!-- Overlay Play State -->
+<div class="absolute inset-0 bg-black/10 flex items-center justify-center">
+<div class="w-20 h-20 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 active:scale-90 transition-transform">
+<span class="material-symbols-outlined text-white text-4xl" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</div>
+</div>
+<!-- Video Controls Overlay (Simulation) -->
+<div class="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/60 to-transparent video-controls opacity-0 transition-opacity duration-300">
+<div class="flex items-center gap-4 text-white">
+<span class="material-symbols-outlined cursor-pointer">play_pause</span>
+<div class="flex-grow h-1.5 bg-white/30 rounded-full overflow-hidden relative">
+<div class="absolute top-0 left-0 h-full w-1/3 bg-white"></div>
+</div>
+<span class="font-mono-sm text-mono-sm">00:12 / 00:36</span>
+<span class="material-symbols-outlined cursor-pointer">volume_up</span>
+<span class="material-symbols-outlined cursor-pointer">fullscreen</span>
+</div>
+</div>
+</div>
+<!-- Secondary Actions -->
+<div class="flex flex-wrap items-center gap-4">
+<button class="flex items-center gap-2 px-5 py-2.5 border border-outline-variant rounded-full font-label-md text-label-md hover:bg-surface-container-low transition-all active:scale-95">
+<span class="material-symbols-outlined text-[18px]">refresh</span>
+                        Regenerate
+                    </button>
+<button class="flex items-center gap-2 px-5 py-2.5 border border-outline-variant rounded-full font-label-md text-label-md hover:bg-surface-container-low transition-all active:scale-95">
+<span class="material-symbols-outlined text-[18px]">content_copy</span>
+                        Duplicate
+                    </button>
+<div class="flex-grow"></div>
+<button class="flex items-center gap-2 px-5 py-2.5 border border-error/20 text-error rounded-full font-label-md text-label-md hover:bg-error/5 transition-all active:scale-95">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+                        Delete Project
+                    </button>
+</div>
+</div>
+<!-- Details Sidebar -->
+<aside class="lg:col-span-4 space-y-6">
+<!-- Info Card -->
+<div class="bg-surface-container-low p-8 rounded-[24px] border border-outline-variant/20">
+<h3 class="font-headline-md text-headline-md text-primary mb-6">Video Details</h3>
+<div class="space-y-6">
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-widest">Original Prompt</label>
+<div class="bg-surface p-4 rounded-xl border border-outline-variant/30 font-body-md text-body-md text-on-surface leading-relaxed">
+                                "Cinematic drone shot soaring through a rain-slicked futuristic Neo-Tokyo street, vibrant neon reflections, volumetric fog, hyper-realistic, 8k resolution."
+                            </div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="space-y-1">
+<label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-widest">Aspect Ratio</label>
+<p class="font-body-lg text-body-lg text-primary font-medium">16:9 Cinema</p>
+</div>
+<div class="space-y-1">
+<label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-widest">Duration</label>
+<p class="font-body-lg text-body-lg text-primary font-medium">0:36 Seconds</p>
+</div>
+<div class="space-y-1">
+<label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-widest">Resolution</label>
+<p class="font-body-lg text-body-lg text-primary font-medium">3840 x 2160</p>
+</div>
+<div class="space-y-1">
+<label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-widest">Model</label>
+<p class="font-body-lg text-body-lg text-primary font-medium">Morph-2V Ultra</p>
+</div>
+</div>
+<hr class="border-outline-variant/30"/>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">auto_fix</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-primary">Motion Strength</p>
+<p class="text-[10px] text-on-surface-variant uppercase">8.5 / 10</p>
+</div>
+</div>
+<button class="text-primary font-label-md text-label-md underline underline-offset-4 hover:opacity-70">Edit</button>
+</div>
+</div>
+</div>
+<!-- Export History / Versions -->
+<div class="bg-white p-6 rounded-[24px] border border-outline-variant/10 shadow-sm">
+<h4 class="font-label-md text-label-md text-on-surface-variant uppercase tracking-widest mb-4">Version History</h4>
+<div class="space-y-3">
+<div class="flex items-center gap-3 p-2 rounded-lg bg-surface-container-lowest border border-primary/5">
+<div class="w-12 h-8 rounded bg-surface-variant overflow-hidden flex-shrink-0">
+<img alt="V2" class="w-full h-full object-cover" data-alt="A small abstract thumbnail of a dark futuristic city with neon lights, serving as a placeholder for a previous video version. The image maintains the same minimalist dark aesthetic with bright accent colors." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAKPjufWwbSVqyOrljEAKMuuKNEpeFBPWW_m0HPzjThPD0IW5F68o1F8wD37OhTNdpp91sAKTN3NAHyqK6-WC-eUxsPBCj1nXuCfsjMA9AiZH_Lr2StSsrO1LRakzvT43jFXqAzbL10sKVt887ujCkr6PKfJiEpNWw5PbBwuM25qnNHSe7HKCNBPWhGofj3LaioR10W2mnwwdWkwQSSXYCMSXim7E40ieDYioIKlvxlrzzfXj7MBSwqdbfwMxhIGKoRv_OIMxFi50E"/>
+</div>
+<div class="flex-grow">
+<p class="font-label-md text-label-md">Version 2.0 (Current)</p>
+<p class="text-[10px] text-on-surface-variant">2 mins ago</p>
+</div>
+<span class="material-symbols-outlined text-emerald-500 text-[18px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div class="flex items-center gap-3 p-2 rounded-lg hover:bg-surface-container-low transition-colors cursor-pointer group">
+<div class="w-12 h-8 rounded bg-surface-variant overflow-hidden flex-shrink-0 opacity-60">
+<img alt="V1" class="w-full h-full object-cover" data-alt="A dark and moody thumbnail for an earlier video iteration, showing a blurry city skyline with dim blue lighting. It fits the overall cinematic tech theme while looking like an archived version." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAeEqet2p7AP6Zujxba13xAA71e20VAI0DH8amNxaIAddNiGQ_9mFLr73fgnIdQNAy3zlofKztWF-tgUBorqsfK4QClqfs_cH1a2F_U5mVHfSYOs3FFYr8TvsXkqHCw93N_r3N-TO5Oko9fJiUFPHNTMqpSsfud-fSCCcxWFcMwmqGkyC3-6Qf_ereKC8ap_umAPzOdLTdaSvJPLjBUJ1i56eiTZHp4FVvgFx86OogCiyRKhFhkEnV9p836Z8TG2gQ7yZkiFvCwc0M"/>
+</div>
+<div class="flex-grow">
+<p class="font-label-md text-label-md text-on-surface-variant group-hover:text-primary transition-colors">Version 1.0</p>
+<p class="text-[10px] text-on-surface-variant">15 mins ago</p>
+</div>
+</div>
+</div>
+</div>
+</aside>
+</div>
+<!-- Suggestion Section / Gallery -->
+<section class="mt-20">
+<div class="flex items-center justify-between mb-8">
+<h2 class="font-headline-md text-headline-md text-primary">Similar Generations</h2>
+<button class="text-primary font-label-md text-label-md flex items-center gap-1 hover:gap-2 transition-all">
+                    View All <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</button>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+<!-- Bento-ish Card 1 -->
+<div class="group relative bg-surface border border-outline-variant/30 rounded-2xl overflow-hidden aspect-square cursor-pointer hover:shadow-xl transition-all duration-300">
+<img alt="Landscape" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="A cinematic and moody view of a futuristic mountain landscape under a purple twilight sky. The scene is dominated by deep violets and obsidian blacks, with glowing technological outposts dotting the peaks. The lighting is low-key and dramatic, highlighting the sleek, angular architecture against the soft gradient of the sky. The overall feeling is one of vast, quiet exploration in a high-tech future." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD1VP24om6ax79wKrteBFiwP05WRN2kEyTSNNcqVLlon4dGd_xOS_CeTRmCD1nFwfhtA_SdcBu6Mcf6MsB93lTyqE4HfZILtJbSjI7ujKELIaQBrCBX48c4LmrjWgrh99IHNspNHDY7Vi46GIUqjdbq18KyO_mpYvn4xTxCqIcb9OBtLiMZb7c1Q9RbslO8lDEBsJGGabGpv5ETmMM3OzRKgwer_2RrdL9QcPdZOTBCF9rWV67_imy2I4eOr-2A6yXtDUVeKLVMilQ"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-4 flex flex-col justify-end">
+<p class="text-white font-label-md text-label-md mb-1">Obsidian Range</p>
+<p class="text-white/60 text-[10px] uppercase">4K • 24 FPS</p>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="group relative bg-surface border border-outline-variant/30 rounded-2xl overflow-hidden aspect-square cursor-pointer hover:shadow-xl transition-all duration-300">
+<img alt="Energy" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="A vibrant, high-energy shot of a digital light show with swirling patterns of orange and teal. The scene is complex and dynamic, suggesting high-speed movement and particle effects. The lighting is intense and focused, with deep shadows providing high contrast. The visual style is abstract and modern, evoking a sense of powerful data processing or a digital energy storm." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDe3vJRY48tJjkuyOCYA72l43TzX6yHz7k1hG6DMsuspVBbPspfXt6xe0w4UrwBVWUytiKB8NhvqxdURgpz8tRuM0W_xLLH8JhUJzLVxsc4Tz4P-hFZ74ne8KR3i0mpPvHlma0c47aMXWEGp6_QKCgASXAOe1T731KRvPkCMabss4yfCz_N7qpxJBJ6GPeraRxpaR2YvdlBPM099Vrmv2GC8We17Gku3_iSYg_lQJcttDTH2dBPQulysJYdVOsGGFFBNwz1MiqHcOc"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-4 flex flex-col justify-end">
+<p class="text-white font-label-md text-label-md mb-1">Neural Flow</p>
+<p class="text-white/60 text-[10px] uppercase">Vertical • 60 FPS</p>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="group relative bg-surface border border-outline-variant/30 rounded-2xl overflow-hidden aspect-square cursor-pointer hover:shadow-xl transition-all duration-300">
+<img alt="Circuit" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="A close-up shot of an intricate microchip glowing with golden and amber internal lights, set against a dark, tech-focused background. The lighting is precise, emphasizing the complex geometric patterns of the circuitry. The mood is sophisticated and emphasizes advanced engineering and high-performance computing. The color palette is restricted to blacks, greys, and warm metallic tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCLpqvBrc-TRP1Yd9i-zSQdrcPVdKEpeyLxm0E_Yo_W2fyd_LR4Vt0mGuHHNYuwwEv-Mlm7FANJPS42t6416hhzhQQvBM-GMCvNi8yODD2kLaRmYfH2-2Lz4KqhIycY3Np7ClGiJevQS54pSlXR5c0_hOo00Kous_sx-kSHZ-6fzVqB-XOvcVuOskYKLATzAobAKUhm47XEdVQaaxjbneJAG0U6er7oGEnNHam9KC0dvfxXTJMNl6wCiLerppktXth93OfX8HzK_GU"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-4 flex flex-col justify-end">
+<p class="text-white font-label-md text-label-md mb-1">Logic Core</p>
+<p class="text-white/60 text-[10px] uppercase">Macro • Cinematic</p>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="group relative bg-surface border border-outline-variant/30 rounded-2xl overflow-hidden aspect-square cursor-pointer hover:shadow-xl transition-all duration-300">
+<img alt="Earth" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="A breathtaking view of planet Earth from space at night, with city lights forming a glowing web across continents. The scene is illuminated by the soft blue glow of the atmosphere and the sharp pinpricks of light from distant stars. The visual style is epic and high-definition, focusing on the beauty of global connectivity and technological achievement. The palette is a mix of deep blues, blacks, and vibrant golden light." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBv2gUwG7q8EXSKy7c5v7Af4rZypW1pCR3huzTnDxhrdrXtacvdBY8CVW7s1hhxPMEgAzgw6aMOo6X8qpCKbV0ZzqQQB7zSLUMICQrmCoW51y_cewZLxYGKze6TIRl4gAeA_9TyYii0MkWENJfqfEK5-PuIR4vaOfdJspKdBFuqy_RVxfxig2FAJqrjHlAeAxNADNjKz-17ndVuz3HuXKSohuwH3ZHFMSrB7gZuRzxOtxjnSwzLXgWeIdoyFQkyWAWyfFh1gRWAKsk"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-4 flex flex-col justify-end">
+<p class="text-white font-label-md text-label-md mb-1">Global Mesh</p>
+<p class="text-white/60 text-[10px] uppercase">Aerial • 8K</p>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer Space -->
+<footer class="mt-12 py-12 px-container-padding-desktop border-t border-outline-variant/20 bg-surface-container-low">
+<div class="max-w-[1440px] mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+<div class="flex items-center gap-2">
+<span class="font-headline-md text-headline-md font-black text-primary">MorphFlow</span>
+<span class="text-on-surface-variant font-label-md text-label-md">© 2023 MorphFlow AI. All rights reserved.</span>
+</div>
+<div class="flex items-center gap-8 font-label-md text-label-md text-on-surface-variant">
+<a class="hover:text-primary transition-colors" href="#">Documentation</a>
+<a class="hover:text-primary transition-colors" href="#">Terms of Service</a>
+<a class="hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="hover:text-primary transition-colors" href="#">Support</a>
+</div>
+</div>
+</footer>
+<!-- Interactive Layer -->
+<script>
+        // Simple Interaction logic
+        document.addEventListener('DOMContentLoaded', () => {
+            const videoContainer = document.querySelector('.video-container');
+            const playIcon = videoContainer.querySelector('.material-symbols-outlined');
+            
+            videoContainer.addEventListener('click', () => {
+                const isPlaying = playIcon.textContent === 'pause';
+                playIcon.textContent = isPlaying ? 'play_arrow' : 'pause';
+                
+                if(!isPlaying) {
+                    console.log('MorphFlow: Starting Video Playback Preview...');
+                    videoContainer.querySelector('.absolute.inset-0').style.backgroundColor = 'rgba(0,0,0,0.05)';
+                } else {
+                    videoContainer.querySelector('.absolute.inset-0').style.backgroundColor = 'rgba(0,0,0,0.1)';
+                }
+            });
+
+            // Hover effect logic
+            const cards = document.querySelectorAll('.group');
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', () => {
+                    card.style.transform = 'translateY(-4px)';
+                });
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = 'translateY(0)';
+                });
+            });
+        });
+    </script>
+</body></html>
