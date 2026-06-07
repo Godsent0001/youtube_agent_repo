@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 import uuid
 import rq
 from app.services.pipeline_service import pipeline_service
-from app.services.agent_service import agent_service
+from app.services.video.video_service import video_service
 from app.db.session import db
 from app.core.logger import logger
 from bson import ObjectId
@@ -45,21 +45,20 @@ def update_job_activity(job_id: str, activity: str, progress: int = None):
 
 def on_video_job_failure(job, connection, type, value, traceback):
     """
-    Failure callback for RQ jobs to ensure agent status is updated
-    even if the standard try/except is bypassed (e.g. timeout)
+    Failure callback for RQ jobs
     """
     try:
-        agent_id = job.args[0]
+        video_id = job.args[0]
         custom_job_id = job.args[1]
-        logger.error(f"RQ Failure Callback: Job {custom_job_id} failed for agent {agent_id}. Error: {value}")
+        logger.error(f"RQ Failure Callback: Job {custom_job_id} failed for video {video_id}. Error: {value}")
 
-        from app.db.session import db
+        from app.db.session import db, videos_collection
         from bson import ObjectId
 
-        # Mark agent as failed
-        db["agents"].update_one(
-            {"_id": ObjectId(agent_id)},
-            {"$set": {"status": "failed"}}
+        # Mark video as failed
+        videos_collection.update_one(
+            {"_id": ObjectId(video_id)},
+            {"$set": {"status": "failed", "error_log": str(value)}}
         )
 
         # Mark job as failed
@@ -74,14 +73,14 @@ def on_video_job_failure(job, connection, type, value, traceback):
     except Exception as e:
         logger.error(f"Error in on_video_job_failure: {e}")
 
-def generate_video_job(agent_id: str, job_id: str):
+def generate_video_job(video_id: str, job_id: str):
     """
     Background job to run the full video generation pipeline
     """
     # Diagnostic: log current timeout
     current_job = rq.get_current_job()
     timeout = current_job.timeout if current_job else "unknown"
-    logger.info(f"Starting video generation job {job_id} for agent {agent_id}. Timeout: {timeout}s")
+    logger.info(f"Starting video generation job {job_id} for video {video_id}. Timeout: {timeout}s")
 
     # Ensure storage directories exist in the worker environment
     import os
@@ -92,39 +91,37 @@ def generate_video_job(agent_id: str, job_id: str):
     # 1. Update job status to processing
     update_job_status(job_id, "processing")
 
-    # 2. Update agent status to processing
-    db["agents"].update_one(
-        {"_id": ObjectId(agent_id)},
+    # 2. Update video status to processing
+    from app.db.session import videos_collection
+    videos_collection.update_one(
+        {"_id": ObjectId(video_id)},
         {"$set": {"status": "processing"}}
     )
 
     try:
-        # 3. Get agent
-        agent = agent_service.get_agent(agent_id)
-        if not agent:
-            raise Exception(f"Agent {agent_id} not found")
+        # 3. Get video record
+        video = video_service.get_video(video_id)
+        if not video:
+            raise Exception(f"Video {video_id} not found")
 
         # 4. Run pipeline
-        result = pipeline_service.run(agent, job_id)
+        result = pipeline_service.run(video, job_id)
 
-        # 5. Update agent stats and next run
-        now = datetime.utcnow()
-        db["agents"].update_one(
-            {"_id": ObjectId(agent_id)},
-            {
-                "$set": {
-                    "status": "idle",
-                    "last_run_at": now,
-                    "next_run_time": now + timedelta(hours=24)
-                }
-            }
-        )
-
-        # 6. Update job as completed
+        # 5. Update video status
         res_url = None
         if isinstance(result, dict):
             res_url = result.get("final_video_path")
 
+        videos_collection.update_one(
+            {"_id": ObjectId(video_id)},
+            {"$set": {
+                "status": "completed",
+                "video_url": res_url,
+                "thumbnail_url": result.get("thumbnail_url") if isinstance(result, dict) else None
+            }}
+        )
+
+        # 6. Update job as completed
         update_job_status(job_id, "completed", result_url=res_url)
         logger.info(f"Job {job_id} completed successfully")
 
@@ -133,10 +130,10 @@ def generate_video_job(agent_id: str, job_id: str):
     except Exception as e:
         logger.error(f"Job {job_id} failed: {str(e)}")
 
-        # Mark agent as failed but keep is_active as is
-        db["agents"].update_one(
-            {"_id": ObjectId(agent_id)},
-            {"$set": {"status": "failed"}}
+        # Mark video as failed
+        videos_collection.update_one(
+            {"_id": ObjectId(video_id)},
+            {"$set": {"status": "failed", "error_log": str(e)}}
         )
 
         # Update job as failed

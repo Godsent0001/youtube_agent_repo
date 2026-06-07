@@ -1,186 +1,135 @@
-
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { apiRequest } from '../utils/api';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
-import { Play, Zap, DollarSign, ArrowRight } from 'lucide-react';
-import { Button } from '../components/ui/Button';
-import { Navbar } from '../components/Navbar';
-import { Footer } from '../components/Footer';
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-    },
-  },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
-};
 
 export const LandingPage = () => {
+  const [prompt, setPrompt] = useState('');
+  const [aspectRatio, setAspectRatio] = useState<'16:9' | '9:16'>('16:9');
+  const [duration, setDuration] = useState<number>(30);
+  const [isAspectOpen, setIsAspectOpen] = useState(false);
+  const [isDurationOpen, setIsDurationOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const handleCreate = async () => {
+    const token = localStorage.getItem('access_token');
+    const userId = localStorage.getItem('user_id');
+
+    const videoData = {
+      prompt,
+      aspect_ratio: aspectRatio,
+      duration_seconds: duration
+    };
+
+    if (!token || !userId) {
+      localStorage.setItem('pending_video', JSON.stringify(videoData));
+      navigate('/login');
+      return;
+    }
+
+    try {
+      const response = await apiRequest('/videos', {
+        method: 'POST',
+        body: JSON.stringify(videoData)
+      });
+      navigate(`/video/${response.video_id}`);
+    } catch (error) {
+      console.error('Error creating video:', error);
+      alert('Failed to start video generation.');
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-background text-white">
-      <Navbar />
-
+    <div className="relative h-full flex flex-col items-center justify-center px-4 bg-surface-container-lowest">
       {/* Hero Section */}
-      <section className="relative overflow-hidden py-16 sm:py-24 md:py-32">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="lg:flex lg:items-center lg:gap-x-16">
-            <motion.div
-              className="mx-auto max-w-2xl lg:mx-0 lg:flex-auto text-center lg:text-left"
-              initial={{ opacity: 0, x: -50 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8 }}
-            >
-              <div className="flex items-center justify-center lg:justify-start gap-x-2 mb-6">
-                <div className="rounded-full bg-primary/10 px-3 py-1 text-xs sm:text-sm font-semibold leading-6 text-primary ring-1 ring-inset ring-primary/20">
-                  New: AI Shorts Agent
-                </div>
-              </div>
-              <h1 className="text-3xl font-bold tracking-tight sm:text-5xl lg:text-6xl text-white">
-                Automate Your YouTube Channel with <span className="text-primary">AI</span>
-              </h1>
-              <p className="mt-6 text-base sm:text-lg leading-7 sm:leading-8 text-secondary-foreground">
-                Create AI-powered channels that post daily videos, generate trending content, and even run affiliate ads—without lifting a finger.
-              </p>
-              <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 sm:gap-6">
-                <Link to={localStorage.getItem('access_token') ? "/create-agent" : "/signup"} className="w-full sm:w-auto">
-                  <Button size="lg" className="w-full sm:w-auto gap-2">
-                    Create Your First Agent <ArrowRight className="h-5 w-5" />
-                  </Button>
-                </Link>
-                <Link to="/login" className="w-full sm:w-auto">
-                  <Button variant="ghost" size="lg" className="w-full sm:w-auto">
-                    Learn How It Works
-                  </Button>
-                </Link>
-              </div>
-            </motion.div>
-            <motion.div
-              className="mt-12 sm:mt-16 lg:mt-0 lg:flex-shrink-0 lg:flex-grow"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 1, delay: 0.2 }}
-            >
-              <div className="relative mx-auto max-w-[300px] sm:max-w-[400px] lg:max-w-[500px] aspect-square bg-gradient-to-br from-primary/20 to-transparent rounded-full flex items-center justify-center p-4 sm:p-8">
-                <div className="absolute inset-0 bg-primary/5 blur-3xl rounded-full animate-pulse" />
-                <div className="relative z-10 w-full h-full bg-card rounded-2xl border border-border overflow-hidden shadow-2xl flex flex-col p-4 sm:p-6">
-                  <div className="flex items-center justify-between mb-4 border-b border-border pb-2">
-                    <div className="flex gap-1.5">
-                      <div className="w-3 h-3 rounded-full bg-red-500" />
-                      <div className="w-3 h-3 rounded-full bg-yellow-500" />
-                      <div className="w-3 h-3 rounded-full bg-green-500" />
-                    </div>
-                    <div className="text-xs text-secondary-foreground font-mono">Agent: Active</div>
-                  </div>
-                  <div className="flex-1 space-y-4">
-                    <div className="h-4 bg-neutral-800 rounded w-3/4 animate-pulse" />
-                    <div className="h-32 bg-neutral-800 rounded w-full animate-pulse" />
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="h-16 bg-neutral-800 rounded animate-pulse" />
-                      <div className="h-16 bg-neutral-800 rounded animate-pulse" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        </div>
-        {/* Background Decorative Element */}
-        <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-3xl -z-10" />
-      </section>
+      <div className="text-center mb-8 max-w-2xl">
+        <h1 className="font-hanken text-4xl md:text-5xl font-semibold text-primary mb-4 leading-tight">
+          Create Professional Videos in Minutes
+        </h1>
+        <p className="font-hanken text-lg text-on-surface-variant">
+          Transform ideas into polished videos using intelligent video assembly and editing.
+        </p>
+      </div>
 
-      {/* Features Section */}
-      <section className="py-16 sm:py-24 md:py-32 bg-card/30" id="features">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-2xl text-center mb-12 sm:mb-16">
-            <h2 className="text-sm sm:text-base font-semibold leading-7 text-primary uppercase tracking-wider">How It Works</h2>
-            <p className="mt-2 text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-white">Everything you need to scale</p>
-          </div>
-          <motion.div
-            className="grid grid-cols-1 md:grid-cols-3 gap-8"
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-          >
-            {[
-              {
-                title: 'Create AI Agent',
-                description: 'Set up your YouTube agent in seconds with minimal inputs and clear goals.',
-                icon: Zap,
-              },
-              {
-                title: 'Automatic Content',
-                description: 'Agent fetches trending topics, generates scripts, and posts daily videos.',
-                icon: Play,
-              },
-              {
-                title: 'Monetize Effortlessly',
-                description: 'Add affiliate links or promotions; agent integrates them naturally into videos.',
-                icon: DollarSign,
-              },
-            ].map((feature, idx) => (
-              <motion.div
-                key={idx}
-                variants={itemVariants}
-                className="bg-card p-8 rounded-2xl border border-border hover:border-primary/50 transition-colors group"
+      {/* Prompt Workspace */}
+      <div className="w-full max-w-[800px] bg-white rounded-[32px] border border-outline-variant/40 shadow-[0_20px_50px_rgba(0,0,0,0.02)] p-6 flex flex-col gap-4">
+        <div className="relative">
+          <textarea
+            className="w-full h-40 border-none focus:ring-0 resize-none font-hanken text-lg p-0 placeholder:text-outline text-on-surface"
+            placeholder="What do you want to create today? Describe your vision, style, and tone..."
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+          ></textarea>
+        </div>
+
+        <div className="flex flex-wrap items-center justify-between pt-4 border-t border-outline-variant/20">
+          <div className="flex items-center gap-3">
+            {/* Aspect Ratio Dropdown */}
+            <div className="relative">
+              <button
+                className="flex items-center gap-2 px-3 py-1.5 bg-surface-container-low rounded-full hover:bg-surface-container transition-colors font-geist text-xs border border-outline-variant/10"
+                onClick={() => setIsAspectOpen(!isAspectOpen)}
               >
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-6 group-hover:bg-primary transition-colors">
-                  <feature.icon className="h-6 w-6 text-primary group-hover:text-white" />
+                <span className="material-symbols-outlined text-[18px]">aspect_ratio</span>
+                <span>{aspectRatio}</span>
+                <span className="material-symbols-outlined text-[16px]">expand_more</span>
+              </button>
+              {isAspectOpen && (
+                <div className="absolute top-full left-0 mt-2 w-32 bg-white border border-outline-variant/20 rounded-xl shadow-lg z-10 overflow-hidden">
+                  {['16:9', '9:16'].map((ratio) => (
+                    <button
+                      key={ratio}
+                      className="w-full text-left px-4 py-2 hover:bg-surface-container font-geist text-xs"
+                      onClick={() => { setAspectRatio(ratio as any); setIsAspectOpen(false); }}
+                    >
+                      {ratio}
+                    </button>
+                  ))}
                 </div>
-                <h3 className="text-xl font-bold mb-2 text-white">{feature.title}</h3>
-                <p className="text-secondary-foreground">{feature.description}</p>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-16 sm:py-24 md:py-32 overflow-hidden">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <motion.div
-            className="relative isolate overflow-hidden bg-card px-6 py-16 sm:py-24 text-center shadow-2xl rounded-3xl sm:px-16"
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-          >
-            <h2 className="mx-auto max-w-2xl text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-white">
-              Ready to start your AI channel?
-            </h2>
-            <p className="mx-auto mt-6 max-w-xl text-base sm:text-lg leading-7 sm:leading-8 text-secondary-foreground">
-              Join thousands of creators who are automating their content creation workflow with AI.
-            </p>
-            <div className="mt-8 sm:mt-10 flex items-center justify-center gap-x-6">
-              <Link to={localStorage.getItem('access_token') ? "/create-agent" : "/signup"} className="w-full sm:w-auto">
-                <Button size="lg" className="w-full sm:w-auto">Create Your First Agent</Button>
-              </Link>
+              )}
             </div>
-            {/* Background pattern */}
-            <svg
-              viewBox="0 0 1024 1024"
-              className="absolute left-1/2 top-1/2 -z-10 h-[64rem] w-[64rem] -translate-x-1/2 [mask-image:radial-gradient(closest-side,white,transparent)]"
-              aria-hidden="true"
-            >
-              <circle cx="512" cy="512" r="512" fill="url(#827591b1-ce8c-4110-b064-7cb85a0b1217)" fillOpacity="0.7" />
-              <defs>
-                <radialGradient id="827591b1-ce8c-4110-b064-7cb85a0b1217">
-                  <stop stopColor="#FF0000" />
-                  <stop offset={1} stopColor="#1E1E1E" />
-                </radialGradient>
-              </defs>
-            </svg>
-          </motion.div>
-        </div>
-      </section>
 
-      <Footer />
+            {/* Duration Dropdown */}
+            <div className="relative">
+              <button
+                className="flex items-center gap-2 px-3 py-1.5 bg-surface-container-low rounded-full hover:bg-surface-container transition-colors font-geist text-xs border border-outline-variant/10"
+                onClick={() => setIsDurationOpen(!isDurationOpen)}
+              >
+                <span className="material-symbols-outlined text-[18px]">schedule</span>
+                <span>{duration}s</span>
+                <span className="material-symbols-outlined text-[16px]">expand_more</span>
+              </button>
+              {isDurationOpen && (
+                <div className="absolute top-full left-0 mt-2 w-32 bg-white border border-outline-variant/20 rounded-xl shadow-lg z-10 overflow-hidden">
+                  {[15, 30, 60, 120].map((d) => (
+                    <button
+                      key={d}
+                      className="w-full text-left px-4 py-2 hover:bg-surface-container font-geist text-xs"
+                      onClick={() => { setDuration(d); setIsDurationOpen(false); }}
+                    >
+                      {d}s
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <button
+            className={`w-12 h-12 rounded-full flex items-center justify-center transition-all shadow-lg ${prompt.trim() ? 'bg-primary text-on-primary hover:scale-105 active:scale-95' : 'bg-surface-container text-outline cursor-not-allowed'}`}
+            disabled={!prompt.trim()}
+            onClick={handleCreate}
+          >
+            <span className="material-symbols-outlined">arrow_forward</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Atmospheric Footer Indicator */}
+      <div className="absolute bottom-8 flex items-center gap-2 text-outline-variant font-geist text-[10px] uppercase tracking-widest">
+        <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+        MorphFlow Core v3.0 Ready
+      </div>
     </div>
   );
 };

@@ -5,12 +5,12 @@ from typing import List
 
 router = APIRouter(prefix="/jobs", tags=["Jobs"])
 
-@router.get("/agent/{agent_id}", response_model=List[JobResponse])
-def get_agent_jobs(agent_id: str):
+@router.get("/video/{video_id}", response_model=List[JobResponse])
+def get_video_jobs(video_id: str):
     """
-    Fetch all background jobs for a specific agent
+    Fetch all background jobs for a specific video
     """
-    jobs = list(db["jobs"].find({"agent_id": agent_id}).sort("created_at", -1).limit(20))
+    jobs = list(db["jobs"].find({"video_id": video_id}).sort("created_at", -1).limit(20))
 
     for job in jobs:
         job["id"] = str(job["_id"])

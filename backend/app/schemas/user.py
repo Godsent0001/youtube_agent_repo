@@ -7,7 +7,6 @@ from typing import Optional, Literal
 # =========================
 class UserCreate(BaseModel):
     email: EmailStr
-    username: str
     password: str
     full_name: Optional[str] = None
 
@@ -26,6 +25,5 @@ class UserLogin(BaseModel):
 class UserResponse(BaseModel):
     id: str
     email: EmailStr
-    username: str
-    plan: Literal["free", "pro", "enterprise"]
+    tier: Literal["free", "elite", "pro"]
     is_active: bool
