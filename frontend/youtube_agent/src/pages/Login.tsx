@@ -29,7 +29,8 @@ export const Login = () => {
         });
         navigate(`/video/${videoResponse.video_id}`);
       } else {
-        navigate('/dashboard');
+        // Redirection updated: Go to Home page by default
+        navigate('/');
       }
     } catch (err: any) {
       setError(err.message || 'Login failed');

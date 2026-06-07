@@ -19,7 +19,7 @@ export const SignUp = () => {
       // After signup, login
       const response = await apiRequest('/auth/login', {
         method: 'POST',
-        body: JSON.stringify({ username: email, password })
+        body: JSON.stringify({ email, password })
       });
       localStorage.setItem('access_token', response.access_token);
       localStorage.setItem('user_id', response.user_id);
@@ -34,7 +34,8 @@ export const SignUp = () => {
         });
         navigate(`/video/${videoResponse.video_id}`);
       } else {
-        navigate('/dashboard');
+        // Redirection updated: Go to Home page by default
+        navigate('/');
       }
     } catch (err: any) {
       setError(err.message || 'Signup failed');
