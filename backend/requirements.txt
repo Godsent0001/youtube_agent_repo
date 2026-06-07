@@ -88,3 +88,5 @@ opencv-python==4.10.0.84
 # OPTIONAL (BETTER PERFORMANCE)
 # =========================
 orjson==3.10.7
+piper-tts
+onnxruntime

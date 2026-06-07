@@ -32,7 +32,8 @@ export const SignUp = () => {
           method: 'POST',
           body: pendingVideo
         });
-        navigate(`/video/${videoResponse.video_id}`);
+        // Always redirect to video detail page after processing pending video
+        navigate(`/video/${videoResponse.video_id}`, { replace: true });
       } else {
         // Redirection updated: Go to Home page by default
         navigate('/');
@@ -43,34 +44,33 @@ export const SignUp = () => {
   };
 
   return (
-    <div className="min-h-full flex flex-col items-center justify-center p-6 bg-background">
-      <div className="w-full max-w-md space-y-8">
+    <div className="w-full space-y-8">
         <div className="text-center">
-          <h1 className="font-hanken text-4xl font-black text-primary mb-2">MorphFlow</h1>
+          <h1 className="font-hanken text-4xl md:text-5xl font-black text-primary mb-2">MorphFlow</h1>
           <p className="text-on-surface-variant font-geist text-xs uppercase tracking-widest">Create your account</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="bg-white p-8 rounded-[32px] border border-outline-variant/30 shadow-sm space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
           {error && <div className="p-3 bg-error/10 text-error rounded-xl text-xs font-geist">{error}</div>}
 
-          <div className="space-y-1">
-            <label className="font-geist text-[10px] text-on-surface-variant uppercase tracking-widest">Email Address</label>
+          <div className="space-y-2">
+            <label className="font-geist text-[10px] text-on-surface-variant uppercase tracking-widest px-1">Email Address</label>
             <input
               type="email"
               required
-              className="w-full p-4 bg-surface-container-low rounded-2xl border border-transparent focus:border-primary/20 focus:bg-white transition-all text-sm"
+              className="w-full p-5 bg-surface-container-low rounded-2xl border border-transparent focus:border-primary/20 focus:bg-white transition-all text-base md:text-sm"
               placeholder="name@company.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
           </div>
 
-          <div className="space-y-1">
-            <label className="font-geist text-[10px] text-on-surface-variant uppercase tracking-widest">Password</label>
+          <div className="space-y-2">
+            <label className="font-geist text-[10px] text-on-surface-variant uppercase tracking-widest px-1">Password</label>
             <input
               type="password"
               required
-              className="w-full p-4 bg-surface-container-low rounded-2xl border border-transparent focus:border-primary/20 focus:bg-white transition-all text-sm"
+              className="w-full p-5 bg-surface-container-low rounded-2xl border border-transparent focus:border-primary/20 focus:bg-white transition-all text-base md:text-sm"
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -79,7 +79,7 @@ export const SignUp = () => {
 
           <button
             type="submit"
-            className="w-full py-4 bg-primary text-on-primary rounded-2xl font-geist text-sm font-bold active:scale-[0.98] transition-all"
+            className="w-full py-5 bg-primary text-on-primary rounded-2xl font-geist text-base font-bold active:scale-[0.98] transition-all shadow-lg"
           >
             Get Started
           </button>
@@ -88,7 +88,6 @@ export const SignUp = () => {
             Already have an account? <Link to="/login" className="text-primary font-bold hover:underline">Sign in</Link>
           </p>
         </form>
-      </div>
     </div>
   );
 };

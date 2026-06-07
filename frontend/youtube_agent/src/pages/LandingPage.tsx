@@ -22,7 +22,7 @@ export const LandingPage = () => {
 
     if (!token || !userId) {
       localStorage.setItem('pending_video', JSON.stringify(videoData));
-      navigate('/login');
+      navigate('/login', { state: { from: '/' } });
       return;
     }
 
@@ -39,10 +39,10 @@ export const LandingPage = () => {
   };
 
   return (
-    <div className="relative h-full flex flex-col items-center justify-center px-4 bg-surface-container-lowest">
+    <div className="relative h-full flex flex-col items-center justify-center px-4 py-12 bg-surface-container-lowest overflow-y-auto">
       {/* Hero Section */}
       <div className="text-center mb-8 max-w-2xl">
-        <h1 className="font-hanken text-4xl md:text-5xl font-semibold text-primary mb-4 leading-tight">
+        <h1 className="font-hanken text-3xl md:text-5xl font-semibold text-primary mb-4 leading-tight">
           Create Professional Videos in Minutes
         </h1>
         <p className="font-hanken text-lg text-on-surface-variant">
@@ -51,10 +51,10 @@ export const LandingPage = () => {
       </div>
 
       {/* Prompt Workspace */}
-      <div className="w-full max-w-[800px] bg-white rounded-[32px] border border-outline-variant/40 shadow-[0_20px_50px_rgba(0,0,0,0.02)] p-6 flex flex-col gap-4">
+      <div className="w-full max-w-[800px] bg-white rounded-[32px] border border-outline-variant/40 shadow-[0_20px_50px_rgba(0,0,0,0.02)] p-4 md:p-8 flex flex-col gap-4">
         <div className="relative">
           <textarea
-            className="w-full h-40 border-none focus:ring-0 resize-none font-hanken text-lg p-0 placeholder:text-outline text-on-surface"
+            className="w-full min-h-[160px] md:h-40 border-none focus:ring-0 resize-none font-hanken text-lg p-0 placeholder:text-outline text-on-surface"
             placeholder="What do you want to create today? Describe your vision, style, and tone..."
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
