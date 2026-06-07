@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { apiRequest } from '../utils/api';
+import { useState, useEffect } from 'react';
 
 export const Settings = () => {
   const [user, setUser] = useState<any>(null);

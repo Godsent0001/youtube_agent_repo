@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Optional
+from fastapi import APIRouter
+from typing import Optional
 from app.services.video.video_service import video_service
 
 router = APIRouter(prefix="/dashboard", tags=["Dashboard"])

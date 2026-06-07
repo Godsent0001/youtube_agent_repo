@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiRequest } from '../utils/api';
-import { motion } from 'framer-motion';
 
 export const LandingPage = () => {
   const [prompt, setPrompt] = useState('');

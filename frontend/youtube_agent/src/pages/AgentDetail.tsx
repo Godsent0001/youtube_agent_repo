@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { apiRequest } from '../utils/api';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 export const AgentDetail = () => {
   const { id } = useParams();
@@ -57,8 +57,6 @@ export const AgentDetail = () => {
       </div>
     );
   }
-
-  const isProcessing = video?.status === 'processing' || video?.status === 'queued';
 
   return (
     <main className="min-h-full pt-12 pb-24 px-4 md:px-12 max-w-[1440px] mx-auto w-full">

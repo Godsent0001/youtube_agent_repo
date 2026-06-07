@@ -8,7 +8,7 @@ interface SideNavBarProps {
   onLogout: () => void;
 }
 
-export const SideNavBar: React.FC<SideNavBarProps> = ({ isOpen, onClose, user, onLogout }) => {
+export const SideNavBar: React.FC<SideNavBarProps> = ({ isOpen, onClose, onLogout }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
