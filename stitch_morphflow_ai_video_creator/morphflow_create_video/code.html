@@ -1,0 +1,309 @@
+<!DOCTYPE html><html class="light" lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>MorphFlow | AI Video Creation</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800;900&amp;family=Geist:wght@400;500&amp;display=swap" rel="stylesheet">
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "inverse-surface": "#313030",
+                        "on-primary-fixed-variant": "#474646",
+                        "surface-variant": "#e5e2e1",
+                        "background": "#fdf8f8",
+                        "tertiary-fixed": "#e6e1df",
+                        "error-container": "#ffdad6",
+                        "outline-variant": "#c4c7c7",
+                        "error": "#ba1a1a",
+                        "surface-container-high": "#ebe7e6",
+                        "tertiary-fixed-dim": "#cac6c3",
+                        "surface-container-highest": "#e5e2e1",
+                        "on-secondary-container": "#626262",
+                        "on-secondary-fixed-variant": "#464747",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-fixed": "#1d1b1a",
+                        "surface-tint": "#5f5e5e",
+                        "on-error": "#ffffff",
+                        "secondary-container": "#e1dfdf",
+                        "secondary-fixed-dim": "#c7c6c6",
+                        "on-secondary": "#ffffff",
+                        "on-primary-fixed": "#1c1b1b",
+                        "on-tertiary": "#ffffff",
+                        "on-surface": "#1c1b1b",
+                        "inverse-primary": "#c8c6c5",
+                        "on-background": "#1c1b1b",
+                        "secondary": "#5e5e5e",
+                        "primary-fixed": "#e5e2e1",
+                        "surface-bright": "#fdf8f8",
+                        "primary": "#000000",
+                        "surface": "#fdf8f8",
+                        "tertiary-container": "#1d1b1a",
+                        "on-tertiary-container": "#868381",
+                        "on-primary-container": "#858383",
+                        "surface-container-low": "#f7f3f2",
+                        "on-error-container": "#93000a",
+                        "primary-container": "#1c1b1b",
+                        "secondary-fixed": "#e4e2e2",
+                        "primary-fixed-dim": "#c8c6c5",
+                        "on-secondary-fixed": "#1b1c1c",
+                        "on-tertiary-fixed-variant": "#484645",
+                        "surface-container": "#f1edec",
+                        "on-surface-variant": "#444748",
+                        "tertiary": "#000000",
+                        "outline": "#747878",
+                        "surface-dim": "#ddd9d8",
+                        "on-primary": "#ffffff",
+                        "inverse-on-surface": "#f4f0ef"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-padding-mobile": "20px",
+                        "stack-md": "16px",
+                        "gutter": "24px",
+                        "unit": "4px",
+                        "stack-lg": "32px",
+                        "section-gap": "64px",
+                        "container-padding-desktop": "48px",
+                        "stack-sm": "8px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Hanken Grotesk"],
+                        "mono-sm": ["Geist"],
+                        "headline-lg": ["Hanken Grotesk"],
+                        "headline-md": ["Hanken Grotesk"],
+                        "body-lg": ["Hanken Grotesk"],
+                        "label-md": ["Geist"],
+                        "display": ["Hanken Grotesk"],
+                        "body-md": ["Hanken Grotesk"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["24px", {"lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "mono-sm": ["13px", {"lineHeight": "1.5", "letterSpacing": "0", "fontWeight": "400"}],
+                        "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "headline-md": ["20px", {"lineHeight": "1.4", "letterSpacing": "-0.01em", "fontWeight": "500"}],
+                        "body-lg": ["16px", {"lineHeight": "1.6", "letterSpacing": "0", "fontWeight": "400"}],
+                        "label-md": ["12px", {"lineHeight": "1", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                        "display": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "body-md": ["14px", {"lineHeight": "1.5", "letterSpacing": "0", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { background-color: #FFFFFF; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .sidebar-transition { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .glass-panel { backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+    </style>
+</head>
+<body class="h-screen overflow-hidden font-body-md text-on-surface">
+<!-- Top Floating Header (TopNavBar Anchor Implementation) -->
+<header class="fixed top-0 left-1/2 -translate-x-1/2 z-50 flex items-center rounded-full mt-4 mx-auto px-6 py-2 bg-surface/80 backdrop-blur-xl border border-outline-variant/30 shadow-[0_10px_30px_rgba(0,0,0,0.04)] w-full max-w-4xl justify-between">
+<div class="flex items-center gap-4">
+<button class="p-2 hover:bg-surface-container rounded-full transition-colors" id="sidebarToggle">
+<span class="material-symbols-outlined text-primary">menu</span>
+</button>
+<span class="font-headline-md text-headline-md font-bold text-primary">MorphFlow</span>
+</div>
+
+<div class="flex items-center gap-4">
+
+<div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant bg-secondary-container flex items-center justify-center">
+<span class="text-on-secondary-container font-label-md text-[12px] font-bold">JT</span>
+</div>
+</div>
+</header>
+<!-- Collapsible Sidebar (SideNavBar Anchor Implementation) -->
+<aside class="fixed left-0 top-0 bottom-0 flex flex-col p-4 gap-4 z-40 h-screen w-64 bg-surface border-r border-outline-variant/30 sidebar-transition -translate-x-full" id="sidebar">
+<div class="flex flex-col gap-6 h-full">
+<div class="px-2 pt-16">
+<span class="font-headline-md text-headline-md font-black text-primary">MorphFlow</span>
+<p class="text-on-surface-variant text-label-md font-label-md">AI Video Editor</p>
+</div>
+<button class="flex items-center gap-3 w-full bg-primary text-on-primary p-3 rounded-lg font-medium active:scale-[0.98] transition-all">
+<span class="material-symbols-outlined">add</span>
+<span class="">New Project</span>
+</button>
+<nav class="flex flex-col gap-1 flex-grow">
+<a class="flex items-center gap-3 p-3 bg-secondary-container text-on-secondary-container font-medium rounded-lg transition-all active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-md text-label-md">Home</span>
+</a>
+<a class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">video_library</span>
+<span class="font-label-md text-label-md">Projects</span>
+</a>
+<a class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">folder_open</span>
+<span class="font-label-md text-label-md">Assets</span>
+</a>
+<a class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+<!-- Recent Videos Thumbnails -->
+<div class="mt-6 px-2">
+<p class="text-on-surface-variant text-[10px] font-bold uppercase tracking-wider mb-3">Recent Projects</p>
+<div class="flex flex-col gap-3">
+<div class="group flex items-center gap-3 cursor-pointer">
+<div class="w-12 h-8 rounded bg-surface-container overflow-hidden">
+<img class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" data-alt="A cinematic wide shot of a futuristic cityscape at dusk, featuring sleek architectural lines and soft ambient lighting. The scene is captured with a high-end digital aesthetic, prioritizing clean silhouettes and a professional, calm atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAU0A2aIKSDDZxXfexbSjXUE0naJD1qJSH-U77-isQ7SGgJG2TszcQARLwuAPAdegoZu87IHE7aR2DSbyM5iie3wSXLkGSdURKl3jDQgS24y0b-D_6cD7NeJAZsWIOM_lTBFkJ97ymzOEMK0W4_BoepLrIrMITV2ZemQgMsQBuldNDZB43R_uUAGv3DsVpCtUesV177VRlSJomzaokwl7A_xa_nEmUOev9D5b97C_vBdtFfFGLVHFx-_mEMDcHp8JhwN5znFVANBmA">
+</div>
+<span class="text-body-md font-body-md text-on-surface-variant truncate">Product Launch</span>
+</div>
+<div class="group flex items-center gap-3 cursor-pointer">
+<div class="w-12 h-8 rounded bg-surface-container overflow-hidden">
+<img class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" data-alt="Abstract tech-inspired visualization with glowing nodes and clean circuit-like paths on a deep charcoal background. The lighting is precise and technical, evoking a sense of advanced artificial intelligence and professional software engineering." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAmiI_pEh9P9rMFmQxI2f_VK7jbzbCoEmo5JKa2MNcCLvGZCWOGGheT10XleXEgbV-cSuEll_iCppqf4twSuOwhivkphRtwSBHMeJ0ZaZ3vxIxEljvv-PcNeNAhaigMaJXQ1m6y5rklPgangXphWnUJR-ZuzWrk7e6Hmkafx69JIOm-c1v4vzxisp1Afr-_UvC7OhZZP_dpU4b_tH3WbcXlydAfeoN99NEy0rfnHJlvmSuJ9oV8LANX_8ruy1KPF-OGPN4tr9p2fP0">
+</div>
+<span class="text-body-md font-body-md text-on-surface-variant truncate">AI Explainer</span>
+</div>
+</div>
+</div>
+</nav>
+<div class="mt-auto border-t border-outline-variant/20 pt-4 flex flex-col gap-1">
+<a class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="font-label-md text-label-md">Help</span>
+</a>
+<a class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all text-error" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-label-md text-label-md">Logout</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="relative h-full flex flex-col items-center justify-center px-container-padding-desktop bg-surface-container-lowest transition-all duration-300">
+<!-- Hero Section -->
+<div class="text-center mb-stack-lg max-w-2xl animate-fade-in" style="opacity: 1;">
+<h1 class="font-display text-display text-primary mb-4 leading-tight">Create Professional Videos in Minutes</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Transform ideas into polished videos using intelligent video assembly and editing.</p>
+</div>
+<!-- Prompt Workspace -->
+<div class="w-full max-w-[800px] bg-white rounded-[32px] border border-outline-variant/40 shadow-[0_20px_50px_rgba(0,0,0,0.02)] p-6 flex flex-col gap-4 animate-slide-up">
+<div class="relative">
+<textarea class="w-full h-40 border-none focus:ring-0 resize-none font-body-lg text-body-lg p-0 placeholder:text-outline" placeholder="What do you want to create today? Describe your vision, style, and tone..."></textarea>
+</div>
+<div class="flex flex-wrap items-center justify-between pt-4 border-t border-outline-variant/20">
+<div class="flex items-center gap-3">
+<!-- Custom Dropdowns -->
+<div class="relative group">
+<button class="flex items-center gap-2 px-3 py-1.5 bg-surface-container-low rounded-full hover:bg-surface-container transition-colors font-label-md text-label-md border border-outline-variant/10">
+<span class="material-symbols-outlined text-[18px]">aspect_ratio</span>
+<span class="">16:9</span>
+<span class="material-symbols-outlined text-[16px]">expand_more</span>
+</button>
+</div>
+<div class="relative group">
+<button class="flex items-center gap-2 px-3 py-1.5 bg-surface-container-low rounded-full hover:bg-surface-container transition-colors font-label-md text-label-md border border-outline-variant/10">
+<span class="material-symbols-outlined text-[18px]">schedule</span>
+<span class="">30s</span>
+<span class="material-symbols-outlined text-[16px]">expand_more</span>
+</button>
+</div>
+
+</div>
+<button class="w-12 h-12 rounded-full bg-primary text-on-primary flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-lg">
+<span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Atmospheric Footer Indicator -->
+<div class="absolute bottom-8 flex items-center gap-2 text-outline-variant font-mono-sm text-mono-sm uppercase tracking-widest">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+            MorphFlow Core v2.4 Ready
+        </div>
+</main>
+<!-- Overlay for Sidebar -->
+<div class="fixed inset-0 bg-black/10 backdrop-blur-[2px] z-30 hidden transition-opacity opacity-0" id="overlay"></div>
+<script>
+        const sidebar = document.getElementById('sidebar');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const overlay = document.getElementById('overlay');
+        const mainContent = document.querySelector('main');
+
+        let isSidebarOpen = false;
+
+        function toggleSidebar() {
+            isSidebarOpen = !isSidebarOpen;
+            if (isSidebarOpen) {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+                setTimeout(() => overlay.classList.add('opacity-100'), 10);
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.remove('opacity-100');
+                setTimeout(() => overlay.classList.add('hidden'), 300);
+            }
+        }
+
+        sidebarToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleSidebar();
+        });
+
+        overlay.addEventListener('click', toggleSidebar);
+
+        // Micro-interactions for the prompt area
+        const textarea = document.querySelector('textarea');
+        const container = textarea.parentElement.parentElement;
+
+        textarea.addEventListener('focus', () => {
+            container.classList.add('border-primary');
+            container.classList.add('shadow-[0_20px_60px_rgba(0,0,0,0.06)]');
+        });
+
+        textarea.addEventListener('blur', () => {
+            container.classList.remove('border-primary');
+            container.classList.remove('shadow-[0_20px_60px_rgba(0,0,0,0.06)]');
+        });
+
+        // Simple animation entrance
+        document.addEventListener('DOMContentLoaded', () => {
+            const elements = document.querySelectorAll('.animate-fade-in');
+            elements.forEach((el, index) => {
+                setTimeout(() => {
+                    el.style.opacity = '1';
+                }, index * 200);
+            });
+        });
+    </script>
+<style>
+        .animate-fade-in {
+            opacity: 0;
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+        .animate-slide-up {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.2s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+
+
+</body></html>
