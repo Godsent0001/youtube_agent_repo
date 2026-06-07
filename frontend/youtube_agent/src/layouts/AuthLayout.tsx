@@ -8,15 +8,15 @@ export const AuthLayout = () => {
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-md"
+        className="w-full max-w-xl"
       >
         <div className="flex flex-col items-center mb-8">
           <Link to="/" className="flex items-center gap-2 mb-4">
             <Play className="h-10 w-10 text-primary" />
-            <span className="text-2xl font-bold tracking-tight">AI Agents</span>
+            <span className="text-2xl font-bold tracking-tight">MorphFlow</span>
           </Link>
         </div>
-        <div className="bg-card p-6 sm:p-8 rounded-2xl border border-border shadow-xl">
+        <div className="bg-card p-2 md:p-4 rounded-3xl md:rounded-[32px] border border-border shadow-xl">
           <Outlet />
         </div>
       </motion.div>

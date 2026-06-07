@@ -14,7 +14,15 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     ffmpeg \
+    wget \
+    curl \
+    libgomp1 \
     && rm -rf /var/lib/apt/lists/*
+
+# Install Piper TTS models (from official voices repo)
+RUN mkdir -p /app/models && \
+    wget -O /app/models/en_US-lessac-medium.onnx https://github.com/rhasspy/piper-voices/releases/download/v1.0.0/en_US-lessac-medium.onnx && \
+    wget -O /app/models/en_US-lessac-medium.onnx.json https://github.com/rhasspy/piper-voices/releases/download/v1.0.0/en_US-lessac-medium.onnx.json
 
 # Set working directory
 WORKDIR /app

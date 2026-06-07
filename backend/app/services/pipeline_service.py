@@ -7,7 +7,7 @@ from app.services.ai.metadata_service import metadata_service
 from app.services.ai.scene_service import scene_service
 
 from app.services.media.selector_service import selector_service
-from app.services.audio.elevenlabs_service import elevenlabs_service
+from app.services.audio.piper_service import piper_service
 
 from app.services.video.builder_service import video_builder_service
 from app.services.video.render_service import RenderService
@@ -116,7 +116,7 @@ class PipelineService:
         scene_scripts = [s.get("text", "") for s in scenes if s.get("text")]
         synced_script = " ".join(scene_scripts)
 
-        audio_path = elevenlabs_service.generate_audio(synced_script or script)
+        audio_path = piper_service.generate_audio(synced_script or script)
         if not audio_path:
             raise Exception("Audio generation failed")
 
