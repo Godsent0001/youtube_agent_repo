@@ -1,7 +1,5 @@
 import os
-from datetime import datetime
 from pydantic_settings import BaseSettings
-from typing import Optional
 
 
 class Settings(BaseSettings):
@@ -38,8 +36,8 @@ class Settings(BaseSettings):
     # =========================
     # SECURITY
     # =========================
-    SECRET_KEY: str = os.getenv("JWT_SECRET", "supersecret")
-    ALGORITHM: str = "HS256"
+    JWT_SECRET: str = os.getenv("JWT_SECRET", "supersecret")
+    JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "1440"))
 
     class Config:
