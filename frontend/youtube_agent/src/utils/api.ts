@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://youtube-backend-agent-repo.onrender.com';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
 export const apiRequest = async (endpoint: string, options: any = {}) => {
   const token = localStorage.getItem('access_token');
@@ -10,17 +10,15 @@ export const apiRequest = async (endpoint: string, options: any = {}) => {
     ...options.headers,
   };
 
-  // Standardize API structure: ALWAYS remove trailing slashes
-  // to follow canonical REST patterns and avoid redirect loops.
   const normalizedEndpoint = endpoint.replace(/\/+$/, "");
 
-  // Auto-append user_id to query params if not already there
   let url = `${API_BASE_URL}${normalizedEndpoint}`;
+  const separator = url.includes('?') ? '&' : '?';
+
   if (userId && !normalizedEndpoint.includes('auth')) {
-      const separator = url.includes('?') ? '&' : '?';
-      if (!url.includes('user_id=')) {
-          url = `${url}${separator}user_id=${userId}`;
-      }
+    if (!url.includes('user_id=')) {
+      url = `${url}${separator}user_id=${userId}`;
+    }
   }
 
   const response = await fetch(url, {

@@ -9,8 +9,9 @@ class ActivityStep(BaseModel):
 class JobBase(BaseModel):
     job_id: str
     user_id: str
-    agent_id: str
+    video_id: str
     status: str = "queued"
+    progress: int = 0
     created_at: datetime
     updated_at: datetime
     result_url: Optional[str] = None
@@ -18,4 +19,4 @@ class JobBase(BaseModel):
     activities: List[ActivityStep] = []
 
 class JobResponse(JobBase):
-    pass
+    id: str

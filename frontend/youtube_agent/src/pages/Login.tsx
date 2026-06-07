@@ -1,115 +1,90 @@
-import React, { useState } from "react";
-
-import { Link, useNavigate } from 'react-router-dom';
-import { Button } from '../components/ui/Button';
-import { Input } from '../components/ui/Input';
-import { Play, Mail } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { useNavigate, Link } from 'react-router-dom';
 import { apiRequest } from '../utils/api';
+import React, { useState } from 'react';
 
 export const Login = () => {
-  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setLoading(true);
     try {
-      const data = await apiRequest('/auth/login', {
+      const response = await apiRequest('/auth/login', {
         method: 'POST',
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password })
       });
-      localStorage.setItem('access_token', data.access_token);
-      localStorage.setItem('user_id', data.user_id);
-      localStorage.setItem('user_email', email);
-      setSuccess('Login successful! Redirecting...');
-      setTimeout(() => navigate('/dashboard'), 1500);
-    } catch (err: any) {
-      if (err.message.includes('401') || err.message.toLowerCase().includes('invalid')) {
-        setError('Incorrect email or password, please try again.');
+      localStorage.setItem('access_token', response.access_token);
+      localStorage.setItem('user_id', response.user_id);
+      localStorage.setItem('user', JSON.stringify({ email, id: response.user_id }));
+
+      const pendingVideo = localStorage.getItem('pending_video');
+      if (pendingVideo) {
+        localStorage.removeItem('pending_video');
+        const videoResponse = await apiRequest('/videos', {
+          method: 'POST',
+          body: pendingVideo
+        });
+        navigate(`/video/${videoResponse.video_id}`);
       } else {
-        setError(err.message || 'An error occurred. Please try again.');
+        navigate('/dashboard');
       }
-    } finally {
-      setLoading(false);
+    } catch (err: any) {
+      setError(err.message || 'Login failed');
     }
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -20 }}
-    >
-      <div className="text-center mb-8">
-        <h1 className="text-2xl font-bold text-white">Welcome Back!</h1>
-        <p className="text-secondary-foreground">Login to manage your AI agents</p>
-      </div>
-
-      <div className="space-y-4">
-        <Button variant="outline" className="w-full gap-2 bg-white text-black hover:bg-neutral-200 border-none py-6 sm:py-2">
-          <Play className="h-5 w-5 text-red-600" />
-          Continue with YouTube
-        </Button>
-        <Button variant="outline" className="w-full gap-2 py-6 sm:py-2">
-          <Mail className="h-5 w-5" />
-          Continue with Google
-        </Button>
-      </div>
-
-      <div className="relative my-8">
-        <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t border-border" />
+    <div className="min-h-full flex flex-col items-center justify-center p-6 bg-background">
+      <div className="w-full max-w-md space-y-8">
+        <div className="text-center">
+          <h1 className="font-hanken text-4xl font-black text-primary mb-2">MorphFlow</h1>
+          <p className="text-on-surface-variant font-geist text-xs uppercase tracking-widest">Sign in to continue</p>
         </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-card px-2 text-secondary-foreground">Or continue with</span>
-        </div>
-      </div>
 
-      {error && <p className="text-red-500 text-sm mb-4 text-center">{error}</p>}
-      {success && <p className="text-green-500 text-sm mb-4 text-center">{success}</p>}
-      <form onSubmit={handleLogin} className="space-y-4">
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-secondary-foreground">Email</label>
-          <Input
-            type="email"
-            placeholder="name@example.com"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </div>
-        <div className="space-y-2">
-          <div className="flex justify-between">
-            <label className="text-sm font-medium text-secondary-foreground">Password</label>
-            <Link to="/forgot-password" className="text-xs text-primary hover:underline">
-              Forgot password?
-            </Link>
+        <form onSubmit={handleSubmit} className="bg-white p-8 rounded-[32px] border border-outline-variant/30 shadow-sm space-y-6">
+          {error && <div className="p-3 bg-error/10 text-error rounded-xl text-xs font-geist">{error}</div>}
+
+          <div className="space-y-1">
+            <label className="font-geist text-[10px] text-on-surface-variant uppercase tracking-widest">Email Address</label>
+            <input
+              type="email"
+              required
+              className="w-full p-4 bg-surface-container-low rounded-2xl border border-transparent focus:border-primary/20 focus:bg-white transition-all text-sm"
+              placeholder="name@company.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
           </div>
-          <Input
-            type="password"
-            placeholder="••••••••"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </div>
-        <Button type="submit" className="w-full py-6 sm:py-2" disabled={loading}>
-          {loading ? 'Logging in...' : 'Login'}
-        </Button>
-      </form>
 
-      <p className="mt-8 text-center text-sm text-secondary-foreground">
-        Don't have an account?{' '}
-        <Link to="/signup" className="text-primary hover:underline font-medium">
-          Create Account →
-        </Link>
-      </p>
-    </motion.div>
+          <div className="space-y-1">
+            <div className="flex justify-between items-center">
+              <label className="font-geist text-[10px] text-on-surface-variant uppercase tracking-widest">Password</label>
+            </div>
+            <input
+              type="password"
+              required
+              className="w-full p-4 bg-surface-container-low rounded-2xl border border-transparent focus:border-primary/20 focus:bg-white transition-all text-sm"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="w-full py-4 bg-primary text-on-primary rounded-2xl font-geist text-sm font-bold active:scale-[0.98] transition-all"
+          >
+            Sign In
+          </button>
+
+          <p className="text-center text-on-surface-variant text-xs pt-4">
+            Don't have an account? <Link to="/signup" className="text-primary font-bold hover:underline">Sign up</Link>
+          </p>
+        </form>
+      </div>
+    </div>
   );
 };
