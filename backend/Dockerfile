@@ -19,10 +19,10 @@ RUN apt-get update && apt-get install -y \
     libgomp1 \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Piper TTS models (from official voices repo)
+# Install Piper TTS models (from Hugging Face)
 RUN mkdir -p /app/models && \
-    wget -O /app/models/en_US-lessac-medium.onnx https://github.com/rhasspy/piper-voices/releases/download/v1.0.0/en_US-lessac-medium.onnx && \
-    wget -O /app/models/en_US-lessac-medium.onnx.json https://github.com/rhasspy/piper-voices/releases/download/v1.0.0/en_US-lessac-medium.onnx.json
+    wget -O /app/models/en_US-lessac-medium.onnx https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/lessac/medium/en_US-lessac-medium.onnx?download=true && \
+    wget -O /app/models/en_US-lessac-medium.onnx.json https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/lessac/medium/en_US-lessac-medium.onnx.json?download=true
 
 # Set working directory
 WORKDIR /app
