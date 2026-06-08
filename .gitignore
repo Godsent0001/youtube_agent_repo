@@ -78,9 +78,6 @@ storage/
 *.mp3
 *.wav
 *.flac
-*.png
-*.jpg
-*.jpeg
 *.webp
 
 # =========================
