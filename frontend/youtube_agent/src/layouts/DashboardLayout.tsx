@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { TopNavBar } from '../components/TopNavBar';
 import { SideNavBar } from '../components/SideNavBar';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import heroBg from '../assets/hero-bg.png';
 
 export const DashboardLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -26,7 +27,28 @@ export const DashboardLayout = () => {
   };
 
   return (
-    <div className={`h-screen flex flex-col ${isLandingPage ? 'bg-transparent' : 'bg-surface-container-lowest'} transition-colors duration-500 overflow-hidden`}>
+    <div className={`h-screen flex flex-col ${isLandingPage ? 'bg-transparent' : 'bg-surface-container-lowest'} overflow-hidden relative`}>
+      <AnimatePresence>
+        {isLandingPage && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.8 }}
+            className="fixed inset-0 -z-10 overflow-hidden bg-black"
+          >
+            <div
+              className="absolute inset-0 bg-center bg-cover"
+              style={{ backgroundImage: `url(${heroBg})` }}
+            >
+            </div>
+
+            {/* Overlay for UI Legibility */}
+            <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"></div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <TopNavBar
         onMenuClick={() => setIsSidebarOpen(true)}
         user={user}
