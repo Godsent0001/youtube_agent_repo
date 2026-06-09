@@ -44,7 +44,7 @@ export const DashboardLayout = () => {
             </div>
 
             {/* Overlay for UI Legibility */}
-            <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"></div>
+            <div className="absolute inset-0 bg-black/20 backdrop-blur-[2px]"></div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -52,6 +52,7 @@ export const DashboardLayout = () => {
       <TopNavBar
         onMenuClick={() => setIsSidebarOpen(true)}
         user={user}
+        isLandingPage={isLandingPage}
       />
 
       <SideNavBar

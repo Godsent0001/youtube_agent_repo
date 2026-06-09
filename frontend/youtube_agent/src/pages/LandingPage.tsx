@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiRequest } from '../utils/api';
-import heroBg from '../assets/hero-bg.png';
 
 export const LandingPage = () => {
   const [prompt, setPrompt] = useState('');
