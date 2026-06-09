@@ -4,13 +4,14 @@ import { useNavigate } from 'react-router-dom';
 interface TopNavBarProps {
   onMenuClick: () => void;
   user: any;
+  isLandingPage?: boolean;
 }
 
-export const TopNavBar: React.FC<TopNavBarProps> = ({ onMenuClick, user }) => {
+export const TopNavBar: React.FC<TopNavBarProps> = ({ onMenuClick, user, isLandingPage }) => {
   const navigate = useNavigate();
 
   return (
-    <header className="fixed top-0 left-1/2 -translate-x-1/2 z-50 flex items-center rounded-full mt-4 mx-auto px-6 py-2 bg-surface/80 backdrop-blur-xl border border-outline-variant/30 shadow-[0_10px_30px_rgba(0,0,0,0.04)] w-[calc(100%-2rem)] max-w-4xl justify-between">
+    <header className={`fixed top-0 left-1/2 -translate-x-1/2 z-50 flex items-center rounded-full mt-4 mx-auto px-6 py-2 ${isLandingPage ? 'bg-white/10 border-white/20' : 'bg-surface/80 border-outline-variant/30 shadow-[0_10px_30px_rgba(0,0,0,0.04)]'} backdrop-blur-xl border w-[calc(100%-2rem)] max-w-4xl justify-between transition-all duration-300`}>
       <div className="flex items-center gap-4">
         {user && (
           <button

@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiRequest } from '../utils/api';
-import heroBg from '../assets/hero-bg.png';
 
 export const LandingPage = () => {
   const [prompt, setPrompt] = useState('');
@@ -40,20 +39,7 @@ export const LandingPage = () => {
   };
 
   return (
-    <>
-      {/* Background Layer */}
-      <div className="fixed inset-0 -z-10 overflow-hidden bg-black">
-        <div
-          className="absolute inset-0 bg-center bg-cover"
-          style={{ backgroundImage: `url(${heroBg})` }}
-        >
-        </div>
-
-        {/* Overlay for UI Legibility */}
-        <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"></div>
-      </div>
-
-      <div className="relative h-full flex flex-col items-center justify-center px-4 py-12 overflow-y-auto">
+    <div className="relative h-full flex flex-col items-center justify-center px-4 py-12 overflow-y-auto">
         {/* Hero Section */}
       <div className="text-center mb-8 max-w-2xl">
         <h1 className="font-hanken text-3xl md:text-5xl font-semibold text-primary mb-4 leading-tight">
@@ -144,6 +130,5 @@ export const LandingPage = () => {
         MorphFlow Core v3.0 Ready
       </div>
     </div>
-    </>
   );
 };
