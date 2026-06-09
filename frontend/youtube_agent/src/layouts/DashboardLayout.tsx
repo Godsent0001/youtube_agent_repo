@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { TopNavBar } from '../components/TopNavBar';
 import { SideNavBar } from '../components/SideNavBar';
 import { motion } from 'framer-motion';
@@ -8,6 +8,8 @@ export const DashboardLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
   const navigate = useNavigate();
+  const location = useLocation();
+  const isLandingPage = location.pathname === '/';
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -24,7 +26,7 @@ export const DashboardLayout = () => {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-surface-container-lowest overflow-hidden">
+    <div className={`h-screen flex flex-col ${isLandingPage ? 'bg-transparent' : 'bg-surface-container-lowest'} transition-colors duration-500 overflow-hidden`}>
       <TopNavBar
         onMenuClick={() => setIsSidebarOpen(true)}
         user={user}
