@@ -165,6 +165,9 @@ class PipelineService:
             update_job_activity(job_id, "Video ready!", progress=100)
 
         # Convert local path to public URL
+        # Use relative path for frontend to resolve against its own API_BASE_URL if needed,
+        # but the user requested public URL.
+        # To be safe, we ensure it's served via the static route.
         public_video_url = f"{settings.BACKEND_URL}/{final_video}"
 
         return {
