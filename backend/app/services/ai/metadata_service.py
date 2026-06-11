@@ -20,10 +20,10 @@ class MetadataService:
 You are a YouTube growth expert.
 
 Your job:
-- Create viral titles optimized for CTR
-- Write SEO-optimized descriptions
+- Create simple, professional, heading-like titles (e.g., "Cake Baking Guide", "Python Tutorial", "Travel Tips")
+- AVOID clickbait, ALL CAPS, or exaggerated claims
+- Write clear and descriptive descriptions
 - Generate relevant tags/hashtags
-- Maximize engagement probability
 
 Return ONLY valid JSON:
 {

@@ -2,6 +2,7 @@ import os
 from datetime import datetime
 from app.core.logger import logger
 
+from app.core.config import settings
 from app.services.ai.script_service import script_service
 from app.services.ai.metadata_service import metadata_service
 from app.services.ai.scene_service import scene_service
@@ -163,11 +164,14 @@ class PipelineService:
         if job_id:
             update_job_activity(job_id, "Video ready!", progress=100)
 
+        # Convert local path to public URL
+        public_video_url = f"{settings.BACKEND_URL}/{final_video}"
+
         return {
             "success": True,
             "video_id": video_id,
             "title": title,
-            "final_video_path": final_video,
+            "final_video_path": public_video_url,
             "thumbnail_url": None # Could be extracted from video if needed
         }
 

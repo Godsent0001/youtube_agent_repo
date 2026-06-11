@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { apiRequest } from '../utils/api';
 
 interface SideNavBarProps {
   isOpen: boolean;
@@ -11,6 +12,25 @@ interface SideNavBarProps {
 export const SideNavBar: React.FC<SideNavBarProps> = ({ isOpen, onClose, onLogout }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [recentVideos, setRecentVideos] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchRecentVideos();
+    }
+  }, [isOpen]);
+
+  const fetchRecentVideos = async () => {
+    try {
+      const userId = localStorage.getItem('user_id');
+      if (!userId) return;
+      const data = await apiRequest(`/videos?user_id=${userId}`);
+      // Show top 5 most recent videos
+      setRecentVideos(data.slice(0, 5));
+    } catch (error) {
+      console.error('Error fetching recent videos:', error);
+    }
+  };
 
   const navItems = [
     { label: 'Home', icon: 'home', path: '/' },
@@ -52,6 +72,24 @@ export const SideNavBar: React.FC<SideNavBarProps> = ({ isOpen, onClose, onLogou
                 <span className="font-geist text-sm">{item.label}</span>
               </button>
             ))}
+
+            {recentVideos.length > 0 && (
+              <div className="mt-4">
+                <p className="px-3 py-2 text-[10px] font-bold text-outline uppercase tracking-wider">Recent Videos</p>
+                <div className="flex flex-col gap-1">
+                  {recentVideos.map((video) => (
+                    <button
+                      key={video.id}
+                      className="flex items-center gap-3 p-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all text-left"
+                      onClick={() => { navigate(`/video/${video.id}`); onClose(); }}
+                    >
+                      <span className="material-symbols-outlined text-[20px]">movie</span>
+                      <span className="font-geist text-xs truncate">{video.title || 'Untitled Project'}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </nav>
 
           <div className="mt-auto border-t border-outline-variant/20 pt-4 flex flex-col gap-1">
