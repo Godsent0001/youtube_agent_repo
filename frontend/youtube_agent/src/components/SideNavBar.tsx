@@ -18,15 +18,24 @@ export const SideNavBar: React.FC<SideNavBarProps> = ({ isOpen, onClose, onLogou
     if (isOpen) {
       fetchRecentVideos();
     }
-  }, [isOpen]);
+  }, [isOpen, location.pathname]);
 
   const fetchRecentVideos = async () => {
     try {
       const userId = localStorage.getItem('user_id');
-      if (!userId) return;
+      if (!userId) {
+        console.warn('SideNavBar: user_id not found in localStorage');
+        return;
+      }
       const data = await apiRequest(`/videos?user_id=${userId}`);
-      // Show top 5 most recent videos
-      setRecentVideos(data.slice(0, 5));
+
+      if (Array.isArray(data)) {
+        // Sort by created_at descending just in case the API doesn't
+        const sorted = data.sort((a: any, b: any) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+        setRecentVideos(sorted.slice(0, 5));
+      }
     } catch (error) {
       console.error('Error fetching recent videos:', error);
     }

@@ -19,6 +19,16 @@ export const AgentDetail = () => {
   const fetchVideo = async () => {
     try {
       const data = await apiRequest(`/videos/${id}`);
+
+      // Fix for hardcoded URLs from previous environments
+      if (data.video_url && data.video_url.includes('onrender.com')) {
+        const urlParts = data.video_url.split('/storage/');
+        if (urlParts.length > 1) {
+          const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+          data.video_url = `${API_BASE_URL}/storage/${urlParts[1]}`;
+        }
+      }
+
       setVideo(data);
       setLoading(false);
     } catch (error) {
@@ -50,7 +60,7 @@ export const AgentDetail = () => {
      alert('Link copied to clipboard!');
   };
 
-  if (loading) {
+  if (loading && !status) {
     return (
       <div className="h-full flex items-center justify-center bg-background">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
@@ -60,6 +70,34 @@ export const AgentDetail = () => {
 
   return (
     <main className="min-h-full pt-12 pb-24 px-4 md:px-12 max-w-[1440px] mx-auto w-full">
+      {!video && status && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
+           <div className="w-full max-w-md space-y-6 text-center">
+              <div className="text-primary font-hanken text-2xl font-semibold mb-8">
+                {status?.activities?.length > 0 ? `${status.activities[status.activities.length - 1].step} ${status.progress || 0}%` : 'Initializing...'}
+              </div>
+              <div className="w-full bg-surface-container h-3 rounded-full overflow-hidden shadow-inner">
+                 <motion.div
+                  className="bg-primary h-full shadow-[0_0_15px_rgba(59,130,246,0.5)]"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${status?.progress || 0}%` }}
+                  transition={{ duration: 0.5 }}
+                 />
+              </div>
+              <div className="space-y-3 max-h-60 overflow-y-auto hide-scrollbar text-left bg-surface/50 p-6 rounded-2xl border border-outline-variant/20">
+                 {status?.activities?.slice().reverse().map((act: any, i: number) => (
+                   <div key={i} className={`flex items-center gap-3 text-sm ${i === 0 ? 'text-primary font-medium' : 'text-on-surface-variant opacity-60'}`}>
+                      <span className="material-symbols-outlined text-[18px] text-emerald-500">
+                        {i === 0 && status.status !== 'completed' ? 'sync' : 'check_circle'}
+                      </span>
+                      <span>{act.step}</span>
+                   </div>
+                 ))}
+              </div>
+           </div>
+        </div>
+      )}
+
       <header className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6">
         <div className="space-y-2">
           <div className="flex items-center gap-3">
