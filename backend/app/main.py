@@ -3,6 +3,7 @@ load_dotenv()
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from app.core.config import settings
 from app.core.logger import logger
@@ -29,6 +30,11 @@ app = FastAPI(
     title="MorphFlow AI Video Creator",
     version="1.0.0"
 )
+
+# =========================
+# STATIC FILES
+# =========================
+app.mount("/storage", StaticFiles(directory="storage"), name="storage")
 
 # =========================
 # CORS CONFIGURATION

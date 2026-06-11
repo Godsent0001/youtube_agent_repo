@@ -110,7 +110,7 @@ export const AgentDetail = () => {
               <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center">
                  <div className="w-full max-w-md space-y-6">
                     <div className="text-primary font-hanken text-xl font-medium">
-                      {status?.activities?.length > 0 ? status.activities[status.activities.length - 1].step : 'Initializing...'}
+                      {status?.activities?.length > 0 ? `${status.activities[status.activities.length - 1].step} ${status.progress || 0}%` : 'Initializing...'}
                     </div>
                     <div className="w-full bg-surface-container h-2 rounded-full overflow-hidden">
                        <motion.div
