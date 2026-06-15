@@ -46,21 +46,29 @@ class VideoService:
         for field in ["video_url", "thumbnail_url"]:
             val = prepared_video.get(field)
             if val:
-                # If it's already an absolute URL but points to the WRONG domain (e.g. render),
-                # or if it's a relative path (starts with storage/),
-                # we force it to use the current BACKEND_URL.
-                if "onrender.com" in val or val.startswith("storage/"):
-                    # Extract filename if it was a full URL
+                old_val = val
+                # 1. If it's a legacy Render URL, extract filename
+                if "onrender.com" in val:
                     filename = val.split('/')[-1]
-                    # Reconstruct correctly based on field type
                     if "video" in field:
-                        prepared_video[field] = f"{base_url}/storage/videos/{filename}"
+                        val = f"storage/videos/{filename}"
                     else:
-                        prepared_video[field] = f"{base_url}/storage/images/{filename}"
+                        val = f"storage/images/{filename}"
 
-                # If it's a relative path but doesn't have storage/ prefix (unlikely but safe)
-                elif not val.startswith("http"):
+                # 2. If it's a relative path (doesn't start with http), prepend BACKEND_URL
+                if not val.startswith("http"):
+                    # Ensure path starts with storage/ if it's just a filename
+                    if not val.startswith("storage/"):
+                        if "video" in field:
+                            val = f"storage/videos/{val.lstrip('/')}"
+                        else:
+                            val = f"storage/images/{val.lstrip('/')}"
+
                     prepared_video[field] = f"{base_url}/{val.lstrip('/')}"
+                    self.logger.info(f"URL FIX: {field} [{old_val}] -> [{prepared_video[field]}]")
+                else:
+                    # It's already an absolute URL (and not Render), keep as is
+                    prepared_video[field] = val
 
         return prepared_video
 
