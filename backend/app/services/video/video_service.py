@@ -35,6 +35,33 @@ class VideoService:
         # Remove Mongo _id from API response
         prepared_video.pop("_id", None)
 
+        # ==================================================
+        # DYNAMIC URL CONSTRUCT (FIX FOR VPS/RENDER MIGRATION)
+        # ==================================================
+        from app.core.config import settings
+
+        # Clean up BACKEND_URL (remove trailing slash)
+        base_url = settings.BACKEND_URL.rstrip('/')
+
+        for field in ["video_url", "thumbnail_url"]:
+            val = prepared_video.get(field)
+            if val:
+                # If it's already an absolute URL but points to the WRONG domain (e.g. render),
+                # or if it's a relative path (starts with storage/),
+                # we force it to use the current BACKEND_URL.
+                if "onrender.com" in val or val.startswith("storage/"):
+                    # Extract filename if it was a full URL
+                    filename = val.split('/')[-1]
+                    # Reconstruct correctly based on field type
+                    if "video" in field:
+                        prepared_video[field] = f"{base_url}/storage/videos/{filename}"
+                    else:
+                        prepared_video[field] = f"{base_url}/storage/images/{filename}"
+
+                # If it's a relative path but doesn't have storage/ prefix (unlikely but safe)
+                elif not val.startswith("http"):
+                    prepared_video[field] = f"{base_url}/{val.lstrip('/')}"
+
         return prepared_video
 
     # =========================
