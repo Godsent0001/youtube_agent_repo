@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     # =========================
     # URLS
     # =========================
-    BACKEND_URL: str = "http://localhost:8000"
+    BACKEND_URL: str = "https://api.aiworkforceinc.com"
     FRONTEND_URL: str = "http://localhost:5173"
 
     # =========================

@@ -164,14 +164,13 @@ class PipelineService:
         if job_id:
             update_job_activity(job_id, "Video ready!", progress=100)
 
-        # Convert local path to public URL
-        public_video_url = f"{settings.BACKEND_URL}/{final_video}"
-
+        # RETURN RELATIVE PATH (e.g. storage/videos/final_...)
+        # This allows the API/Frontend to build the absolute URL dynamically
         return {
             "success": True,
             "video_id": video_id,
             "title": title,
-            "final_video_path": public_video_url,
+            "final_video_path": final_video,
             "thumbnail_url": None # Could be extracted from video if needed
         }
 
