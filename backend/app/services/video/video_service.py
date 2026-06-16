@@ -18,57 +18,38 @@ class VideoService:
     # =========================
     def _prepare_video(self, video: dict | None):
         """
-        Convert MongoDB _id -> id safely
+        Convert MongoDB _id -> id safely and FORCE absolute URLs.
         """
-
         if not video:
             return None
 
-        # Create copy so original Mongo object is untouched
+        # Create copy
         prepared_video = dict(video)
 
-        mongo_id = prepared_video.get("_id")
-
-        if mongo_id:
-            prepared_video["id"] = str(mongo_id)
-
-        # Remove Mongo _id from API response
-        prepared_video.pop("_id", None)
+        # Convert ID
+        if "_id" in prepared_video:
+            prepared_video["id"] = str(prepared_video["_id"])
+            prepared_video.pop("_id", None)
 
         # ==================================================
-        # DYNAMIC URL CONSTRUCT (FIX FOR VPS/RENDER MIGRATION)
+        # HARDCODED FAIL-SAFE FOR VPS
         # ==================================================
-        from app.core.config import settings
+        BASE_DOMAIN = "https://api.aiworkforceinc.com"
 
-        # Clean up BACKEND_URL (remove trailing slash)
-        base_url = settings.BACKEND_URL.rstrip('/')
+        # Force Video URL to be absolute
+        v_url = prepared_video.get("video_url")
+        if v_url:
+            # Extract just the filename to be safe
+            filename = v_url.split('/')[-1]
+            if filename:
+                prepared_video["video_url"] = f"{BASE_DOMAIN}/storage/videos/{filename}"
 
-        for field in ["video_url", "thumbnail_url"]:
-            val = prepared_video.get(field)
-            if val:
-                old_val = val
-                # 1. If it's a legacy Render URL, extract filename
-                if "onrender.com" in val:
-                    filename = val.split('/')[-1]
-                    if "video" in field:
-                        val = f"storage/videos/{filename}"
-                    else:
-                        val = f"storage/images/{filename}"
-
-                # 2. If it's a relative path (doesn't start with http), prepend BACKEND_URL
-                if not val.startswith("http"):
-                    # Ensure path starts with storage/ if it's just a filename
-                    if not val.startswith("storage/"):
-                        if "video" in field:
-                            val = f"storage/videos/{val.lstrip('/')}"
-                        else:
-                            val = f"storage/images/{val.lstrip('/')}"
-
-                    prepared_video[field] = f"{base_url}/{val.lstrip('/')}"
-                    self.logger.info(f"URL FIX: {field} [{old_val}] -> [{prepared_video[field]}]")
-                else:
-                    # It's already an absolute URL (and not Render), keep as is
-                    prepared_video[field] = val
+        # Force Thumbnail URL to be absolute
+        t_url = prepared_video.get("thumbnail_url")
+        if t_url:
+            filename = t_url.split('/')[-1]
+            if filename:
+                prepared_video["thumbnail_url"] = f"{BASE_DOMAIN}/storage/images/{filename}"
 
         return prepared_video
 
