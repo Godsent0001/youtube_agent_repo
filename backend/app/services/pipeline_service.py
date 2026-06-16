@@ -164,13 +164,15 @@ class PipelineService:
         if job_id:
             update_job_activity(job_id, "Video ready!", progress=100)
 
-        # RETURN RELATIVE PATH (e.g. storage/videos/final_...)
-        # This allows the API/Frontend to build the absolute URL dynamically
+        # FORCE ABSOLUTE URL WITH HARDCODED DOMAIN FAIL-SAFE
+        base_domain = "https://api.aiworkforceinc.com"
+        public_video_url = f"{base_domain}/{final_video.lstrip('/')}"
+
         return {
             "success": True,
             "video_id": video_id,
             "title": title,
-            "final_video_path": final_video,
+            "final_video_path": public_video_url,
             "thumbnail_url": None # Could be extracted from video if needed
         }
 
