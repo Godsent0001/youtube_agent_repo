@@ -37,7 +37,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY backend/ .
 
 # Ensure storage directories exist
-RUN mkdir -p storage/audio storage/images storage/videos
+RUN mkdir -p storage/audio storage/images storage/videos storage/temp_media models
 
 # Make scripts executable
 RUN chmod +x scripts/*.sh

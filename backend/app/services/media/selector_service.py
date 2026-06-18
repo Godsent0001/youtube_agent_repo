@@ -29,7 +29,8 @@ class SelectorService:
 
         query = (
             scene.get("stock_query")
-            or scene.get("visual_query", "")
+            or scene.get("visual_query")
+            or scene.get("visual_description", "")
         ).strip()
 
         emotion = scene.get("emotion", "neutral")

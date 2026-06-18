@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  # Redis for Task Queue
+  redis:
+    image: redis:7-alpine
+    container_name: morphflow_redis
+    ports:
+      - "6379:6379"
+    restart: always
+
+  # Backend API (FastAPI)
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: morphflow_backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - ROLE=web
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - redis
+    volumes:
+      - ./storage:/app/storage
+    restart: always
+
+  # Worker (RQ Worker)
+  worker:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: morphflow_worker
+    command: ./scripts/start-worker.sh
+    env_file:
+      - .env
+    environment:
+      - ROLE=worker
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - redis
+    volumes:
+      - ./storage:/app/storage
+    restart: always
+
+volumes:
+  storage:
