@@ -11,7 +11,15 @@ class PiperService:
 
     def __init__(self):
         self.logger = logger
-        self.model_path = "/app/models/en_US-lessac-medium.onnx"
+        # Flexible model path: check Docker path first, then local path
+        docker_path = "/app/models/en_US-lessac-medium.onnx"
+        local_path = os.path.join(os.getcwd(), "models/en_US-lessac-medium.onnx")
+
+        if os.path.exists(docker_path):
+            self.model_path = docker_path
+        else:
+            self.model_path = local_path
+
         self.output_dir = "storage/audio"
 
     def generate_audio(self, text: str):
@@ -77,10 +85,37 @@ class PiperService:
             return self._mock_audio(file_path)
 
     def _mock_audio(self, file_path):
-        with open(file_path, "wb") as f:
-            f.write(b"MOCK PIPER AUDIO CONTENT")
-        self.logger.info(f"MOCK Piper audio generated: {file_path}")
-        return file_path
+        """
+        Generates a valid (but silent) WAV file as a last-resort fallback.
+        This prevents MoviePy from crashing when it expects a valid audio file.
+        """
+        import wave
+        import struct
+
+        try:
+            # Create a 2-second silent WAV file
+            sample_rate = 22050
+            duration = 2 # seconds
+            num_samples = sample_rate * duration
+
+            with wave.open(file_path, 'wb') as wav_file:
+                wav_file.setnchannels(1) # Mono
+                wav_file.setsampwidth(2) # 16-bit
+                wav_file.setframerate(sample_rate)
+
+                # Write silence (zeros)
+                for _ in range(num_samples):
+                    data = struct.pack('<h', 0)
+                    wav_file.writeframesraw(data)
+
+            self.logger.info(f"MOCK valid silent WAV generated: {file_path}")
+            return file_path
+        except Exception as e:
+            self.logger.error(f"Failed to generate mock WAV: {e}")
+            # Absolute last resort (will probably still fail in MoviePy)
+            with open(file_path, "wb") as f:
+                f.write(b"MOCK PIPER AUDIO CONTENT")
+            return file_path
 
 # singleton
 piper_service = PiperService()

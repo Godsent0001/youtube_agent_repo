@@ -37,10 +37,13 @@ class PipelineService:
 
         self.logger.info(f"Pipeline started for video: {video_id} (User: {user_id})")
 
-        # Create folders
-        os.makedirs("storage/videos", exist_ok=True)
-        os.makedirs("storage/audio", exist_ok=True)
-        os.makedirs("storage/images", exist_ok=True)
+        # Create folders with full permissions
+        for folder in ["storage/videos", "storage/audio", "storage/images", "storage/temp_media"]:
+            os.makedirs(folder, exist_ok=True)
+            try:
+                os.chmod(folder, 0o777)
+            except:
+                pass
 
         # =========================
         # 1. SCRIPT GENERATION
