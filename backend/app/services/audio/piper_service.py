@@ -12,25 +12,26 @@ class PiperService:
     def __init__(self):
         self.logger = logger
 
-        base_dir = os.path.dirname(
-            os.path.dirname(
-                os.path.dirname(__file__)
-            )
+        # Reliable absolute path relative to this file
+        base_dir = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "../../../")
         )
 
         docker_path = "/app/models/en_US-lessac-medium.onnx"
 
         local_path = os.path.join(
             base_dir,
-            "models/en_US-lessac-medium.onnx"
+            "models",
+            "en_US-lessac-medium.onnx"
         )
 
         if os.path.exists(docker_path):
             self.model_path = docker_path
-
-        else:
+        elif os.path.exists(local_path):
             self.model_path = local_path
-
+        else:
+            # Fallback for flexibility, but log it
+            self.model_path = local_path
 
         self.output_dir = "storage/audio"
 
@@ -40,7 +41,7 @@ class PiperService:
         )
 
         self.logger.info(
-            f"Piper model: {self.model_path}"
+            f"Piper model loaded from: {self.model_path}"
         )
 
 
