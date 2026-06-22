@@ -219,6 +219,7 @@ class VideoBuilderService:
                 audio_codec="aac",
                 preset="ultrafast",   # EXTREME SPEED
                 threads=4,
+                ffmpeg_params=["-pix_fmt", "yuv420p"],
                 logger=moviepy_logger
             )
 
