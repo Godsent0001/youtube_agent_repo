@@ -11,9 +11,27 @@ export const AgentDetail = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchVideo();
-    const interval = setInterval(fetchStatus, 3000);
-    return () => clearInterval(interval);
+    let interval: any;
+
+    const initialize = async () => {
+      const initialVideo = await fetchVideo();
+
+      // Only start polling if the video is not yet finished
+      if (initialVideo && initialVideo.status !== 'completed' && initialVideo.status !== 'failed') {
+        interval = setInterval(async () => {
+          const statusData = await fetchStatus();
+          if (statusData && (statusData.status === 'completed' || statusData.status === 'failed')) {
+            clearInterval(interval);
+            fetchVideo(); // Final fetch to get the video_url
+          }
+        }, 3000);
+      }
+    };
+
+    initialize();
+    return () => {
+      if (interval) clearInterval(interval);
+    };
   }, [id]);
 
   const fetchVideo = async () => {
@@ -21,8 +39,11 @@ export const AgentDetail = () => {
       const data = await apiRequest(`/videos/${id}`);
       setVideo(data);
       setLoading(false);
+      return data;
     } catch (error) {
       console.error('Error fetching video:', error);
+      setLoading(false);
+      return null;
     }
   };
 
@@ -30,11 +51,10 @@ export const AgentDetail = () => {
     try {
       const data = await apiRequest(`/videos/${id}/status`);
       setStatus(data);
-      if (data.status === 'completed' && !video?.video_url) {
-        fetchVideo();
-      }
+      return data;
     } catch (error) {
       console.error('Error fetching status:', error);
+      return null;
     }
   };
 
