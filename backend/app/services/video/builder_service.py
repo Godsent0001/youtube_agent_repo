@@ -170,6 +170,15 @@ class VideoBuilderService:
         fps = 30 if content_type == "shorts" else 24
 
         try:
+            # FIX: Ensure even dimensions for H.264 compatibility
+            w, h = final_video.size
+            new_w = w if w % 2 == 0 else w - 1
+            new_h = h if h % 2 == 0 else h - 1
+
+            if new_w != w or new_h != h:
+                self.logger.info(f"Resizing video from {w}x{h} to {new_w}x{new_h} for compatibility")
+                final_video = final_video.resize(newsize=(new_w, new_h))
+
             # Custom logger for progress tracking
             moviepy_logger = "bar"
             if job_id:
