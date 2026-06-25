@@ -129,35 +129,29 @@ class VideoBuilderService:
         final_video = concatenate_videoclips(clips, method="compose")
 
         # ==================================================
-        # AUDIO SYNC FIX
+        # AUDIO SYNC FIX (SIMPLIFIED)
         # ==================================================
         if audio:
             try:
-                # Force video duration to match audio EXACTLY to prevent black screen
-                target_duration = audio_duration
+                # Ensure video matches audio duration exactly
+                target_duration = float(audio.duration)
 
-                # STRICT DURATION ENFORCEMENT
+                # Optional compliance clipping
                 if video_length:
+                    v_len = float(video_length)
                     if content_type == "shorts":
-                        limit = min(video_length, 60)
-                        if target_duration > limit:
-                            self.logger.info(f"Clipping audio to {limit}s for Shorts compliance")
-                            audio = audio.subclip(0, limit)
-                            target_duration = limit
+                        limit = min(v_len, 60.0)
                     else:
-                        # Long form
-                        if video_length < 20: # minutes
-                            limit = video_length * 60
-                        else: # seconds
-                            limit = video_length
+                        limit = v_len if v_len > 20 else v_len * 60.0
 
-                        if target_duration > limit:
-                            self.logger.info(f"Clipping audio to {limit}s for duration compliance")
-                            audio = audio.subclip(0, limit)
-                            target_duration = limit
+                    if target_duration > limit:
+                        self.logger.info(f"Clipping audio to {limit}s for compliance")
+                        audio = audio.subclip(0, limit)
+                        target_duration = limit
 
                 final_video = final_video.set_duration(target_duration)
                 final_video = final_video.set_audio(audio)
+                self.logger.info("Audio attached successfully")
 
             except Exception as e:
                 self.logger.warning(f"Audio sync failed: {e}")
