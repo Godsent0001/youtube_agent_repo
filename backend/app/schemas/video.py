@@ -40,16 +40,16 @@ class VideoResponse(BaseModel):
     id: str
     user_id: str
 
-    title: Optional[str]
-    description: Optional[str]
+    title: Optional[str] = None
+    description: Optional[str] = None
 
     prompt: str
     aspect_ratio: Literal["16:9", "9:16"]
     duration_seconds: int
 
-    script: Optional[str]
-    video_url: Optional[str]
-    thumbnail_url: Optional[str]
+    script: Optional[str] = None
+    video_url: Optional[str] = None
+    thumbnail_url: Optional[str] = None
 
     status: Literal["queued", "processing", "completed", "failed"]
 
